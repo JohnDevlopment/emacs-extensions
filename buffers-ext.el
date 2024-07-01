@@ -91,6 +91,9 @@ Internally, calls `kill-buffers' with the pattern
 
 ;;; Functions that create scratch or temp buffers
 
+;; TODO: #1 Macro for creating scratch buffer
+
+;; TODO: #2 Move to custom-ext; use macro mentioned in #1
 (defun faces-buffer ()
   "Open a buffer listing all the faces."
   (interactive)
@@ -101,6 +104,7 @@ Internally, calls `kill-buffers' with the pattern
       (insert face)
       (newline))))
 
+;; TODO: #3 Move to custom-ext; use macro mentioned in #1
 (defun docstring-scratch (buffer-name &optional fill-number)
   "Open a scratch buffer for documentation strings.
 
@@ -121,6 +125,7 @@ When called interactively, FILL-NUMBER is the prefix arg."
     (when fill-number
       (set-fill-column fill-number))))
 
+;; TODO: #4 Use macro mentioned in #1
 (defun git-commit-scratch ()
   "Open a scratch buffer to let you format a git commit."
   (interactive)
@@ -134,28 +139,13 @@ When called interactively, FILL-NUMBER is the prefix arg."
 		   (kill-region (point-min) (point-max))
 		   (kill-and-quit))))
 
+;; TODO: #5 Move to custom-ext; use macro mentioned in #1
 (defun python-scratch ()
   "Open a scratch buffer for Python code."
   (interactive)
   (tmpbuf "python" t)
   (python-mode)
   (electric-pair-local-mode 1))
-
-(defun tmpbuf (buf &optional switch)
-  "Open a temporary buffer.
-
-If it doesn't exist, open a new one.  BUF is the name of the
-buffer.
-
-If this function is called interactively, or if SWITCH is
-non-nil, this switches to the newly created buffer.
-Otherwise, this just returns the newly created buffer."
-  (interactive "sBuffer name: \nP")
-  (let* ((newbuf (concat "*" buf "*"))
-	 (newbuf (get-buffer-create newbuf)))
-    (if (or (called-interactively-p 'any) switch)
-	(switch-to-buffer newbuf)
-      newbuf)))
 
 ;; ---
 
@@ -175,6 +165,22 @@ as prefix args."
 		   (not (buffer-modified-p)))
 	  (revert-buffer t t))))
     (message "Reverted all file buffers")))
+
+(defun tmpbuf (buf &optional switch)
+  "Open a temporary buffer.
+
+If it doesn't exist, open a new one.  BUF is the name of the
+buffer.
+
+If this function is called interactively, or if SWITCH is
+non-nil, this switches to the newly created buffer.
+Otherwise, this just returns the newly created buffer."
+  (interactive "sBuffer name: \nP")
+  (let* ((newbuf (concat "*" buf "*"))
+	 (newbuf (get-buffer-create newbuf)))
+    (if (or (called-interactively-p 'any) switch)
+	(switch-to-buffer newbuf)
+      newbuf)))
 
 (defun narrow-to-region2 (start end)
   "Call `narrow-to-region' with START and END."
