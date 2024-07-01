@@ -1,9 +1,20 @@
 (eval-and-compile
   (require 'dired))
 
-(put 'dired-find-alternate-file 'disabled nil)
+;; Enable `dired-find-alternate-file'
+(put #'dired-find-alternate-file 'disabled nil)
 
+;; Bind C-x M-d to `dired-alternate'
+(global-set-key (kbd "C-x M-d") #'dired-alternate)
 
+(defun dired-ext-find-alternate-updir ()
+  "In Dired, find alternate file in parent directory."
+  (interactive)
+  (find-alternate-file ".."))
+
+(defun dired-ext-quit-kill-window ()
+  (interactive)
+  (quit-window t))
 
 (defun dired-alternate (dirname &optional switches)
   "\"Edit\" directory DIRNAME, same as `dired', kill the current buffer.
