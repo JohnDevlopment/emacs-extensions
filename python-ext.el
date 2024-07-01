@@ -120,7 +120,6 @@
 
 (defun python--extra-hook ()
   (setq-local beginning-of-defun-function #'py-backward-def-or-class)
-  (electric-pair-local-mode)
   (outline-minor-mode -1))
 
 (add-hook 'python-mode-hook #'python--extra-hook)
