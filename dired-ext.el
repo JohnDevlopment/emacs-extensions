@@ -3,13 +3,7 @@
 
 (put 'dired-find-alternate-file 'disabled nil)
 
-(defun dired-mode--extra-hook ()
-  (define-key dired-mode-map (kbd "^")
-    (lambda () (interactive) (find-alternate-file "..")))
-  (define-key dired-mode-map "k"
-    (lambda () (interactive) (quit-window t))))
 
-(add-hook 'dired-mode-hook #'dired-mode--extra-hook)
 
 (defun dired-alternate (dirname &optional switches)
   "Calls `dired' with the provided arguments, with the additional function of
@@ -25,3 +19,12 @@ options are pointless."
 	(newbuf (dired-noselect dirname switches)))
     (pop-to-buffer-same-window newbuf)
     (kill-buffer curbuf)))
+
+;;; Hook
+
+(defun dired-mode--extra-hook ()
+  "Extra hook for `dired-mode'."
+  (define-key dired-mode-map "^" #'dired-ext-find-alternate-updir)
+  (define-key dired-mode-map "k" #'dired-ext-quit-kill-window))
+
+(add-hook 'dired-mode-hook #'dired-mode--extra-hook)
