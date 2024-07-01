@@ -1,4 +1,4 @@
-;;; python-ext.el --- Python extension -*- lexical-binding: t; -*-
+;; -*- lexical-binding: t; -*-
 
 (eval-and-compile
   (require 'python-mode))
