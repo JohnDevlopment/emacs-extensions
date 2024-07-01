@@ -12,10 +12,6 @@
   :type 'integer
   :group 'user-extensions)
 
-;; (defcustom python-ext-docstring-indent-offset 4
-;;   "Indentation offset for python."
-;;   :type 'integer
-;;   :group 'user-extensions)
 (defvar user-ext-python--orig-position nil
   "Position in the original buffer when editing Python docstring.")
 
