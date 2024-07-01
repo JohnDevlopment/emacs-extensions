@@ -1,21 +1,4 @@
-;;; custom-ext.el --- Customization                    -*- lexical-binding: t; -*-
-
-;; Copyright (C) 2024  John
-;; Author: John <john@john-System-Product-Name>
-;; Keywords:
-;;
-;; This program is free software; you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation, either version 3 of the License, or
-;; (at your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU General Public License for more details.
-;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
+;; -*- lexical-binding: t; -*-
 
 (eval-when-compile
   (require 'custom))
@@ -66,7 +49,8 @@
   "Face for highlight-changes."
   :group 'user-extensions)
 
-;; Aliases
+;;; Aliases
+
 (defalias 'log-view-date    'user-ext-log-view-date)
 (defalias 'log-view-debug   'user-ext-log-view-debug)
 (defalias 'log-view-error   'user-ext-log-view-error)
@@ -74,7 +58,6 @@
 (defalias 'log-view-time    'user-ext-log-view-time)
 (defalias 'log-view-warning 'user-ext-log-view-warning)
 
-;; Group for global modes
 (defgroup user-ext-global-modes nil
   "A group for global modes."
   :group 'user-extensions)
