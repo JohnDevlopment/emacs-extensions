@@ -2,15 +2,7 @@
 
 (require 'codeium)
 
-;; (defun temp ()
-;;   "Edit codeium-ext.el."
-;;   (interactive)
-;;   (find-extension "codeium-ext")
-;;   (with-current-buffer "codeium-ext.el"
-;;     (company-mode)
-;;     (electric-pair-local-mode)))
-
-;; Variables
+;;; Variables
 
 (defvar user-ext-codeium-menu-map nil
   "Keymap for Codeium menu.")
@@ -25,7 +17,7 @@
 
 (make-local-variable 'user-ext-codeium--is-init)
 
-;; Menu
+;;; Menu
 
 (easy-menu-define user-ext-codeium-menu-map nil
   "Codeium commands"
@@ -49,7 +41,7 @@
   (cons "Codeium" user-ext-codeium-menu-map)
   'tools)
 
-;; Functions
+;;; Functions
 
 (defun user-ext-codeium-init-p ()
   "Check if Codeium is initialized."
