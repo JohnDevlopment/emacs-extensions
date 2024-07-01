@@ -1,38 +1,34 @@
 (eval-when-compile
   (require 'dired))
 
-;; Customization
+;;; Customization
 
 (defgroup buffers-ext nil
   "Group for custom buffer-related options."
   :group 'user-extensions)
 
 (defcustom user-ext-temp-buffers-to-kill
-  '(
-    "*Backtrace*" "*comment-tags*"
+  '("*Backtrace*" "*comment-tags*"
     "*Buffer List*"
     "*Completions*"
     "*Compile-Log*"
     "*Occur*"
     "*Packages*"
-    "*Shell Command Output*"
-    )
+    "*Shell Command Output*")
   "A list of buffers to kill when `kill-certain-temp-buffers' is called."
   :type '(repeat string)
   :safe 'list-p
   :group 'buffers-ext)
 
 (defcustom user-ext-temp-buffers-to-kill-regex
-  '(
-    "\\*.*[hH]elp.*"
-    "\\*vc-.*"
-    )
+  '("\\*.*[hH]elp.*" "\\*vc-.*")
   "A list of regexes of buffers to kill when `kill-certain-temp-buffers' is called."
   :type '(repeat regexp)
   :safe 'list-p
   :group 'buffers-ext)
 
-;; Functions to kill buffers matching patterns
+
+;;; Functions to kill buffers matching patterns
 
 (defun kill-certain-temp-buffers ()
   "Convenience function to kill certain buffers you do not need.
@@ -84,7 +80,7 @@ Internally, calls `kill-buffers' with the pattern
 	    (message "Killed %s" (buffer-name buf))
 	    (kill-buffer (buffer-name buf))))))
 
-;; ---
+;;; ---
 
 (defun get-buffer-file-name ()
   "Print the file belonging to the current buffer."
@@ -93,7 +89,7 @@ Internally, calls `kill-buffers' with the pattern
     (insert (buffer-file-name))
     (kill-region pos (point))))
 
-;; Functions that create scratch or temp buffers
+;;; Functions that create scratch or temp buffers
 
 (defun faces-buffer ()
   "Open a buffer listing all the faces."
