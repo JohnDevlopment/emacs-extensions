@@ -126,7 +126,13 @@ When called interactively, FILL-NUMBER is the prefix arg."
   (interactive)
   (tmpbuf "git commit" t)
   (auto-fill-mode t)
-  (set-fill-column 50))
+  (set-fill-column 50)
+  (setq header-line-format "Type C-c C-c when finished, C-x k to cancel editing.")
+  (local-set-key (kbd "C-c C-c")
+		 (lambda ()
+		   (interactive)
+		   (kill-region (point-min) (point-max))
+		   (kill-and-quit))))
 
 (defun python-scratch ()
   "Open a scratch buffer for Python code."
