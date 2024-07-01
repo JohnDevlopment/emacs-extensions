@@ -1,4 +1,3 @@
-;; load on compile
 (eval-when-compile
   (require 'skeleton)
   (require 'cc-mode))
