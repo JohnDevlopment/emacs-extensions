@@ -1,11 +1,28 @@
 ;; -*- lexical-binding: t; -*-
 
 (eval-and-compile
-  (require 'codeium))
+  (defvar-local user-ext-local-position-ring nil
+    "Current file's mark ring.")
+  (require 'debug-ext))
 
 ;;; Functions
 
+(defun save-current-position (&optional pos)
+  (interactive)
+  (let ((pos (or pos (point-marker))))
+    (add-to-history 'user-ext-local-position-ring pos)
+    (message
+     (substitute-command-keys
+      "Position saved to local position ring. Go back with `\\[pop-saved-position]'."))))
 
+(defun pop-saved-position ()
+  (interactive)
+  (let (pos)
+    (assert (> (length user-ext-local-position-ring) 0)
+	"The local position ring is empty!")
+    (setq pos (pop user-ext-local-position-ring))
+    (goto-char pos)
+    (message "Restored to position %s." pos)))
 
 (defun add-mode-comment (mode)
   "Insert a comment line that changes the major mode to MODE.
