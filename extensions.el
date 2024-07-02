@@ -1,6 +1,10 @@
-;; Extensions entry point
+(add-to-list 'load-path "~/.emacs.d/extensions/packages")
 
-(add-to-list 'load-path "~/.emacs.d/extensions")
+(eval-when-compile
+  (load-extension "custom-ext"))
+
+(load-extension "codeium-ext")
+(load-extension "custom-ext")
 
 ;; General functions and key bindings
 (load-extension "general")
