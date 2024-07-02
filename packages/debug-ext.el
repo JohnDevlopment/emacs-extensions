@@ -25,11 +25,13 @@
 (defmacro assert (form &optional message)
   (declare (indent 2))
   "Assert that FORM evaluates to non-nil.
-Otherwise throw an error."
+Otherwise throw an error.
+
+FORM should not be quoted."
   `(unless ,form
      ,(if message
-	  `(user-error ,message)
-	`(user-error (format "Assertion failed: %s" ',form)))))
+	  `(error (format "Assertion failed: %s, %s" ',form ,message))
+	`(error (format "Assertion failed: %s" ',form)))))
 
 (defun debug-ext-get-function-body (symbol)
   "Get the function definition of SYMBOL."
