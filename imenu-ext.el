@@ -19,27 +19,29 @@ buffers sharing the same major mode will be affected."
     (local-set-key (kbd "<double-mouse-1>") #'imenu)
     (message "Bind `imenu' to the left mouse button double-clicked")))
 
-(defun imenu--sh-hook ()
-  (setq imenu-generic-expression
-	(list `("*Functions*"
-		,(rx line-start (* (syntax whitespace))
-		     "function" (+ (syntax whitespace))
-		     (group (* (syntax symbol)))
-		     (* (syntax whitespace)) (opt "()")) 1)
-	      `("*Functions*"
-		,(rx line-start (* (syntax whitespace))
-		     (group (* (syntax symbol)))
-		     (* (syntax whitespace)) (opt "()"))))))
+;; (defun imenu--sh-hook ()
+;;   (setq imenu-generic-expression
+;; 	(list `("*Functions*"
+;; 		,(rx line-start (* (syntax whitespace))
+;; 		     "function" (+ (syntax whitespace))
+;; 		     (group (* (syntax symbol)))
+;; 		     (* (syntax whitespace)) (opt "()")) 1)
+;; 	      `("*Functions*"
+;; 		,(rx line-start (* (syntax whitespace))
+;; 		     (group (* (syntax symbol)))
+;; 		     (* (syntax whitespace)) (opt "()"))))))
 
 (defun imenu--python-hook ()
+  "Imenu Hook for Python mode."
   (setq imenu-generic-expression
 	(list `("*Functions*"
-	   ,(rx line-start (* (syntax whitespace))
-		(opt "async" (+ (syntax whitespace)))
-		"def" (+ (syntax whitespace))
-		(group (+ (syntax symbol)))
-		"(" (* nonl) ")"
-		(* nonl) ":") 1))))
+		,(rx line-start (* (syntax whitespace))
+		     (opt "async" (+ (syntax whitespace)))
+		     "def" (+ (syntax whitespace))
+		     (group (+ (syntax symbol)))
+		     "(" (* nonl) ")"
+		     (* nonl) ":")
+		1))))
 
-(add-hook 'sh-mode-hook #'imenu--sh-hook)
+;; (add-hook 'sh-mode-hook #'imenu--sh-hook)
 (add-hook 'python-mode-hook #'imenu--python-hook)
