@@ -51,7 +51,7 @@ form of the ref is inserted, if it has one."
   (let ((label (read-from-minibuffer "Label: "))
 	(buf (current-buffer)))
     (princ (format ":ref:`%s`" label) buf)))
-    
+
 (defun sphinx--add-ref-with-link ()
   (let ((label (read-from-minibuffer "Label: "))
 	(link (read-from-minibuffer "Link: "))
