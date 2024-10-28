@@ -52,8 +52,7 @@ This kills buffers belonging to `user-ext-temp-buffers-to-kill' and
   "Kill all buffers that have to do with function `lsp-mode'."
   (interactive)
   (kill-buffers "\*.*ls.*")
-  (kill-buffers "\*pyright.*")
-  (kill-buffer "*Flymake log*"))
+  (kill-buffers "\*pyright.*"))
 
 (defun kill-customization-buffers ()
   "Close all customization buffers.
