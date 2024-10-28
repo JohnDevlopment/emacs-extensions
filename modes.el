@@ -12,8 +12,8 @@
 ;; (load-extension "org-ext" t)
 (load-extension "perl-ext" t)
 (load-extension "python-ext" t)
-(load-extension "sh-ext" t)
-(load-extension "toml-ext" t)
+;; (load-extension "sh-ext" t)
+;; (load-extension "toml-ext" t)
 
 ;; Minor modes
 ;; (load-extension "comment-tags-ext" t)
