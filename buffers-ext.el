@@ -27,6 +27,16 @@
   :safe 'list-p
   :group 'buffers-ext)
 
+;; (defun list-buffers-ex (&optional arg)
+;;   "Display a list of existing buffers.
+;; This pretty much calls `list-buffers', then selects the window
+;; where the list is displayed.
+
+;; With prefix argument ARG, only show buffers that are visiting
+;; files."
+;;   (interactive "P")
+;;   (list-buffers arg)
+;;   (other-window 1))
 
 ;;; Functions to kill buffers matching patterns
 
