@@ -8,6 +8,10 @@
   (let ((yas-fallback-behavior 'return-nil))
     (yas-expand)))
 
+(defun yas-ext-enable-company-completion ()
+  (interactive)
+  (add-to-list 'completion-at-point-functions #'yasnippet-capf nil #'eq))
+
 (defun yas-ext-compile-snippet-dir (&optional is-interactive)
   "Call this function to compile a snippet directory.
 
