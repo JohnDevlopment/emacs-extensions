@@ -90,45 +90,50 @@ Internally, calls `kill-buffers' with the pattern
 
 ;;; Functions that create scratch or temp buffers
 
-;; TODO: #1 Macro for creating scratch buffer
+(defmacro define-scratch-buffer-function (name buffer-name arg-list
+					       docstring int-spec
+					       &rest body)
+  "Define a function that creates a scratch buffer named NAME."
+  (declare (indent 3) (doc-string 4))
+  (let ()
+    `(progn
+       (defun ,name ,arg-list
+	 ,docstring
+	 ,(if int-spec
+	      (list 'interactive int-spec)
+	    '(interactive))
+	 (let (buffer)
+	   (setq buffer (tmpbuf ,buffer-name))
+	   (switch-to-buffer-other-window buffer)
+	   ,@body)))))
 
-;; TODO: #2 Move to custom-ext; use macro mentioned in #1
-(defun faces-buffer ()
+(define-scratch-buffer-function faces-buffer "faces" nil
   "Open a buffer listing all the faces."
-  (interactive)
+  nil
   (let (faces face)
     (setq faces (seq-map 'symbol-name (face-list)))
-    (tmpbuf "faces")
     (dolist (face (seq-sort 'string< faces))
       (insert face)
       (newline))))
 
-;; TODO: #3 Move to custom-ext; use macro mentioned in #1
-(defun docstring-scratch (buffer-name &optional fill-number)
+(define-scratch-buffer-function docstring-scratch "docstring"
+				(&optional fill-number)
   "Open a scratch buffer for documentation strings.
 
-Creates a temporary buffer with the name BUFFER-NAME.  The
+Creates a temporary buffer with the name \"docstring\".  The
 newly created buffer has `auto-fill-mode' enabled.  Its
 `fill-column' is set to FILL-NUMBER (if non-nil) or 60
 otherwise.
 
 When called interactively, FILL-NUMBER is the prefix arg."
-  (interactive "sBuffer (default: \"docstring\"): \nP")
-  (let* ((bufname (if (> (length buffer-name) 0)
-		      buffer-name
-		    "docstring"))
-	 (buffer (tmpbuf bufname))
-	 (fill-number (or fill-number 60)))
-    (switch-to-buffer buffer)
-    (auto-fill-mode t)
-    (when fill-number
-      (set-fill-column fill-number))))
+  "P"
+  (text-mode)
+  (auto-fill-mode t)
+  (set-fill-column (or fill-number 60)))
 
-;; TODO: #4 Use macro mentioned in #1
-(defun git-commit-scratch ()
+(define-scratch-buffer-function git-commit-scratch "git commit" nil
   "Open a scratch buffer to let you format a git commit."
-  (interactive)
-  (tmpbuf "git commit" t)
+  nil
   (auto-fill-mode t)
   (set-fill-column 50)
   (setq header-line-format "Type C-c C-c when finished, C-x k to cancel editing.")
@@ -137,14 +142,6 @@ When called interactively, FILL-NUMBER is the prefix arg."
 		   (interactive)
 		   (kill-region (point-min) (point-max))
 		   (kill-and-quit))))
-
-;; TODO: #5 Move to custom-ext; use macro mentioned in #1
-(defun python-scratch ()
-  "Open a scratch buffer for Python code."
-  (interactive)
-  (tmpbuf "python" t)
-  (python-mode)
-  (electric-pair-local-mode 1))
 
 ;; ---
 
