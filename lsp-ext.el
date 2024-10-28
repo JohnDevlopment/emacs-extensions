@@ -1,14 +1,46 @@
-;; lsp extension
+;;; lsp-ext --- Lsp Extension
+
+;;; Commentary:
+
+;;; Code:
 
 (require 'lsp-mode)
+(require 'lsp-origami)
+(require 'lsp-pyright)
 
 (with-eval-after-load 'lsp-mode
   (setq lsp-keymap-prefix "C-c c l"))
 
+;; Faces
+
+;; (defface lsp-flycheck-info-unnecessary
+;;   '((t :inherit lsp-flycheck-info-unnecessary-face))
+;;   "Lsp Flycheck Info Unnecessary Face."
+;;   :group 'user-extensions)
+
+;; (defface lsp-flycheck-info-unnecessary-face
+;;   '((t :inherit default :foreground "Gray"
+;;        :underline '(:style 'wave :color "ForestGreen")))
+;;   "Lsp Flycheck Info Unnecessary Face."
+;;   :group 'user-extensions)
+
+;; (defface lsp-flycheck-info-unnecessary
+;;   '((t :inherit default :foreground "Gray"
+;;        :underline '(:style 'wave :color "ForestGreen")))
+;;   "Lsp Flycheck Info Unnecessary Face."
+;;   :group 'user-extensions)
+
 (defvar lsp-temporary-workspace-folders nil
   "Folders added with `lsp-workspace-folders-add-temp'.")
 
+;; Functions
+
 (defun lsp--delete-temp-workspace-folders ()
+  "Remove temporary folders from the LSP workspace.
+
+Remove the contents of `lsp-temporary-workspace-folders'
+from the workspace list.  Effectively, this removes
+temporary folders from the workspace."
   (dolist (dir lsp-temporary-workspace-folders)
     (lsp-workspace-folders-remove dir)))
 
@@ -35,6 +67,8 @@
 ;; Exit hook
 (add-hook 'kill-emacs-hook #'lsp--delete-temp-workspace-folders)
 
-(let ()
-  (require 'lsp-origami)
-  (add-hook 'lsp-after-open-hook #'lsp-origami-try-enable))
+(add-hook 'lsp-after-open-hook #'lsp-origami-try-enable)
+
+(provide 'lsp-ext)
+
+;;; lsp-ext ends here

@@ -1,5 +1,10 @@
-(eval-and-compile
-  (require 'dired))
+;;; dired-ext --- Dired mode extension  -*- lexical-binding: t; -*-
+
+;;; Commentary:
+
+;;; Code:
+
+(require 'dired)
 
 ;; Enable `dired-find-alternate-file'
 (put #'dired-find-alternate-file 'disabled nil)
@@ -13,6 +18,7 @@
   (find-alternate-file ".."))
 
 (defun dired-ext-quit-kill-window ()
+  "Kill the current buffer and quit the window."
   (interactive)
   (quit-window t))
 
@@ -40,3 +46,7 @@ individually, so list-sorting options are pointless."
   (define-key dired-mode-map "k" #'dired-ext-quit-kill-window))
 
 (add-hook 'dired-mode-hook #'dired-mode--extra-hook)
+
+(provide 'dired-ext)
+
+;;; dired-ext ends here

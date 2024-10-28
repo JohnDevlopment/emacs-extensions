@@ -1,16 +1,25 @@
-(eval-and-compile
-  (require 'org)
-  (make-local-variable 'org-ext-bindings)
-  (make-variable-buffer-local 'yas-trigger-key)
-  (require 'debug-ext))
+;; -*- lexical-binding: t; -*-
 
-(defvar org-ext-bindings nil
-  "Non-nil if `org-ext-bindings' was called.")
+(require 'debug-ext)
+(require 'org)
+(require 'org-element)
+(require 'yasnippet)
+
+(declare-function yas-ext-org-very-safe-expand "yasnippets-ext")
+(load-extension "yasnippets-ext")
+
+(define-prefix-command 'org-mode-custom-command-prefix)
+(define-prefix-command 'org-mode-custom-insert-command-prefix)
+(make-variable-buffer-local 'yas-trigger-key)
+
+;;; Variables
 
 (defcustom user-ext-browse-url-brave-arguments nil
   "A list of strings to pass to Brave as arguments."
   :type '(repeat (string :tag "Argument"))
   :group 'user-extensions)
+
+;;; Functions
 
 (defun org-ext-open-url-at-point (&optional arg)
   "Open link, timestamp, footnote or tags at point.
@@ -34,8 +43,7 @@ application the system uses for this file type."
 		     footnote-reference headline inline-src-block inlinetask
 		     keyword link node-property planning src-block timestamp)
 	     t))
-	   (type (org-element-type context))
-	   (value (org-element-property :value context)))
+	   (type (org-element-type context)))
       (cond
        ((not type) (user-error "No link found"))
        ;; Do nothing on white spaces after an object.
@@ -55,6 +63,8 @@ application the system uses for this file type."
   (run-hook-with-args 'org-follow-link-hook))
 
 (defun browse-url-brave (url &optional _new-window)
+  "Browse URL in Brave browser.
+_NEW-WINDOW is ignored."
   (interactive (browse-url-interactive-arg "URL: "))
   (setq url (browse-url-encode-url url))
   (let* ((process-environment (browse-url-process-environment)))
@@ -78,10 +88,10 @@ Group 2 matches the number.")
 Group 1 matches the leading spaces.
 Group 2 optionally matches a checkbox.")
 
-(defun org-ext-list-shift-return (&optional arg)
+(defun org-ext-list-shift-return ()
   "If point is in inside a list, enter a newline and add a list item.
 Otherwise, call `org-return'."
-  (interactive "p")
+  (interactive)
   (let* ((context (org-element-lineage
 		   (org-element-context)
 		   '(plain-list) t))
@@ -124,44 +134,86 @@ Otherwise, call `org-return'."
   (interactive)
   (occur "^\\*\\{1,3\\} .+"))
 
-(defun org-ext--babel-confirm-babel-evalutate (lang body)
+(defun org-ext--babel-confirm-babel-evalutate (lang _body)
   "Used by `org-babel-confirm-evaluate' to confirm Babel evaluation.
-If this returns non-nil, Babel evaluation proceeds. Otherwise, confirm."
+If this returns non-nil, Babel evaluation proceeds.
+Otherwise, confirm.  LANG is the language name of the Babel
+block.  _BODY is the body of the code block to be evaluated.
+It is ignored.  See `org-babel-confirm-evaluate' for
+details."
   (print lang)
   (not (string= lang "plantuml")))
 
-(defun org--extra-hook ()
-  (org-ext-bindings)
-  (setq yas-trigger-key [tab])
-  (add-hook 'org-tab-first-hook #'yas-ext-org-very-safe-expand)
-  (define-key yas-keymap [tab] #'yas-next-field))
+(define-scratch-buffer-function org-ext-scratch "org scratch" ()
+  "Create an `org-mode' scratch buffer."
+  nil
+  (org-mode))
 
+(defun org-ext--insert-commas (num-string)
+  "Insert commas as thousands separators into NUM-STRING."
+  (let* ((parts (split-string num-string "\\."))
+	 (int-part (car parts))
+	 (dec-part (cadr parts))
+	 (int-with-commas
+	  (reverse
+	   (mapconcat 'identity
+		      (seq-partition (reverse int-part) 3) ","))))
+    (if dec-part
+	(concat int-with-commas "." dec-part)
+      int-with-commas)))
+
+(defun org-ext-format-currency (num &optional prefix)
+  "Return a formatted string with commas as thousands separators.
+NUM is a number.  PREFIX is a string that will be prepended
+to the result.  It is expected to contain a currency symbol."
+  (let ((nstr (org-ext--insert-commas (format "%.2f" num))))
+    (concat prefix nstr)))
+
+(defun org-ext-scan-number (string)
+  "Scan STRING for a number."
+  (string-to-number
+   (replace-regexp-in-string "[^0-9.]" "" string)))
+
+(defun org-ext-scan-numbers (&rest strings)
+  "Scan STRINGS for numbers and return them as a list."
+  (mapcar #'org-ext-scan-number strings))
+
+(let ((values ["$30.01" "$30,000.50"]))
+  ;; Convert vector to list
+  (setq values (append values nil))
+  values)
+
+;; Hooks
+
+;;;###autoload
+(defun org--extra-hook ()
+  "Extra hook for `org-mode'."
+  (setq yas-trigger-key [tab])					;
+  (add-hook 'org-tab-first-hook #'yas-ext-org-very-safe-expand) ;
+  (define-key yas-keymap [tab] #'yas-next-field)		;
+  (ignore))
+
+;;;###autoload
 (add-hook 'org-mode-hook #'org--extra-hook)
 
-(defun org-ext-bindings ()
-  "Bind <C-tab> to `tab-next'."
-  (interactive)
-  (when (not org-ext-bindings)
-    (local-set-key (kbd "M-e") #'yas-expand)
-    ;; Commands: C-c M-c ...
-    (define-prefix-command #'org-mode-custom-command-prefix)
-    (local-set-key (kbd "C-c M-c") #'org-mode-custom-command-prefix)
-    (define-key org-mode-custom-command-prefix "<tab>"
-      (lambda ()
-	"Call `org-set-startup-visibility'."
-	(interactive)
-	(org-set-startup-visibility)))
-    ;; Insertion commands: C-c i ...
-    (define-prefix-command 'org-mode-custom-insert-command-prefix)
-    (local-set-key (kbd "C-c i") #'org-mode-custom-insert-command-prefix)
-    (define-key org-mode-custom-insert-command-prefix "h"
-      (lambda ()
-	"Insert a horizontal rule."
-	(interactive)
-	(insert "----------\n")))
-    ;;
-    (define-key org-mode-map (kbd "<S-return>") #'org-ext-list-shift-return)
-    (define-key org-mode-map (kbd "C-c o") #'org-ext-open-url-at-point)
-    (define-key org-mode-map (kbd "<C-tab>") #'tab-next)
-    (define-key org-mode-map (kbd "M-F") #'fill-region)
-    (setq org-ext-bindings t)))
+(local-set-key (kbd "M-e") #'yas-expand)
+
+;; Commands: C-c M-c ...
+(define-key org-mode-map (kbd "C-c M-c") #'org-mode-custom-command-prefix)
+(define-key org-mode-custom-command-prefix "<tab>"
+  (lambda ()
+    "Call `org-set-startup-visibility'."
+    (interactive)
+    (org-set-startup-visibility)))
+;; Insertion commands: C-c i ...
+(local-set-key (kbd "C-c i") #'org-mode-custom-insert-command-prefix)
+(define-key org-mode-custom-insert-command-prefix "h"
+  (lambda ()
+    "Insert a horizontal rule."
+    (interactive)
+    (insert "----------\n")))
+
+(define-key org-mode-map (kbd "<S-return>") #'org-ext-list-shift-return)
+(define-key org-mode-map (kbd "C-c o") #'org-ext-open-url-at-point)
+(define-key org-mode-map (kbd "<C-tab>") #'tab-next)
+(define-key org-mode-map (kbd "M-F") #'fill-region)

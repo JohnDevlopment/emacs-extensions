@@ -1,7 +1,5 @@
-;; load tcl
 (eval-and-compile
-  (require 'tcl)
-  (require 'codeium))
+  (require 'tcl))
 
 ;; make function called tcl--extra-hook and add it to tcl-mode-hooks
 (defun tcl--extra-hook ()
@@ -10,7 +8,6 @@
   (setq indent-tabs-mode nil)
   (setq tab-width 2)
   (setq indent-line-function #'tcl-indent-line)
-  (enable-codeium-completion)
   (define-key tcl-mode-map [remap tcl-eval-region] #'tcl-eval-region2))
 
 (defun tcl-eval-region2 (start end &optional and-go)
