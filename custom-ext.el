@@ -1,5 +1,7 @@
 ;; -*- lexical-binding: t; -*-
 
+(require 'dash)
+
 (eval-when-compile
   (require 'custom))
 
@@ -61,3 +63,16 @@
 (defgroup user-ext-global-modes nil
   "A group for global modes."
   :group 'user-extensions)
+
+;; Functions
+
+;; (defun my-set-face-attribute (face frame &rest args)
+;;   (apply #'original-set-face-attribute face frame args)
+;;   ; Add custom behavior here, e.g., set :weight to normal
+;;   (set-face-attribute face frame :weight 'normal))
+
+;; (fset 'original-set-face-attribute (symbol-function 'set-face-attribute))
+;; (advice-add 'set-face-attribute :around 'my-set-face-attribute)
+
+;; (defun custom-ext-set-face-attribute (face &rest args)
+;;   (apply #'set-face-attribute face nil args))
