@@ -1,4 +1,8 @@
-;; -*- lexical-binding: t; -*-
+;;; toml-ext --- TOML mode extension.  -*- lexical-binding: t;  -*-
+
+;;; Commentary:
+
+;;; Code:
 
 (require 'toml-mode)
 (require 'json-mode)
@@ -15,8 +19,14 @@
       (indent-line-to (js--proper-indentation parse-status))
       (when (> offset 0) (forward-char offset)))))
 
+;;;###autoload
 (defun toml-mode--extra-hook ()
   "Extra hook for `toml-mode'."
   (setq-local indent-line-function #'toml-ext-indent))
 
+;;;###autoload
 (add-hook 'toml-mode-hook #'toml-mode--extra-hook)
+
+(provide 'toml-ext)
+
+;;; toml-ext ends here
