@@ -1,6 +1,6 @@
-(eval-and-compile
-  (add-to-list 'load-path "~/.emacs.d/dropdown-list")
-  (require 'dropdown-list))
+;; (eval-and-compile
+;;   (add-to-list 'load-path "~/.emacs.d/dropdown-list")
+;;   (require 'dropdown-list))
 
 (add-to-list 'completion-at-point-functions #'yasnippet-capf)
 
