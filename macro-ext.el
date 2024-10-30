@@ -1,4 +1,8 @@
-;; -*- lexical-binding: t; -*-
+;;; macro-ext --- Macro functions.  -*- lexical-binding: t; -*-
+
+;;; Commentary:
+
+;;; Code:
 
 (require 'kmacro)
 
@@ -16,3 +20,7 @@ use.  If the input is non-empty, it is inserted at point."
 		  (read-from-minibuffer prompt))))
     (unless (string= input "")
       (insert input))))
+
+(provide 'macro-ext)
+
+;;; macro-ext ends here
