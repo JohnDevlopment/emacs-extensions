@@ -1,4 +1,4 @@
-;;; lsp-ext --- Lsp Extension
+;;; lsp-ext --- Lsp Extension  -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 
