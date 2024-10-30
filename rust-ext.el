@@ -1,4 +1,9 @@
-;; load rust
+;;; rust-ext --- Rust mode extension.  -*- lexical-binding: t; -*-
+
+;;; Commentary:
+
+;;; Code:
+
 (eval-when-compile
   (require 'rust-mode)
   (require 'skeleton))
@@ -15,15 +20,21 @@ bound to rust-skeleton-NAME."
 	 ,@skel))))
 
 (rust-skeleton-define function "Insert a function definition."
-  "Name: "
-  "fn " str "(" ("Parameter, %s: "
-		 (unless (equal ?\( (char-before)) ", ")
-		 str) ") {" \n
-		 > "// code..." _ \n < "}" \n)
+		      "Name: "
+		      "fn " str "(" ("Parameter, %s: "
+				     (unless (equal ?\( (char-before)) ", ")
+				     str) ") {" \n
+				     > "// code..." _ \n < "}" \n)
 
+;;;###autoload
 (defun rust--custom-hook ()
   (setq-local skeleton-further-elements
 	      '((< '(- (min rust-indent-offset (current-column))))))
   (define-key rust-mode-map (kbd "C-c C-t f") #'rust-skeleton-function))
 
+;;;###autoload
 (add-hook 'rust-mode-hook #'rust--custom-hook)
+
+(provide 'rust-ext)
+
+;;; rust-ext ends here

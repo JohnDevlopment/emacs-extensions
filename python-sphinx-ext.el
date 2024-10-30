@@ -1,12 +1,14 @@
-;; -*- lexical-binding: t; -*-
+;;; python-sphinx-ext --- Python-Sphinx extension.  -*- lexical-binding: t;  -*-
+
+;;; Commentary:
+
+;;; Code:
 
 (require 'sphinx-doc)
 
 (eval-when-compile
   (require 'python-mode)
   (require 'debug-ext))
-
-;;; Code:
 
 ;; Customization
 
@@ -157,6 +159,7 @@ prompts the user for the content of the role."
 	(buf (current-buffer)))
     (princ (format "%s`%s`" rolename ref) buf)))
 
+;;;###autoload
 (defun sphinx-ext-align ()
   "Align the current line with the first line of this role.
 
@@ -326,9 +329,15 @@ skeleton is bound to sphinx-ext--skeleton-NAME."
 
 ;; Hooks
 
+;;;###autoload
 (defun sphinx-doc-mode--extra-hook ()
   "Hook for `sphinx-doc-mode'."
   (setq-local skeleton-further-elements
 	      '((^ (- (1+ (current-indentation)))))))
 
+;;;###autoload
 (add-hook 'sphinx-doc-mode-hook #'sphinx-doc-mode--extra-hook)
+
+(provide 'python-sphinx-ext)
+
+;;; python-sphinx-ext ends here

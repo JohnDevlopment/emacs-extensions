@@ -1,8 +1,13 @@
-;; -*- lexical-binding: t; -*-
+;;; text-ext --- Text mode extension.  -*- lexical-binding: t; -*-
+
+;;; Commentary:
+
+;;; Code:
 
 (eval-when-compile
   (require 'cl-lib))
 
+;;;###autoload
 (defun text-ext-highlight-even-lines ()
   "Highlight every even-numbered line in the current buffer."
   (interactive)
@@ -23,10 +28,8 @@
 	    (add-text-properties (line-beginning-position)
 				 (line-end-position)
 				 (list 'face face)))
-        (forward-line 1))))))
+          (forward-line 1))))))
 
-;; (defun text-ext--evenp (n)
-;;   "Return t if N is an even number."
-;;   (zerop (% n 2)))
+(provide 'text-ext)
 
-;; (global-set-key (kbd "C-c e") 'highlight-even-lines)
+;;; text-ext ends here

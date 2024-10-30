@@ -1,4 +1,6 @@
-;; -*- lexical-binding: t; -*-
+;;; python-ext --- Python mode extension.  -*- lexical-binding: t; -*-
+
+;;; Commentary:
 
 ;;; Code:
 
@@ -49,6 +51,7 @@
 ;;               (format "Insert %s statement." name))
 ;;          ,@skel))))
 
+;;;###autoload (autoload 'python-ext-scratch "python-ext" "Opens a scratch buffer to let you write Python code." t)
 (define-scratch-buffer-function python-ext-scratch "python" nil
   "Opens a scratch buffer to let you write Python code."
   nil
@@ -161,16 +164,25 @@
 
 ;; Hooks
 
+;;;###autoload
 (defun python--extra-hook ()
   "Hook for `python-mode' for this extension."
   (setq-local beginning-of-defun-function #'py-backward-def-or-class)
   (outline-minor-mode -1))
 
+;;;###autoload
 (defun python--lsp-hook ()
   "Hook for `python-mode' when lsp is enabled."
   (when (eq major-mode 'python-mode)
     (setq completion-at-point-functions
 	  (delq #'py-fast-complete completion-at-point-functions))))
 
+;;;###autoload
 (add-hook 'python-mode-hook #'python--extra-hook)
+
+;;;###autoload
 (add-hook 'lsp-after-open-hook #'python--lsp-hook)
+
+(provide 'python-ext)
+
+;;; python-ext ends here

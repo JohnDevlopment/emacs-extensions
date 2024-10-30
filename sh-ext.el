@@ -1,4 +1,6 @@
-;; -*- lexical-binding: t; -*-
+;;; sh-ext --- Shell script mode extension.  -*- lexical-binding: t; -*-
+
+;;; Commentary:
 
 ;;; Code:
 
@@ -115,6 +117,7 @@ it is non-nil, \"1;\" is prepended to the color code."
 
 ;; Hook
 
+;;;###autoload
 (defun sh--extra-hook ()
   (setq imenu-generic-expression
 	'(("*Functions*" "^\\s-**function\\s-+\\([_a-z-]+\\)" 1)
@@ -122,11 +125,15 @@ it is non-nil, \"1;\" is prepended to the color code."
 	  ("*Aliases*" "\\<alias \\([A-Za-z0-9_-]+\\)" 1)
 	  ("*Tags*" "^\\s-*###\\s-*\\(.+\\)" 1))))
 
+;;;###autoload
 (add-hook 'sh-mode-hook #'sh--extra-hook)
 
 ;; Key bindings and abbrevs
 (eval-and-compile
-
   (define-abbrev sh-mode-abbrev-table "cmds" "" #'sh-ext-skeleton-src-command-list)
   (define-key sh-mode-map (kbd "C-c \\") #'sh-ext-color-escape)
   (define-key sh-mode-map (kbd "C-c [") #'sh-ext-insert-non-printing-escape))
+
+(provide 'sh-ext)
+
+;;; sh-ext ends here

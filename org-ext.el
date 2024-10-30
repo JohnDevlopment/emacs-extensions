@@ -1,4 +1,8 @@
-;; -*- lexical-binding: t; -*-
+;;; org-ext --- Org mode extension.  -*- lexical-binding: t; -*-
+
+;;; Commentary:
+
+;;; Code:
 
 (require 'debug-ext)
 (require 'org)
@@ -62,6 +66,7 @@ application the system uses for this file type."
        (t (user-error "No link found")))))
   (run-hook-with-args 'org-follow-link-hook))
 
+;;;###autoload
 (defun browse-url-brave (url &optional _new-window)
   "Browse URL in Brave browser.
 _NEW-WINDOW is ignored."
@@ -144,6 +149,7 @@ details."
   (print lang)
   (not (string= lang "plantuml")))
 
+;;;###autoload (autoload 'org-ext-scratch "org-ext" "Create an `org-mode' scratch buffer." t)
 (define-scratch-buffer-function org-ext-scratch "org scratch" ()
   "Create an `org-mode' scratch buffer."
   nil
@@ -178,24 +184,6 @@ to the result.  It is expected to contain a currency symbol."
   "Scan STRINGS for numbers and return them as a list."
   (mapcar #'org-ext-scan-number strings))
 
-(let ((values ["$30.01" "$30,000.50"]))
-  ;; Convert vector to list
-  (setq values (append values nil))
-  values)
-
-;; Hooks
-
-;;;###autoload
-(defun org--extra-hook ()
-  "Extra hook for `org-mode'."
-  (setq yas-trigger-key [tab])					;
-  (add-hook 'org-tab-first-hook #'yas-ext-org-very-safe-expand) ;
-  (define-key yas-keymap [tab] #'yas-next-field)		;
-  (ignore))
-
-;;;###autoload
-(add-hook 'org-mode-hook #'org--extra-hook)
-
 (local-set-key (kbd "M-e") #'yas-expand)
 
 ;; Commands: C-c M-c ...
@@ -217,3 +205,20 @@ to the result.  It is expected to contain a currency symbol."
 (define-key org-mode-map (kbd "C-c o") #'org-ext-open-url-at-point)
 (define-key org-mode-map (kbd "<C-tab>") #'tab-next)
 (define-key org-mode-map (kbd "M-F") #'fill-region)
+
+;; Hooks
+
+;;;###autoload
+(defun org--extra-hook ()
+  "Extra hook for `org-mode'."
+  (setq yas-trigger-key [tab])					;
+  (add-hook 'org-tab-first-hook #'yas-ext-org-very-safe-expand) ;
+  (define-key yas-keymap [tab] #'yas-next-field)		;
+  (ignore))
+
+;;;###autoload
+(add-hook 'org-mode-hook #'org--extra-hook)
+
+(provide 'org-ext)
+
+;;; org-ext ends here

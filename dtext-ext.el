@@ -1,4 +1,4 @@
-;;; dtext-ext --- DText mode extension.
+;;; dtext-ext --- DText mode extension.  -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 

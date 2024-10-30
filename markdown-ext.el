@@ -27,6 +27,7 @@ The skeleton will be bound to markdown-skeleton-NAME."
 	 ,(or doc (format "Insert %s statement." name))
 	 ,@skel))))
 
+;;;###autoload (autoload 'markdown-skeleton-id "markdown-ext" "Insert a link with an id field." t)
 (markdown-skeleton-define id "Insert a link with an id field."
   "ID: "
   "<a id=\"" str "\"></a>" \n
@@ -34,6 +35,7 @@ The skeleton will be bound to markdown-skeleton-NAME."
 
 ;; Functions
 
+;;;###autoload
 (defun markdown-ext-insert-footnote ()
   "Insert a footnote with a new number and move point to footnote definition."
   (interactive)
@@ -51,11 +53,13 @@ The skeleton will be bound to markdown-skeleton-NAME."
     (markdown-ensure-blank-line-after)
     (goto-char (marker-position pm))))
 
+;;;###autoload
 (defun markdown-ext-set-footnote-counter (num)
   "Set the footnote counter to NUM."
   (interactive "nNew counter: ")
   (setq markdown-footnote-counter num))
 
+;;;###autoload
 (defun markdown-ext-insert-image (file alt &optional title prefix)
   ""
   (interactive "fFile: \nsAlt text: \nsTitle (optional): \nP")
@@ -76,6 +80,7 @@ The skeleton will be bound to markdown-skeleton-NAME."
     ["Insert Footnote" markdown-ext-insert-footnote]
     ["Insert Image" markdown-ext-insert-image]))
 
+;;;###autoload (autoload 'markdown-ext-scratch "markdown-ext" "Open a scratch buffer to edit markdown." t)
 (define-scratch-buffer-function markdown-ext-scratch
 				"markdown scratch" nil
   "Open a scratch buffer to edit markdown."
@@ -84,12 +89,14 @@ The skeleton will be bound to markdown-skeleton-NAME."
 
 ;; Hook
 
+;;;###autoload
 (defun markdown--extra-hook ()
   "Hook for `markdown-mode' extension."
   (define-key markdown-mode-style-map (kbd "i") #'markdown-skeleton-id)
   (define-key markdown-mode-style-map (kbd "f") #'markdown-ext-insert-footnote)
   (define-key quick-mode-map (kbd "t") #'markdown-toc-mode))
 
+;;;###autoload
 (add-hook 'markdown-mode-hook #'markdown--extra-hook)
 
 (provide 'markdown-ext)

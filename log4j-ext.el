@@ -1,4 +1,6 @@
-;; -*- lexical-binding: t; -*-
+;;; log4j-ext --- Log4j mode extension.  -*- lexical-binding: t; -*-
+
+;;; Commentary:
 
 ;;; Code:
 
@@ -12,6 +14,7 @@
   "The name of the temporary buffer that was created via
 `log4j-ext-stop-filter'.")
 
+;;;###autoload
 (defun log4j-ext-start-filter (include-string exclude-string)
   "Turn filtering on in the current log file buffer.
 When used interactively, the user enters INCLUDE-STRING and
@@ -29,12 +32,14 @@ This calls `log4j-start-filter' with the given args."
   (setq user-ext-log4j-filtering-buffer nil user-ext-log4j-filtering nil)
   (define-key log4j-mode-map (kbd "C-c C-s") #'log4j-ext-stop-filter))
 
+;;;###autoload
 (defun log4j-ext-stop-filter ()
   "Turn filtering off in the current log file buffer."
   (interactive)
   (log4j-stop-filter)
   (define-key log4j-mode-map (kbd "C-c C-s") #'log4j-ext-start-filter))
 
+;;;###autoload
 (defun log4j--extra-hook ()
   "Extra hook for `log4j-mode'."
   (visual-line-mode t)
@@ -52,6 +57,12 @@ This calls `log4j-start-filter' with the given args."
   (setq header-line-format "Press r to revert, q to quit, k to kill this buffer.")
   (define-key log4j-mode-map (kbd "C-c C-s") #'log4j-ext-start-filter))
 
+;;;###autoload
 (add-hook 'log4j-mode-hook #'log4j--extra-hook)
 
+;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.log\\.[1-9]+\\'" . log4j-mode))
+
+(provide 'log4j-ext)
+
+;;; log4j-ext ends here
