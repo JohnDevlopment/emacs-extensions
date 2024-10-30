@@ -1,6 +1,10 @@
-;; -*- lexical-binding: t; -*-
+;;; faces-ext --- Faces  -*- lexical-binding: t; -*-
 
-;;; Custom variables and faces
+;;; Commentary:
+
+;;; Code:
+
+;; Custom variables and faces
 
 (defface font-lock-operator-face
   '((t (:inherit font-lock-function-name-face)))
@@ -36,3 +40,7 @@
   '((t (:inherit org-agenda-current-time)))
   "Face for time strings in log files."
   :group 'user-extensions)
+
+(provide 'faces-ext)
+
+;;; faces-ext ends here

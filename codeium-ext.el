@@ -1,8 +1,14 @@
+;;; codeium-ext --- Codeium extension.  -*- lexical-binding: t;  -*-
+
+;;; Commentary:
+
+;;; Code:
+
 (add-to-list 'load-path "~/.emacs.d/codeium.el")
 
 (require 'codeium)
 
-;;; Variables
+;; Variables
 
 (defvar user-ext-codeium-menu-map nil
   "Keymap for Codeium menu.")
@@ -17,7 +23,7 @@
 
 (make-local-variable 'user-ext-codeium--is-init)
 
-;;; Menu
+;; Menu
 
 (easy-menu-define user-ext-codeium-menu-map nil
   "Codeium commands"
@@ -41,7 +47,7 @@
   (cons "Codeium" user-ext-codeium-menu-map)
   'tools)
 
-;;; Functions
+;; Functions
 
 (defun user-ext-codeium-init-p ()
   "Check if Codeium is initialized."
@@ -74,3 +80,7 @@
   (cl-pushnew #'codeium-completion-at-point completion-at-point-functions)
   (setq-local user-ext-codeium-enabled t)
   (message "Codeium completion enabled in buffer."))
+
+(provide 'codeium-ext)
+
+;;; codeium-ext ends here

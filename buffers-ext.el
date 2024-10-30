@@ -1,7 +1,13 @@
+;;; buffers-ext --- Buffers extension.  -*- lexical-binding: t; -*-
+
+;;; Commentary:
+
+;;; Code:
+
 (eval-when-compile
   (require 'dired))
 
-;;; Customization
+;; Customization
 
 (defgroup buffers-ext nil
   "Group for custom buffer-related options."
@@ -27,18 +33,7 @@
   :safe 'list-p
   :group 'buffers-ext)
 
-;; (defun list-buffers-ex (&optional arg)
-;;   "Display a list of existing buffers.
-;; This pretty much calls `list-buffers', then selects the window
-;; where the list is displayed.
-
-;; With prefix argument ARG, only show buffers that are visiting
-;; files."
-;;   (interactive "P")
-;;   (list-buffers arg)
-;;   (other-window 1))
-
-;;; Functions to kill buffers matching patterns
+;; Functions to kill buffers matching patterns
 
 (defun kill-certain-temp-buffers ()
   "Convenience function to kill certain buffers you do not need.
@@ -71,9 +66,7 @@ Internally, calls `kill-buffers' with \"^\*Customize.*\" as the pattern."
   (kill-buffers "\\*Customize.*"))
 
 (defun kill-flymake-diagnostics ()
-  "Close all buffers for flymake diagnostics.
-Internally, calls `kill-buffers' with the pattern
-\"^\*Flymake diagnostics for .*\""
+  "Close all buffers for flymake diagnostics."
   (interactive)
   (kill-buffers "\\*Flymake diag.*"))
 
@@ -86,8 +79,8 @@ Internally, calls `kill-buffers' with the pattern
       (setq idx (string-match-p pattern
 				(buffer-name buf)))
       (when (integerp idx)
-	    (message "Killed %s" (buffer-name buf))
-	    (kill-buffer (buffer-name buf))))))
+	(message "Killed %s" (buffer-name buf))
+	(kill-buffer (buffer-name buf))))))
 
 ;;; ---
 
@@ -98,7 +91,7 @@ Internally, calls `kill-buffers' with the pattern
     (insert (buffer-file-name))
     (kill-region pos (point))))
 
-;;; Functions that create scratch or temp buffers
+;; Functions that create scratch or temp buffers
 
 (defmacro define-scratch-buffer-function (name buffer-name arg-list
 					       docstring int-spec
@@ -214,3 +207,7 @@ Interactively, CLONE is a prefix argument."
     (with-current-buffer base-buffer
       (setq mode major-mode))
     (funcall mode)))
+
+(provide 'buffers-ext)
+
+;;; buffers-ext ends here

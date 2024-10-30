@@ -1,3 +1,9 @@
+;;; imenu-ext --- IMenu extension.  -*- lexical-binding: t; -*-
+
+;;; Commentary:
+
+;;; Code:
+
 (defun bind-imenu ()
   "Binds `imenu' to the right-mouse button locally.
 The bindings are local to the active keymap, which means
@@ -45,3 +51,7 @@ buffers sharing the same major mode will be affected."
 
 ;; (add-hook 'sh-mode-hook #'imenu--sh-hook)
 (add-hook 'python-mode-hook #'imenu--python-hook)
+
+(provide 'imenu-ext)
+
+;;; imenu-ext ends here

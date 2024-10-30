@@ -1,4 +1,4 @@
-;; -*- lexical-binding: t;  -*-
+;;; keymaps-ext --- Keymaps and keybinds.  -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 
@@ -107,7 +107,7 @@ is non-nil."
 				fn
 			      (cl-first fn))
 			    keymap))
-	 keys key-bindings)
+	keys key-bindings)
     (dolist (binding all-bindings)
       (when (and (vectorp binding)
 		 (integerp (aref binding 0)))
@@ -153,7 +153,7 @@ is non-nil."
 (define-key quick-mode-map (kbd "g") #'contextual-key-g)
 (define-key quick-mode-map (kbd "l") #'lsp-mode)
 (define-key quick-mode-map (kbd "o") #'origami-mode)
-(define-key quick-mode-map (kbd "p") #'p-mode)
+;; (define-key quick-mode-map (kbd "p") #'p-mode)
 (define-key quick-mode-map (kbd "s") #'contextual-key-s)
 (define-key quick-mode-map (kbd "v") #'view-mode)
 (define-key quick-mode-map (kbd "w") #'enable-wrap)
@@ -192,4 +192,6 @@ is non-nil."
 (define-key extension-map "F" #'find-extension-at-point)
 (define-key extension-map "f" #'find-extension)
 
-;;; keymaps-ext.el ends here
+(provide 'keymaps-ext)
+
+;;; keymaps-ext ends here

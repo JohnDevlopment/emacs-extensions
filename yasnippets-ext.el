@@ -1,6 +1,8 @@
-;; (eval-and-compile
-;;   (add-to-list 'load-path "~/.emacs.d/dropdown-list")
-;;   (require 'dropdown-list))
+;;; yasnippets-ext --- Yasnippets mode extension.
+
+;;; Commentary:
+
+;;; Code:
 
 (add-to-list 'completion-at-point-functions #'yasnippet-capf)
 
@@ -33,3 +35,7 @@ was called interactively."
 
 (eval-and-compile
   (define-key yas-minor-mode-map (kbd "C-c & c") #'yas-ext-compile-snippet-dir))
+
+(provide 'yasnippets-ext)
+
+;;; yasnippets-ext ends here

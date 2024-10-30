@@ -1,11 +1,15 @@
-;; -*- lexical-binding: t; -*-
+;;; custom-ext --- Customization variables.  -*- lexical-binding: t; -*-
+
+;;; Commentary:
+
+;;; Code:
 
 (require 'dash)
 
 (eval-when-compile
   (require 'custom))
 
-;;; Custom variables and faces
+;; Custom variables and faces
 
 (defgroup user-extensions nil
   "Group for user-defined extensions."
@@ -51,7 +55,7 @@
   "Face for highlight-changes."
   :group 'user-extensions)
 
-;;; Aliases
+;; Aliases
 
 (defalias 'log-view-date    'user-ext-log-view-date)
 (defalias 'log-view-debug   'user-ext-log-view-debug)
@@ -64,15 +68,6 @@
   "A group for global modes."
   :group 'user-extensions)
 
-;; Functions
+(provide 'custom-ext)
 
-;; (defun my-set-face-attribute (face frame &rest args)
-;;   (apply #'original-set-face-attribute face frame args)
-;;   ; Add custom behavior here, e.g., set :weight to normal
-;;   (set-face-attribute face frame :weight 'normal))
-
-;; (fset 'original-set-face-attribute (symbol-function 'set-face-attribute))
-;; (advice-add 'set-face-attribute :around 'my-set-face-attribute)
-
-;; (defun custom-ext-set-face-attribute (face &rest args)
-;;   (apply #'set-face-attribute face nil args))
+;;; custom-ext ends here

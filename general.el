@@ -1,10 +1,10 @@
-;;; general --- General extension functions.
+;;; general --- General extension functions.  -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 
 ;;; Code:
 
-;;; Abbreviations
+;; Abbreviations
 
 (define-abbrev emacs-lisp-mode-abbrev-table "propline"
   "" (lambda ()
@@ -16,7 +16,7 @@
     "Current file's mark ring.")
   (require 'debug-ext))
 
-;;; Functions
+;; Functions
 
 (defun save-current-position (&optional pos)
   "Save POS to the local position ring.
@@ -97,13 +97,6 @@ START and END specify the region to narrow to."
   (interactive "r")
   (narrow-to-region start end)
   (setq deactivate-mark t))
-
-;; (defun p-mode ()
-;;   "Activate electric-pair mode. Calls `electric-pair-local-mode'."
-;;   (interactive)
-;;   (when (null electric-pair-mode)
-;;     (electric-pair-local-mode 1)
-;;     (message "localized electric pair mode activated")))
 
 (provide 'general)
 
