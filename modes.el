@@ -4,7 +4,6 @@
 (load-extension "dired-ext" t)
 
 ;; Minor modes
-(load-extension "origami-ext" t)
 (load-extension "yasnippets-ext")
 
 ;; Liquidsoap
