@@ -11,10 +11,11 @@
        (interactive)
        (call-interactively #'add-file-local-variable-prop-line)))
 
-(eval-and-compile
-  (defvar-local user-ext-local-position-ring nil
-    "Current file's mark ring.")
-  (require 'debug-ext))
+(defvar-local user-ext-local-position-ring nil
+  "Current file's mark ring.")
+
+(require 'debug-ext)
+(require 'cl-lib)
 
 ;; Functions
 
