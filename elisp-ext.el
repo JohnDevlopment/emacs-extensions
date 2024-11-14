@@ -4,27 +4,6 @@
 
 ;;; Code:
 
-(defconst user-ext-elisp-dir-locals-template
-  "((major-mode . ((var1 . value)
-		(var2 . value)))
- (\"subdirectory\" .
-  ((major-mode . ((var1 . value)
-		  (var2 . value)))
-   (nil . ((var1 . value)
-	   (eval . ((message \"A message.\"))))))))"
-  "Boilerplate for a .dir-locals.el file.")
-
-;;;###autoload
-(defun elisp-ext-create-dir-locals-file (file)
-  "Create a .dir-locals.el file at FILE."
-  (interactive
-   (let ((default ".dir-locals.el"))
-     (list (read-file-name "Filename: " nil nil
-			   (confirm-nonexistent-file-or-buffer)
-			   default))))
-  (with-temp-file file
-    (let ((_buf (current-buffer)))
-      (insert user-ext-elisp-dir-locals-template))))
 
 ;;;###autoload
 (defun elisp-ext-forward-or-backward-sexp (&optional arg)
