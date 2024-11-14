@@ -182,6 +182,7 @@
 
 (define-key python-mode-map (kbd "<S-return>") #'python-ext-shift-return)
 (define-key python-mode-map (kbd "M-e")        #'yas-expand)
+(define-key python-mode-map (kbd "C-c C-j")    #'imenu)
 
 ;; company-capf
 (define-key python-mode-map (kbd "M-S-SPC") #'company-capf)
