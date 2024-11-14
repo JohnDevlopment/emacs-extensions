@@ -63,6 +63,7 @@
   (interactive)
   (let (num-lines prefix buffer-string)
     (deactivate-mark)
+    (untabify (point-min) (point-max))
     (setq num-lines (count-lines (point-min) (point-max))) ; count number of lines
     ;; extract contents of buffer into a variable
     (with-current-buffer user-ext-python--docstring-buffer
@@ -70,12 +71,9 @@
     ;; exit function if string is empty
     (when (string-blank-p buffer-string)
       (kill-buffer)
-      ;; (delete-window)
       (jump-to-register py--edit-register)
       (error "Docstring is empty"))
-    ;; (kill-region (point-min) (point-max))
     (kill-buffer)
-    ;; (delete-window)
     (jump-to-register py--edit-register)
     (insert buffer-string)
     (assert (markerp user-ext-python--orig-position))
