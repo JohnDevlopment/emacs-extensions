@@ -106,6 +106,11 @@
      (push ',mode modes)))
 
 ;;;###autoload
+(defun python-ext-kill-pyi-buffers ()
+  (interactive)
+  (kill-buffers "\\.pyi$"))
+
+;;;###autoload
 (defun python-ext-docstring ()
   "Open a temporary buffer to write a docstring."
   (interactive)
