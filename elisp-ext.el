@@ -4,6 +4,8 @@
 
 ;;; Code:
 
+(defconst user-ext-elisp--register ?e
+  "Used with `window-configuration-to-register'.")
 
 ;;;###autoload
 (defun elisp-ext-forward-or-backward-sexp (&optional arg)
@@ -64,10 +66,10 @@ If REVERSE is non-nil, search backwards."
   (let* ((beg (1+ (elisp-ext--find-quote)))
 	 (end (1- (elisp-ext--find-quote t))))
     (kill-region beg end)
-    (kill-and-quit)))
+    (kill-buffer)
+    (jump-to-register user-ext-elisp--register)))
 
-;;;###autoload (autoload 'elisp-ext-doc-scratch-buffer "elisp-ext" "Create a scratch buffer for Emacs lisp docstrings.")
-(define-scratch-buffer-function elisp-ext-doc-scratch-buffer "elisp docstring" nil
+(define-scratch-buffer-function elisp-ext--doc-scratch-buffer "elisp docstring" nil
   "Create a scratch buffer for Emacs lisp docstrings."
   nil
   (emacs-lisp-mode)
@@ -81,8 +83,15 @@ If REVERSE is non-nil, search backwards."
   (insert ";; Fill column is set to 67. Type S-<return> to set it to 60.\n")
   (insert "\"\n\n\"")
   (goto-char (1+ (elisp-ext--find-quote)))
-  (setq header-line-format "Type C-c C-c when finished, C-x k to cancel editing.")
+  (setq header-line-format "Type C-c C-c when finished.")
   (local-set-key (kbd "C-c C-c") #'elisp-ext-doc-scratch-buffer--ctrl-c-ctrl-c))
+
+;;;###autoload
+(defun elisp-ext-doc-scratch-buffer ()
+  "Create a scratch buffer for Emacs lisp docstrings."
+  (interactive)
+  (window-configuration-to-register user-ext-elisp--register)
+  (elisp-ext--doc-scratch-buffer))
 
 (provide 'elisp-ext)
 
