@@ -171,6 +171,7 @@ is non-nil."
 (define-key command-map (kbd "s")   #'nonincremental-search-forward)
 (define-key command-map (kbd "'")   #'save-current-position)
 (define-key command-map (kbd "&")   #'pop-saved-position)
+(define-key command-map (kbd "^")   #'print-saved-positions)
 (define-key command-map (kbd "M")   #'add-mode-comment)
 
 ;; Misc commands which do not use my custom prefix

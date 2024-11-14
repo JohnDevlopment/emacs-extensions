@@ -6,6 +6,10 @@
 
 ;; Abbreviations
 
+(require 'cl-lib)
+(require 'cl-ext)
+(require 'debug-ext)
+
 (define-abbrev emacs-lisp-mode-abbrev-table "propline"
   "" (lambda ()
        (interactive)
@@ -14,10 +18,22 @@
 (defvar-local user-ext-local-position-ring nil
   "Current file's mark ring.")
 
-(require 'debug-ext)
-(require 'cl-lib)
-
 ;; Functions
+
+(defun print-saved-positions ()
+  (interactive)
+  (assert (> (length user-ext-local-position-ring) 0)
+      "The local position ring is empty!")
+  (let (msg)
+    (setq msg
+	  (string-join
+	   (cl-loop
+	    with i = 0
+	    for pos in user-ext-local-position-ring
+	    collect
+	    (format "%d. %s" (cl-incf i) pos))
+	   "\n"))
+    (message msg)))
 
 (defun save-current-position (&optional pos)
   "Save POS to the local position ring.
