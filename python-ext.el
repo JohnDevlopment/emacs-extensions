@@ -5,11 +5,9 @@
 ;;; Code:
 
 (require 'cl-lib)
+(require 'debug-ext)
 (require 'python-mode)
 (require 'python)
-
-(eval-when-compile
-  (require 'debug-ext))
 
 ;; Variables
 
