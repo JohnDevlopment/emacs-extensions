@@ -195,6 +195,7 @@
 (define-abbrev python-mode-abbrev-table "rbool" "-> bool" #'abbrev-ext-insert-hook :system t)
 (define-abbrev python-mode-abbrev-table "rself" "-> Self" #'abbrev-ext-insert-hook :system t)
 (define-abbrev python-mode-abbrev-table "false" "False"   #'abbrev-ext-insert-hook :system t)
+(define-abbrev python-mode-abbrev-table "true" "True"     #'abbrev-ext-insert-hook :system t)
 
 ;; Hooks
 
