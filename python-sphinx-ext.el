@@ -4,24 +4,17 @@
 
 ;;; Code:
 
+(require 'alist-ext)
 (require 'sphinx-doc)
-
-(eval-when-compile
-  (require 'python-mode)
-  (require 'debug-ext))
-
-;; Customization
-
-;; (defgroup sphinx-ext nil
-;;   "Group for `sphinx-doc-mode' extension."
-;;   :group 'user-extensions)
-
+(require 'python-mode)
+(require 'debug-ext)
 
 ;; Functions
 
 (defun sphinx-ext--style-map-prompt ()
+  "Prompt for `sphinx-ext-style-map'."
   (concat
-   (format ", i = %s"
+   (format "i = %s"
 	   (propertize "italics" 'face 'italic))
    (format ", c = %s"
 	   (propertize "code" 'face 'font-lock-type-face))
@@ -44,6 +37,7 @@
    "s = seealso"))
 
 (defun sphinx-ext--role-map-prompt ()
+  "Prompt for `sphinx-ext-role-map'."
   (let ((type-face 'font-lock-type-face))
     (concat
      (format "r = %s" (propertize ":returns:" 'face type-face))
@@ -133,6 +127,12 @@ where the following keywords are meaningful:
 	  `(define-key sphinx-ext-directive-map ,key #',function-name)))))
 
 (defmacro sphinx-ext-define-insert-style-function (name key symbol doc)
+  "Define a style insertion function with NAME, KEY, SYMBOL, and DOC.
+
+The function is called sphinx-ext-insert-style-NAME.  The
+function is mapped to `sphinx-ext-style-map' with KEY.  DOC
+is the docstring to the function.  SYMBOL is the argument to
+`sphinx-ext--insert-style'."
   (declare (indent 1))
   (let* ((function-name (intern
 			 (format "sphinx-ext-insert-style-%s" name))))
@@ -144,8 +144,7 @@ where the following keywords are meaningful:
        (define-key sphinx-ext-style-map ,key #',function-name))))
 
 (defmacro sphinx-ext-define-insert-role-function (name &optional prompt &rest props)
-  "Define a function to insert a Sphinx role at point.
-The function will be bound to sphinx-ext-insert-role-NAME."
+  ""
   (let* ((function-name (intern
 			 (format "sphinx-ext-insert-role-%s" name)))
 	 (int-prompt (when prompt (format "s%s" prompt)))
@@ -299,6 +298,7 @@ user can press q to finish the docstring."
 	(setq c (read-char-choice prompt chars))))))
 
 (defun sphinx-ext--y-or-n-p (prompt)
+  "Ask the user a yes or no question with PROMPT."
   (let* ((prompt (format "%s y/n " prompt))
 	 (answer (char-to-string
 		  (read-char-choice prompt (list ?y ?n)))))
@@ -310,7 +310,7 @@ OPTION is an option (i.e., \":linenos:\").  INDENT is the
 indent of the option as an integer.  TYPE is a symbol
 controlling the type of the argument to OPTION.
 
-If ASK-YES-NO is non-nil, the user is asked whether they
+If OPTIONAL is non-nil, the user is asked whether they
 want to add this option."
   nil
   (let* ((indent (make-string indent ?\ ))
@@ -318,9 +318,7 @@ want to add this option."
 	 res
 	 argument)
     (if optional
-	(and (sphinx-ext--y-or-n-p
-	      (format "Insert %s?" option))
-	     res)
+	(and (sphinx-ext--y-or-n-p prompt) res)
       (setq argument
 	    (pcase type
 	      ('bool
@@ -397,26 +395,27 @@ skeleton is bound to sphinx-ext--skeleton-NAME."
 (define-prefix-command 'sphinx-ext-role-map nil (sphinx-ext--role-map-prompt))
 (define-key sphinx-doc-mode-map (kbd "C-c C-R") #'sphinx-ext-role-map)
 
+(define-prefix-command 'sphinx-ext-directive-map nil (sphinx-ext--directive-map-prompt))
+(define-key sphinx-doc-mode-map (kbd "C-c C-d")      #'sphinx-ext-directive-map)
+
 (define-prefix-command 'sphinx-ext-style-map nil (sphinx-ext--style-map-prompt))
-(define-key sphinx-doc-mode-map (kbd "C-c C-S") #'sphinx-ext-style-map)
+(define-key sphinx-doc-mode-map (kbd "C-c C-S")  #'sphinx-ext-style-map)
 
 (define-key sphinx-doc-mode-map (kbd "C-c C-M-d") #'sphinx-ext-insert-docstring)
-(sphinx-ext-define-insert-role-function "returns" nil :key "r")
+(define-key sphinx-doc-mode-map (kbd "C-c M-r")   #'sphinx-ext-add-reference)
 
-(sphinx-ext-define-insert-role-function "rtype" nil :key "R")
-
-(sphinx-ext-define-insert-role-function "param" "Name: " :key "p")
-
-(sphinx-ext-define-insert-role-function "type" "Parameter: " :key "t")
+;;---
 
 (sphinx-ext-define-insert-role-function "keyword" "Keyword: " :key "k")
+(sphinx-ext-define-insert-role-function "param" "Name: " :key "p")
+(sphinx-ext-define-insert-role-function "returns" nil :key "r")
+(sphinx-ext-define-insert-role-function "rtype" nil :key "R")
+(sphinx-ext-define-insert-role-function "type" "Parameter: " :key "t")
 
 (sphinx-ext-define-insert-style-function
     "italics" "i" italic "Insert italics at point.")
-
 (sphinx-ext-define-insert-style-function
     "code" "c" code "Insert inline code at point.")
-
 (sphinx-ext-define-insert-style-function
     "code-block" "C" code-block "Insert a code block at point.")
 
