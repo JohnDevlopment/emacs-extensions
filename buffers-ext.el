@@ -43,7 +43,7 @@ This kills buffers belonging to `user-ext-temp-buffers-to-kill' and
   (interactive)
   (let ((bl user-ext-temp-buffers-to-kill)
 	(rl user-ext-temp-buffers-to-kill-regex)
-	bn buf)
+	buf)
     ;; Kill buffers in `user-ext-temp-buffers-to-kill'
     (dolist (bn bl)
       (setq buf (get-buffer bn))
@@ -96,8 +96,13 @@ Internally, calls `kill-buffers' with \"^\*Customize.*\" as the pattern."
 (defmacro define-scratch-buffer-function (name buffer-name arg-list
 					       docstring int-spec
 					       &rest body)
-  "Define a function that creates a scratch buffer named NAME."
-  (declare (indent 3) (doc-string 4))
+  "Define a function NAME for creating a scratch buffer.
+The scratch buffer is named \"BUFFER-NAME\".  NAME has
+ARG-LIST and DOCSTRING as its argument list and
+documentation string, respectively.  Likewise, INT-SPEC is
+used as the argument to `interactive' if non-nil.  The rest
+of the arguments is the BODY of function NAME."
+  (declare (indent 3) (doc-string 4) (pure t))
   (let ()
     `(progn
        (defun ,name ,arg-list
@@ -113,26 +118,26 @@ Internally, calls `kill-buffers' with \"^\*Customize.*\" as the pattern."
 (define-scratch-buffer-function faces-buffer "faces" nil
   "Open a buffer listing all the faces."
   nil
-  (let (faces face)
+  (let (faces)
     (setq faces (seq-map 'symbol-name (face-list)))
     (dolist (face (seq-sort 'string< faces))
       (insert face)
       (newline))))
 
-(define-scratch-buffer-function docstring-scratch "docstring"
-				(&optional fill-number)
-  "Open a scratch buffer for documentation strings.
+;; (define-scratch-buffer-function docstring-scratch "docstring"
+;; 				(&optional fill-number)
+;;   "Open a scratch buffer for documentation strings.
 
-Creates a temporary buffer with the name \"docstring\".  The
-newly created buffer has `auto-fill-mode' enabled.  Its
-`fill-column' is set to FILL-NUMBER (if non-nil) or 60
-otherwise.
+;; Creates a temporary buffer with the name \"docstring\".  The
+;; newly created buffer has `auto-fill-mode' enabled.  Its
+;; `fill-column' is set to FILL-NUMBER (if non-nil) or 60
+;; otherwise.
 
-When called interactively, FILL-NUMBER is the prefix arg."
-  "P"
-  (text-mode)
-  (auto-fill-mode t)
-  (set-fill-column (or fill-number 60)))
+;; When called interactively, FILL-NUMBER is the prefix arg."
+;;   "P"
+;;   (text-mode)
+;;   (auto-fill-mode t)
+;;   (set-fill-column (or fill-number 60)))
 
 (define-scratch-buffer-function git-commit-scratch "git commit" nil
   "Open a scratch buffer to let you format a git commit."
@@ -155,10 +160,9 @@ asked to confirm, so be careful when using this function.  IGNORE-AUTO and
 PREVERSE-MODES are the same as for `revert-buffer', and they are specified
 as prefix args."
   (interactive)
-  (let (buf bufname idx)
+  (let ()
     (dolist (buf (buffer-list))
       (with-current-buffer buf
-	(setq bufname (buffer-name buf))
 	(when (and (buffer-file-name)
 		   (file-exists-p (buffer-file-name))
 		   (not (buffer-modified-p)))
@@ -187,7 +191,7 @@ Otherwise, this just returns the newly created buffer."
   (narrow-to-region start end)
   (setq deactivate-mark t))
 
-(defun view-into-buffer (base-buffer &optional clone)
+(defun view-into-buffer (base-buffer &optional _clone)
   "Create an indirect buffer and show it in another window.
 
 Creates an indirect buffer of BASE-BUFFER and shows it in
