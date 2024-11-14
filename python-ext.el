@@ -98,11 +98,6 @@
     (setq py--edit-register nil)
     (setq user-ext-python--orig-position nil)))
 
-(defmacro python-ext-docstring--push-mode-if-defined (mode)
-  (assert (symbolp mode) "MODE must be a symbol.")
-  `(when (and (boundp ',mode) ,mode)
-     (push ',mode modes)))
-
 ;;;###autoload
 (defun python-ext-kill-pyi-buffers ()
   (interactive)
@@ -115,8 +110,9 @@
   (let ((mode user-ext-python-docstring-major-mode)
 	modes)
     (window-configuration-to-register py--edit-register)
-    (python-ext-docstring--push-mode-if-defined abbrev-mode)
-    (python-ext-docstring--push-mode-if-defined sphinx-doc-mode)
+    (dolist (mode '(abbrev-mode sphinx-doc-mode))
+      (when (and (boundp mode) mode)
+	(cl-pushnew mode modes)))
     ;; save position in original buffer
     (setq user-ext-python--orig-position (point-marker))
     (setq user-ext-python--docstring-buffer (tmpbuf "python-docstring")) ; create a temporary buffer
