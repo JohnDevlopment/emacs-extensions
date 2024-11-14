@@ -46,72 +46,7 @@ Otherwise, this function does nothing." t nil)
 ;;;### (autoloads nil "buffers-ext" "buffers-ext.el" (0 0 0 0))
 ;;; Generated autoloads from buffers-ext.el
 
-(autoload 'kill-certain-temp-buffers "buffers-ext" "\
-Convenience function to kill certain buffers you do not need.
-
-This kills buffers belonging to `user-ext-temp-buffers-to-kill' and
-`user-ext-temp-buffers-to-kill-regex'." t nil)
-
-(autoload 'kill-lsp-buffers "buffers-ext" "\
-Kill all buffers that have to do with function `lsp-mode'." t nil)
-
-(autoload 'kill-customization-buffers "buffers-ext" "\
-Close all customization buffers.
-Internally, calls `kill-buffers' with \"^*Customize.*\" as the pattern." t nil)
-
-(autoload 'kill-flymake-diagnostics "buffers-ext" "\
-Close all buffers for flymake diagnostics." t nil)
-
-(autoload 'kill-buffers "buffers-ext" "\
-Close all buffers matching PATTERN.
-
-\(fn PATTERN)" t nil)
-
-(autoload 'get-buffer-file-name "buffers-ext" "\
-Print the file belonging to the current buffer." t nil)
- (autoload 'faces-buffer "buffers-ext" "Open a buffer listing all the faces." t)
- (autoload 'docstring-scratch "Open a scratch buffer for documentation strings.\n..." t)
- (autoload 'git-commit-scratch "buffers-ext" "Open a scratch buffer to let you format a git commit." t)
-
-(autoload 'revert-all-buffers "buffers-ext" "\
-Reverts all buffers, including special buffers.
-This reverts all buffers in like manner to `revert-buffer'.  The user is NOT
-asked to confirm, so be careful when using this function.  IGNORE-AUTO and
-PREVERSE-MODES are the same as for `revert-buffer', and they are specified
-as prefix args." t nil)
-
-(autoload 'tmpbuf "buffers-ext" "\
-Open a temporary buffer.
-
-If it doesn't exist, open a new one.  BUF is the name of the
-buffer.
-
-If this function is called interactively, or if SWITCH is
-non-nil, this switches to the newly created buffer.
-Otherwise, this just returns the newly created buffer.
-
-\(fn BUF &optional SWITCH)" t nil)
-
-(autoload 'narrow-to-region2 "buffers-ext" "\
-Call `narrow-to-region' with START and END.
-
-\(fn START END)" t nil)
-
-(autoload 'view-into-buffer "buffers-ext" "\
-Create an indirect buffer and show it in another window.
-
-Creates an indirect buffer of BASE-BUFFER and shows it in
-another window.  BASE-BUFFER should be a live buffer or the
-name of an existing buffer.  If the optional arg CLONE is
-non-nil, BASE-BUFFER's state is preserved in the indirect
-buffer, meaning things like minor and major modes.  Otherwise,
-the indirect buffer's state is reset to default values.
-
-Interactively, CLONE is a prefix argument.
-
-\(fn BASE-BUFFER &optional CLONE)" t nil)
-
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "buffers-ext" '("define-scratch-buffer-function" "docstring-scratch" "faces-buffer" "git-commit-scratch" "user-ext-temp-buffers-to-kill")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "buffers-ext" '("define-scratch-buffer-function" "faces-buffer" "get-buffer-file-name" "git-commit-scratch" "kill-" "narrow-to-region2" "revert-all-buffers" "tmpbuf" "user-ext-temp-buffers-to-kill" "view-into-buffer")))
 
 ;;;***
 
@@ -218,11 +153,6 @@ Extra hook for `dtext-mode'." nil nil)
 ;;;### (autoloads nil "elisp-ext" "elisp-ext.el" (0 0 0 0))
 ;;; Generated autoloads from elisp-ext.el
 
-(autoload 'elisp-ext-create-dir-locals-file "elisp-ext" "\
-Create a .dir-locals.el file at FILE.
-
-\(fn FILE)" t nil)
-
 (autoload 'elisp-ext-forward-or-backward-sexp "elisp-ext" "\
 Go to the matching parenthesis to the one is adjacent at point.
 With ARG, do it that many times.  A negative arg -N reverses
@@ -230,9 +160,16 @@ the direction of the motion.
 
 \(fn &optional ARG)" t nil)
  (autoload 'elisp-ext-scratch-buffer "elisp-ext" "Create a scratch buffer for Emacs lisp code." t)
- (autoload 'elisp-ext-doc-scratch-buffer "elisp-ext" "Create a scratch buffer for Emacs lisp docstrings.")
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "elisp-ext" '("elisp-ext-" "user-ext-elisp-dir-locals-template")))
+(autoload 'elisp-ext-doc-scratch-buffer "elisp-ext" "\
+Create a scratch buffer for Emacs lisp docstrings." t nil)
+
+(autoload 'elisp-ext--extra-hook "elisp-ext" "\
+Hook for the `emacs-lisp-mode' extension." nil nil)
+
+(add-hook 'emacs-lisp-mode-hook #'elisp-ext--extra-hook)
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "elisp-ext" '("elisp-ext-" "user-ext-elisp--register")))
 
 ;;;***
 
@@ -246,7 +183,7 @@ the direction of the motion.
 ;;;### (autoloads nil "general" "general.el" (0 0 0 0))
 ;;; Generated autoloads from general.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "general" '("add-mode-comment" "bind-fill-region" "copy-line" "count-words-region2" "date-format-version" "emacs-lisp-mode-abbrev-table" "enable-wrap" "kill-and-quit" "narrow-to-region2" "pop-saved-position" "save-current-position")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "general" '("--add-mode-comment--" "add-mode-comment" "bind-fill-region" "copy-line" "count-words-region2" "date-format-version" "emacs-lisp-mode-abbrev-table" "enable-wrap" "kill-and-quit" "narrow-to-region2" "pop-saved-position" "print-saved-positions" "save-current-position" "user-ext-local-position-ring")))
 
 ;;;***
 
@@ -261,20 +198,7 @@ Modify `html-tag-alist' with our own tags." t nil)
 ;;;### (autoloads nil "imenu-ext" "imenu-ext.el" (0 0 0 0))
 ;;; Generated autoloads from imenu-ext.el
 
-(autoload 'bind-imenu "imenu-ext" "\
-Binds `imenu' to the right-mouse button locally.
-The bindings are local to the active keymap, which means
-buffers sharing the same major mode will be affected." t nil)
-
-(autoload 'bind-imenu-lsp "imenu-ext" "\
-Binds `imenu' to the double left-click mouse button locally.
-The bindings are local to the active keymap, which means
-buffers sharing the same major mode will be affected." t nil)
-
-(autoload 'imenu--python-hook "imenu-ext" "\
-Imenu Hook for Python mode." nil nil)
-
-(add-hook 'python-mode-hook #'imenu--python-hook)
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "imenu-ext" '("bind-imenu" "imenu--python-hook")))
 
 ;;;***
 
@@ -452,6 +376,11 @@ Extra hook for `org-mode'." nil nil)
 ;;; Generated autoloads from python-ext.el
  (autoload 'python-ext-scratch "python-ext" "Opens a scratch buffer to let you write Python code." t)
 
+(autoload 'python-ext-kill-pyi-buffers "python-ext" nil t nil)
+
+(autoload 'python-ext-docstring "python-ext" "\
+Open a temporary buffer to write a docstring." t nil)
+
 (autoload 'python--extra-hook "python-ext" "\
 Hook for `python-mode' for this extension." nil nil)
 
@@ -470,19 +399,22 @@ Hook for `python-mode' when lsp is enabled." nil nil)
 ;;;;;;  (0 0 0 0))
 ;;; Generated autoloads from python-sphinx-ext.el
 
-(autoload 'sphinx-ext-align "python-sphinx-ext" "\
-Align the current line with the first line of this role.
-
-Point should be on the second line of a ':param:' or
-':keyword:' role after `auto-fill-mode' kicks in, for best
-effect." t nil)
-
 (autoload 'sphinx-doc-mode--extra-hook "python-sphinx-ext" "\
 Hook for `sphinx-doc-mode'." nil nil)
 
 (add-hook 'sphinx-doc-mode-hook #'sphinx-doc-mode--extra-hook)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "python-sphinx-ext" '("sphinx-ext-" "user-ext-sphinx-param-regexp")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "python-sphinx-ext" '("sphinx-ext-")))
+
+;;;***
+
+;;;### (autoloads nil "rst-ext" "rst-ext.el" (0 0 0 0))
+;;; Generated autoloads from rst-ext.el
+
+(autoload 'rst-mode--extra-hook "rst-ext" "\
+Extra hook for `rst-mode'." nil nil)
+
+(add-hook 'rst-mode-hook #'rst-mode--extra-hook)
 
 ;;;***
 
