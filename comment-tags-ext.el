@@ -28,7 +28,7 @@
 	(goto-char (point-min))
 	(setq flag (re-search-forward global-comment-tags-regexp nil t)))
       (when flag
-	(message "`comment-tags-mode' enabled in %s" buf)
+	;; (message "`comment-tags-mode' enabled in %s" buf)
 	(comment-tags-mode 1)))))
 
 ;;;###autoload
