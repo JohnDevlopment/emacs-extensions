@@ -93,6 +93,13 @@ If REVERSE is non-nil, search backwards."
   (window-configuration-to-register user-ext-elisp--register)
   (elisp-ext--doc-scratch-buffer))
 
+;;;###autoload
+(defun elisp-ext--extra-hook ()
+  "Hook for the `emacs-lisp-mode' extension.")
+
+;;;###autoload
+(add-hook 'emacs-lisp-mode-hook #'elisp-ext--extra-hook)
+
 (provide 'elisp-ext)
 
 ;;; elisp-ext ends here
