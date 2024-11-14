@@ -24,7 +24,8 @@
 (defcustom user-ext-python-docstring-major-mode 'markdown-mode
   "Major mode for editing Python docstring."
   :type 'symbol
-  :group 'python-ext)
+  :group 'python-ext
+  :safe t)
 
 (defvar user-ext-python--orig-position nil
   "Position in the original buffer when editing Python docstring.")
