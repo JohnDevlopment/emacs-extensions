@@ -36,6 +36,21 @@
    (format ", C = %s"
 	   (propertize "code block" 'face 'font-lock-type-face))))
 
+(defun sphinx-ext--directive-map-prompt ()
+  "Prompt for `sphinx-ext-directive-map'."
+  (concat
+   "M = automodule, "
+   "S = autosummary, "
+   "a = attention, "
+   "c = caution, "
+   "d = danger, "
+   "e = error, "
+   "h = hint, "
+   "n = note, "
+   "t = tip, "
+   "w = warning, "
+   "s = seealso"))
+
 (defun sphinx-ext--role-map-prompt ()
   (let ((type-face 'font-lock-type-face))
     (concat
@@ -60,6 +75,70 @@ WHAT is a symbol naming what style to use:
       ('italic
        (insert "``")
        (left-char)))))
+
+(defun sphinx-ext--insert-directive (what &rest args)
+  "Insert the directive WHAT."
+  (let (spaces)
+    (insert (format ".. %s::" what))
+    (setq spaces (concat
+		  (save-excursion
+		    (back-to-indentation)
+		    (buffer-substring (line-beginning-position) (point)))
+		  "   "))
+    (when (string= what "automodule")
+      (insert " " (car args)))
+    (newline)
+    (insert spaces)))
+
+(defmacro sphinx-ext-define-insert-directive-function (name &rest props)
+  "Define an interactive function for inserting a Sphinx directive.
+The function name is constructed as
+sphinx-ext-insert-directive-NAME, where NAME is the provided
+directive name.
+
+NAME is the string name of the directive.  The rest of the
+arguments shall have the form
+
+   [KEYWORD VALUE]...
+
+where the following keywords are meaningful:
+
+:key	VALUE should be a string accepted by `kbd' to which
+	the created function is mapped.
+:args	VALUE shall be a list of the form
+	   (INT-SPEC VARNAME ...)
+	where INT-SPEC is an `interactive' string and
+	VARNAME is the corresponding argument.
+:doc	VALUE is the documentation string of the created
+	function."
+  (declare (indent 1))
+  (let ((doc (plist-get props :doc))
+	(function-name (intern
+			(format "sphinx-ext-insert-directive-%s" name)))
+	(key (plist-get props :key))
+	(args (plist-get props :args))
+	(int-prompt "")
+	function-arglist)
+    (unless doc
+      (setq doc (format "Insert a %s directive." name)))
+    (when args
+      (cl-loop with pl = nil
+	       for (p al) on args by #'cddr
+	       do
+	       (push al function-arglist)
+	       (push p pl)
+	       finally
+	       (setq int-prompt (string-join (nreverse pl) "\n")))
+      (setq function-arglist (nreverse function-arglist)))
+    `(progn
+       (defun ,function-name ,function-arglist
+         ,doc
+         ,(if (not (string-empty-p int-prompt))
+	      `(interactive ,int-prompt)
+	    '(interactive))
+         (sphinx-ext--insert-directive ,name ,@function-arglist))
+       ,(when key
+	  `(define-key sphinx-ext-directive-map ,key #',function-name)))))
 
 (defmacro sphinx-ext-define-insert-style-function (name key symbol doc)
   (declare (indent 1))
@@ -301,6 +380,31 @@ skeleton is bound to sphinx-ext--skeleton-NAME."
 (sphinx-ext-define-insert-style-function
     "code-block" "C" code-block "Insert a code block at point.")
 
+(sphinx-ext-define-insert-directive-function "automodule"
+  :key "M"
+  :args ("sModule: " module)
+  :doc "Insert an automodule directive.
+MODULE is the name of the module.")
+
+(sphinx-ext-define-insert-directive-function "autosummary"
+  :key "S")
+
+(sphinx-ext-define-insert-directive-function "toctree"
+  :key "T")
+
+;; Admonitions
+(sphinx-ext-define-insert-directive-function "attention" :key "a")
+(sphinx-ext-define-insert-directive-function "caution"   :key "c")
+(sphinx-ext-define-insert-directive-function "danger"    :key "d")
+(sphinx-ext-define-insert-directive-function "error"     :key "e")
+(sphinx-ext-define-insert-directive-function "hint"      :key "h")
+(sphinx-ext-define-insert-directive-function "important" :key "i")
+(sphinx-ext-define-insert-directive-function "note"      :key "n")
+(sphinx-ext-define-insert-directive-function "tip"       :key "t")
+(sphinx-ext-define-insert-directive-function "warning"   :key "w")
+(sphinx-ext-define-insert-directive-function "seealso"   :key "s")
+
+;; TODO: admonition
 (define-key sphinx-doc-mode-map (kbd "C-c i d") #'sphinx-ext-skeleton-docstring)
 (define-key sphinx-doc-mode-map (kbd "C-c M-r") #'sphinx-ext-add-reference)
 (define-key sphinx-doc-mode-map (kbd "<backtab>") #'sphinx-ext-align)
@@ -319,6 +423,20 @@ skeleton is bound to sphinx-ext--skeleton-NAME."
      [":returns:" sphinx-ext-insert-role-returns]
      [":rtype:" sphinx-ext-insert-role-rtype]
      [":type:" sphinx-ext-insert-role-type])
+    ("Insert Directives"
+     ["automodule" sphinx-ext-insert-directive-automodule]
+     ["autosummary" sphinx-ext-insert-directive-autosummary]
+     ["autotoctree" sphinx-ext-insert-directive-toctree]
+     "---"
+     ["caution" sphinx-ext-insert-directive-caution]
+     ["danger" sphinx-ext-insert-directive-danger]
+     ["error" sphinx-ext-insert-directive-error]
+     ["hint" sphinx-ext-insert-directive-hint]
+     ["important" sphinx-ext-insert-directive-important]
+     ["note" sphinx-ext-insert-directive-note]
+     ["tip" sphinx-ext-insert-directive-tip]
+     ["warning" sphinx-ext-insert-directive-warning]
+     ["seealso" sphinx-ext-insert-directive-seealso])
     ("Style"
      ["Code" sphinx-ext-insert-style-code]
      ["Italics" sphinx-ext-insert-style-italics]
