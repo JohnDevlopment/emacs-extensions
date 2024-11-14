@@ -16,14 +16,6 @@
 ;;   "Group for `sphinx-doc-mode' extension."
 ;;   :group 'user-extensions)
 
-(defconst user-ext-sphinx-param-regexp
-  (rx bol (* whitespace) ?:
-      (or "keyword" "param")
-      whitespace
-      (+? (not whitespace))
-      (? whitespace (group (+? (not whitespace))))
-      ?: (+ whitespace) (not whitespace))
-  "Regular expression for :param: and :keyword: roles.")
 
 ;; Functions
 
@@ -238,13 +230,6 @@ prompts the user for the content of the role."
 	(buf (current-buffer)))
     (princ (format "%s`%s`" rolename ref) buf)))
 
-;;;###autoload
-(defun sphinx-ext-align ()
-  "Align the current line with the first line of this role.
-
-Point should be on the second line of a ':param:' or
-':keyword:' role after `auto-fill-mode' kicks in, for best
-effect."
   (interactive)
   (let ((pos (point-marker))
 	beg end indent)
@@ -407,7 +392,6 @@ MODULE is the name of the module.")
 ;; TODO: admonition
 (define-key sphinx-doc-mode-map (kbd "C-c i d") #'sphinx-ext-skeleton-docstring)
 (define-key sphinx-doc-mode-map (kbd "C-c M-r") #'sphinx-ext-add-reference)
-(define-key sphinx-doc-mode-map (kbd "<backtab>") #'sphinx-ext-align)
 
 ;; Menu
 
@@ -415,7 +399,6 @@ MODULE is the name of the module.")
   "Sphinx Minor Mode"
   '("Sphinx"
     ["Add reference" sphinx-ext-add-reference]
-    ["Align" sphinx-ext-align]
     "---"
     ("Insert Roles"
      [":keyword:" sphinx-ext-insert-role-keyword]
