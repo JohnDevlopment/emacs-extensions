@@ -230,19 +230,73 @@ prompts the user for the content of the role."
 	(buf (current-buffer)))
     (princ (format "%s`%s`" rolename ref) buf)))
 
+(defun sphinx-ext-insert-docstring--returns (type)
+  "Insert :returns: with the given TYPE.
+If TYPE is provided, an additional :rtype: is added."
+  (assert (stringp type) (format "TYPE is not string (%s)." type))
+  (newline 2)
+  (insert ":returns: ...")
+  (when (not (string-empty-p type))
+    (newline)
+    (insert ":rtype: " type)))
+
+(defun sphinx-ext-insert-docstring--tag (tag name type)
+  "Insert \":TAG:\" with NAME and TYPE.
+
+TAG, NAME and TYPE must be strings."
+  (assert (stringp tag) (format "TAG is not string (%s)." tag))
+  (assert (stringp name) (format "NAME is not string (%s)." name))
+  (assert (stringp type) (format "TYPE is not string (%s)." type))
+  (assert (not (string-empty-p name)))
+  (newline 2)
+  (cond
+   ((string-empty-p type)
+    ;; No type
+    (insert (format ":param %s:" name)))
+   ((string-match ".+? +or .+" "int or str")
+    ;; Type is "x or y..."
+    (insert (format ":param %s:" name))
+    (newline)
+    (insert (format ":type %s: %s" name type)))
+   (t
+    ;; Type is anything else
+    (insert (format ":param %s %s:" type name)))))
+
+(defun sphinx-ext-insert-docstring ()
+  "Insert documentation for the enclosing function.
+
+First, the user is prompted for the first line, which
+summarizes the function.  Second, they are prompted for a
+series of positional or keyword arguments: if they press p,
+they are asked for the name and type of the parameter, or
+keyword argument if the user presses k. At this stage, the
+user can press q to finish the docstring."
   (interactive)
-  (let ((pos (point-marker))
-	beg end indent)
-    (save-excursion
-      (save-match-data
-	(unless (re-search-backward user-ext-sphinx-param-regexp nil t)
-	  (user-error "Did not find a :param/keyword: here"))
-	(setq beg (match-beginning 0) end (match-end 0)
-	      indent (- (1- end) beg))
-	(assert (> end beg))
-	(goto-char pos)
-	(beginning-of-line)
-	(insert (make-string indent ?\ ))))))
+  (let ((chars (list ?k ?p ?q ?r))
+	(prompt (string-join '("p = :param:"
+			       "k = :keyword:"
+			       "r = :returns:"
+			       "q = quit") ", "))
+	(tags (alist-ext-define ?k "keyword" ?p "param" ?r "returns"))
+	first-line c tag str v1)
+    (setq first-line (read-string "First Line: ")
+	  c (read-char-choice prompt chars))
+    (insert first-line)
+    (catch 'break
+      (while (not (= c ?q))
+	(pcase c
+	  ((or ?k ?p)
+	   (setq tag (alist-get c tags)
+		 str (read-string "Name: ")
+		 v1 (read-string "Type: "))
+	   (assert (not (null tag)))
+	   (sphinx-ext-insert-docstring--tag tag str v1))
+	  (?r
+	   (setq str (read-string "Type: "))
+	   (sphinx-ext-insert-docstring--returns str)
+	   (throw 'break nil))
+	  (?q t))
+	(setq c (read-char-choice prompt chars))))))
 
 (defun sphinx-ext--y-or-n-p (prompt)
   (let* ((prompt (format "%s y/n " prompt))
@@ -312,17 +366,17 @@ skeleton is bound to sphinx-ext--skeleton-NAME."
 	   (signal 'quit t))
 	 ,@skel))))
 
-(sphinx-ext-define-auxiliary-skeleton return
-  "Insert a ':returns:'."
-  ":returns: " str)
+;; (sphinx-ext-define-auxiliary-skeleton return
+;;   "Insert a ':returns:'."
+;;   ":returns: " str)
 
-(sphinx-ext-define-skeleton docstring
-  "Insert a Sphinx-style docstring at point."
-  "First line: "
-  str \n \n
-  ("Argument: "
-   ":param " str ": " \n \n)
-  '(sphinx-ext-skeleton--return))
+;; (sphinx-ext-define-skeleton docstring
+;;   "Insert a Sphinx-style docstring at point."
+;;   "First line: "
+;;   str \n \n
+;;   ("Argument: "
+;;    < ":param " str ": " \n \n)
+;;   '(sphinx-ext-skeleton--return))
 
 (sphinx-ext-define-skeleton code-block
   "Insert a code block."
@@ -346,6 +400,7 @@ skeleton is bound to sphinx-ext--skeleton-NAME."
 (define-prefix-command 'sphinx-ext-style-map nil (sphinx-ext--style-map-prompt))
 (define-key sphinx-doc-mode-map (kbd "C-c C-S") #'sphinx-ext-style-map)
 
+(define-key sphinx-doc-mode-map (kbd "C-c C-M-d") #'sphinx-ext-insert-docstring)
 (sphinx-ext-define-insert-role-function "returns" nil :key "r")
 
 (sphinx-ext-define-insert-role-function "rtype" nil :key "R")
@@ -425,7 +480,7 @@ MODULE is the name of the module.")
      ["Italics" sphinx-ext-insert-style-italics]
      ["Code Block" sphinx-ext-insert-style-code-block])
     ("Skeletons"
-     ["Docstring" sphinx-ext-skeleton-docstring]
+     ["Docstring" sphinx-ext-insert-docstring]
      ["Literal include" sphinx-ext-skeleton-literalinclude])))
 
 ;; Hooks
