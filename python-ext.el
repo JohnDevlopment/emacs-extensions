@@ -167,24 +167,24 @@
 
 ;; Key bindings
 
-(define-prefix-command 'python-ext-command-prefix nil "Python Ex")
+(define-prefix-command 'python-ext-command-prefix)
 
-(define-key python-mode-map (kbd "C-c i")      #'python-ext-command-prefix)
-(define-key python-ext-command-prefix "D"      #'python-ext-docstring)
+(define-key python-mode-map (kbd "C-c i") #'python-ext-command-prefix)
+(define-key python-ext-command-prefix "D" #'python-ext-docstring)
 
-(define-key python-ext-command-prefix "c"      #'python-skeleton-class)
-(define-key python-ext-command-prefix "d"      #'python-skeleton-def)
-(define-key python-ext-command-prefix "f"      #'python-skeleton-for)
-(define-key python-ext-command-prefix "I"      #'python-skeleton-if)
-(define-key python-ext-command-prefix "m"      #'python-skeleton-import)
-(define-key python-ext-command-prefix "T"      #'python-skeleton-try)
-(define-key python-ext-command-prefix "w"      #'python-skeleton-while)
+(define-key python-ext-command-prefix "c" #'python-skeleton-class)
+(define-key python-ext-command-prefix "d" #'python-skeleton-def)
+(define-key python-ext-command-prefix "f" #'python-skeleton-for)
+(define-key python-ext-command-prefix "I" #'python-skeleton-if)
+(define-key python-ext-command-prefix "m" #'python-skeleton-import)
+(define-key python-ext-command-prefix "T" #'python-skeleton-try)
+(define-key python-ext-command-prefix "w" #'python-skeleton-while)
 
 (define-key python-mode-map (kbd "<S-return>") #'python-ext-shift-return)
 (define-key python-mode-map (kbd "M-e")        #'yas-expand)
 
 ;; company-capf
-(define-key python-mode-map (kbd "M-SPC") #'company-capf)
+(define-key python-mode-map (kbd "M-S-SPC") #'company-capf)
 
 (define-key python-mode-map (kbd "C-c M-r") #'python-ext-revert-all-python-buffers)
 
