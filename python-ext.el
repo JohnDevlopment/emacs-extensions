@@ -4,6 +4,7 @@
 
 ;;; Code:
 
+(require 'cl-lib)
 (require 'python-mode)
 (require 'python)
 
@@ -32,6 +33,9 @@
 
 (defvar user-ext-python--docstring-buffer nil
   "Buffer for Python docstring.")
+
+(defvar user-ext-python--reverted nil
+  "t if `python-ext-revert-all-python-buffers' is called.")
 
 ;; Functions
 
@@ -128,6 +132,23 @@
     (setq header-line-format "Python Docstring: Type C-c C-c to apply changes")
     (message "Type C-c C-c to save changes.")))
 
+(defun python-ext-revert-all-python-buffers ()
+  "Revert all Python buffers."
+  (interactive)
+  (unless user-ext-python--reverted
+    (cl-loop
+     with bl = (buffer-list)
+     with bfn = nil
+     for buf in bl
+     do
+     (setq bfn (buffer-file-name))
+     (with-current-buffer buf
+       (when (and bfn (file-exists-p bfn)
+		  (not (buffer-modified-p))
+		  (eq major-mode 'python-mode))
+	 (revert-buffer t t)
+	 (setq user-ext-python--reverted t))))))
+
 (defun python-ext-shift-return ()
   "Called when the user presses <S-return>."
   (interactive)
@@ -159,6 +180,8 @@
 
 ;; company-capf
 (define-key python-mode-map (kbd "M-SPC") #'company-capf)
+
+(define-key python-mode-map (kbd "C-c M-r") #'python-ext-revert-all-python-buffers)
 
 ;; Abbrevs
 
