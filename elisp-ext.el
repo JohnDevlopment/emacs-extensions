@@ -93,6 +93,8 @@ If REVERSE is non-nil, search backwards."
   (window-configuration-to-register user-ext-elisp--register)
   (elisp-ext--doc-scratch-buffer))
 
+(define-key emacs-lisp-mode-map (kbd "C-c C-j") #'imenu)
+
 ;;;###autoload
 (defun elisp-ext--extra-hook ()
   "Hook for the `emacs-lisp-mode' extension.")
