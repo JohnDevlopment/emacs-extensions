@@ -81,8 +81,8 @@
     (message "Type C-c C-c to save changes.")))
 
 (defmacro rust-skeleton-define (name doc &rest skel)
-  "Define a `rust-mode' skeleton using NAME DOC and SKEL. The skeleton will be
-bound to rust-skeleton-NAME."
+  "Define a `rust-mode' skeleton using NAME DOC and SKEL.
+The skeleton will be bound to rust-skeleton-NAME."
   (declare (indent 2))
   (let* ((name (symbol-name name))
 	 (funcname (intern (concat "rust-skeleton-" name))))
@@ -97,13 +97,15 @@ bound to rust-skeleton-NAME."
 				     (unless (equal ?\( (char-before)) ", ")
 				     str) ") {" \n
 				     > "// code..." _ \n < "}" \n)
+
+(define-key rust-mode-map (kbd "M-S-SPC") #'company-capf)
+(define-key rust-mode-map (kbd "C-c C-t f") #'rust-skeleton-function)
 (define-key rust-mode-map (kbd "C-c i D") #'rust-ext-docstring)
 
 ;;;###autoload
 (defun rust--custom-hook ()
   (setq-local skeleton-further-elements
-	      '((< '(- (min rust-indent-offset (current-column))))))
-  (define-key rust-mode-map (kbd "C-c C-t f") #'rust-skeleton-function))
+	      '((< '(- (min rust-indent-offset (current-column)))))))
 
 ;;;###autoload
 (add-hook 'rust-mode-hook #'rust--custom-hook)
