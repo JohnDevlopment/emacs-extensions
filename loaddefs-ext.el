@@ -421,11 +421,14 @@ Extra hook for `rst-mode'." nil nil)
 ;;;### (autoloads nil "rust-ext" "rust-ext.el" (0 0 0 0))
 ;;; Generated autoloads from rust-ext.el
 
+(autoload 'rust-ext-docstring "rust-ext" "\
+Open a temporary buffer to write a docstring." t nil)
+
 (autoload 'rust--custom-hook "rust-ext" nil nil nil)
 
 (add-hook 'rust-mode-hook #'rust--custom-hook)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "rust-ext" '("rust-skeleton-define")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "rust-ext" '("rust-" "user-ext-rust-")))
 
 ;;;***
 
