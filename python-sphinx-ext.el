@@ -444,8 +444,6 @@ MODULE is the name of the module.")
 (sphinx-ext-define-insert-directive-function "seealso"   :key "s")
 
 ;; TODO: admonition
-(define-key sphinx-doc-mode-map (kbd "C-c i d") #'sphinx-ext-skeleton-docstring)
-(define-key sphinx-doc-mode-map (kbd "C-c M-r") #'sphinx-ext-add-reference)
 
 ;; Menu
 
