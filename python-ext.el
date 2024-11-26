@@ -9,6 +9,9 @@
 (require 'python-mode)
 (require 'python)
 
+(eval-when-compile
+  (require 'dash))
+
 ;; Variables
 
 (defgroup python-ext nil
@@ -53,6 +56,41 @@
 ;;          ,(or doc
 ;;               (format "Insert %s statement." name))
 ;;          ,@skel))))
+
+(defun python-ext-finish-variable-type ()
+  (interactive)
+  (let (start end res)
+    (save-excursion
+      (setq end (point) start (progn
+				(beginning-of-line)
+				(point))))
+    (setq res (lsp-request
+	       "textDocument/inlayHint"
+	       (lsp-make-inlay-hints-params
+		:text-document (lsp--text-document-identifier)
+		:range (lsp-make-range :start (lsp-point-to-position start)
+				       :end (lsp-point-to-position end)))))
+    (cl-block found-inlay
+      (dolist (hint res)
+	(-let* (((&InlayHint :label :position) hint)
+		(label (lsp--label-from-inlay-hints-response label))
+		(pos (lsp--position-to-point position)))
+	  (if (= (point) pos)
+	      (progn
+		(cond
+		 ((string-match-p "-> .+" label)
+		  ;; complete return
+		  (insert ?\  label)
+		  (cl-return-from found-inlay))
+		 ((string-match-p ": .+" label)
+		  ;; complete variable type
+		  (insert label)
+		  (cl-return-from found-inlay))
+		 ((string-match-p "[A-Za-z_][A-Za-z_0-9]*=" label)
+		  ;; complete parameter name
+		  (insert label)
+		  (cl-return-from found-inlay))))
+	    (message "label: %s, position: %s" label pos)))))))
 
 ;;;###autoload (autoload 'python-ext-scratch "python-ext" "Opens a scratch buffer to let you write Python code." t)
 (define-scratch-buffer-function python-ext-scratch "python" nil
@@ -180,6 +218,7 @@
 
 ;; company-capf
 (define-key python-mode-map (kbd "M-S-SPC") #'company-capf)
+(define-key python-mode-map (kbd "C-c M-c") #'python-ext-finish-variable-type)
 
 (define-key python-mode-map (kbd "C-c M-r") #'python-ext-revert-all-python-buffers)
 
