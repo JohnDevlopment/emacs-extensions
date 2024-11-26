@@ -24,8 +24,11 @@
 (defun sphinx-ext--directive-map-prompt ()
   "Prompt for `sphinx-ext-directive-map'."
   (concat
+   "M-c = currentmodule, "
+   "C = autoclass, "
    "M = automodule, "
    "S = autosummary, "
+   "T = toctree, "
    "a = attention, "
    "c = caution, "
    "d = danger, "
@@ -71,9 +74,24 @@ WHAT is a symbol naming what style to use:
 		    (back-to-indentation)
 		    (buffer-substring (line-beginning-position) (point)))
 		  "   "))
-    (when (string= what "automodule")
-      (insert " " (car args)))
-    (newline)
+    (pcase what
+      ((or "automodule" "currentmodule")
+       ;; args: module
+       (insert " " (car args)))
+      ("autoclass"
+       ;; args: class members
+       (cl-destructuring-bind (class members) args
+	 (insert ?\  class)
+	 (newline)
+	 (insert spaces (format ":members:%s"
+				(if (not (string-empty-p members))
+				    (concat " " members)
+				  "")))))
+      ("toctree"
+       ;; args: maxdepth
+       (newline)
+       (insert spaces (format ":maxdepth: %d" (car args)))))
+    (newline 2)
     (insert spaces)))
 
 (defmacro sphinx-ext-define-insert-directive-function (name &rest props)
@@ -407,6 +425,10 @@ skeleton is bound to sphinx-ext--skeleton-NAME."
 (sphinx-ext-define-insert-style-function
     "code-block" "C" code-block "Insert a code block at point.")
 
+(sphinx-ext-define-insert-directive-function "autoclass"
+  :key "C"
+  :args ("sClass: " class "sMembers: " members))
+
 (sphinx-ext-define-insert-directive-function "automodule"
   :key "M"
   :args ("sModule: " module)
@@ -417,7 +439,14 @@ MODULE is the name of the module.")
   :key "S")
 
 (sphinx-ext-define-insert-directive-function "toctree"
-  :key "T")
+  :key "T"
+  :args ("nMaxdepth: " maxdepth)
+  :doc "Insert a toctree directive with MAXDEPTH.
+MAXDEPTH corresponds to the :maxdepth: property.")
+
+(sphinx-ext-define-insert-directive-function "currentmodule"
+  :key "M-c"
+  :args ("sModule: " module))
 
 ;; Admonitions
 (sphinx-ext-define-insert-directive-function "attention" :key "a")
@@ -447,8 +476,10 @@ MODULE is the name of the module.")
      [":rtype:" sphinx-ext-insert-role-rtype]
      [":type:" sphinx-ext-insert-role-type])
     ("Insert Directives"
+     ["autoclass" sphinx-ext-insert-directive-autoclass]
      ["automodule" sphinx-ext-insert-directive-automodule]
      ["autosummary" sphinx-ext-insert-directive-autosummary]
+     ["currentmodule" sphinx-ext-insert-directive-currentmodule]
      ["toctree" sphinx-ext-insert-directive-toctree]
      "---"
      ["caution" sphinx-ext-insert-directive-caution]
