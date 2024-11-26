@@ -421,10 +421,18 @@ Extra hook for `rst-mode'." nil nil)
 ;;;### (autoloads nil "rust-ext" "rust-ext.el" (0 0 0 0))
 ;;; Generated autoloads from rust-ext.el
 
+(autoload 'rust-ext-cargo-run-with-args "rust-ext" "\
+Run this project via 'cargo run'.
+This calls `rustic-cargo-run' with a non-nil argument." t nil)
+
 (autoload 'rust-ext-docstring "rust-ext" "\
 Open a temporary buffer to write a docstring." t nil)
 
-(autoload 'rust--custom-hook "rust-ext" nil nil nil)
+(define-scratch-buffer-function rust-ext-scratch-buffer "rust" nil "\
+Open a scratch buffer in `rustic-mode'." nil (rustic-mode))
+
+(autoload 'rust--custom-hook "rust-ext" "\
+Hook for `rustic-mode' extension." nil nil)
 
 (add-hook 'rust-mode-hook #'rust--custom-hook)
 
