@@ -124,7 +124,7 @@ where the following keywords are meaningful:
 	    '(interactive))
          (sphinx-ext--insert-directive ,name ,@function-arglist))
        ,(when key
-	  `(define-key sphinx-ext-directive-map ,key #',function-name)))))
+	  `(define-key sphinx-ext-directive-map (kbd ,key) #',function-name)))))
 
 (defmacro sphinx-ext-define-insert-style-function (name key symbol doc)
   "Define a style insertion function with NAME, KEY, SYMBOL, and DOC.
