@@ -71,7 +71,7 @@ temporary folders from the workspace."
 ;; Exit hook
 (add-hook 'kill-emacs-hook #'lsp--delete-temp-workspace-folders)
 
-(add-hook 'lsp-after-open-hook #'lsp-origami-try-enable)
+;; (add-hook 'lsp-after-open-hook #'lsp-origami-try-enable)
 
 (provide 'lsp-ext)
 
