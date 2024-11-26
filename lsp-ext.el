@@ -64,6 +64,10 @@ temporary folders from the workspace."
   (lsp-workspace-folders-add project-root)
   (cl-pushnew project-root lsp-temporary-workspace-folders))
 
+;; Keymaps
+
+(define-key lsp-mode-map (kbd "<C-return>") #'lsp-find-definition)
+
 ;; Exit hook
 (add-hook 'kill-emacs-hook #'lsp--delete-temp-workspace-folders)
 
