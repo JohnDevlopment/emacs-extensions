@@ -364,18 +364,6 @@ skeleton is bound to sphinx-ext--skeleton-NAME."
 	   (signal 'quit t))
 	 ,@skel))))
 
-;; (sphinx-ext-define-auxiliary-skeleton return
-;;   "Insert a ':returns:'."
-;;   ":returns: " str)
-
-;; (sphinx-ext-define-skeleton docstring
-;;   "Insert a Sphinx-style docstring at point."
-;;   "First line: "
-;;   str \n \n
-;;   ("Argument: "
-;;    < ":param " str ": " \n \n)
-;;   '(sphinx-ext-skeleton--return))
-
 (sphinx-ext-define-skeleton code-block
   "Insert a code block."
   "Language: "
@@ -461,7 +449,7 @@ MODULE is the name of the module.")
     ("Insert Directives"
      ["automodule" sphinx-ext-insert-directive-automodule]
      ["autosummary" sphinx-ext-insert-directive-autosummary]
-     ["autotoctree" sphinx-ext-insert-directive-toctree]
+     ["toctree" sphinx-ext-insert-directive-toctree]
      "---"
      ["caution" sphinx-ext-insert-directive-caution]
      ["danger" sphinx-ext-insert-directive-danger]
