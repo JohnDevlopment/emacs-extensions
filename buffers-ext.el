@@ -102,7 +102,8 @@ ARG-LIST and DOCSTRING as its argument list and
 documentation string, respectively.  Likewise, INT-SPEC is
 used as the argument to `interactive' if non-nil.  The rest
 of the arguments is the BODY of function NAME."
-  (declare (indent 3) (doc-string 4) (pure t))
+  (declare (indent 3) (doc-string 4) (pure t)
+	   (debug (name stringp lambda-list stringp form body)))
   (let ()
     `(progn
        (defun ,name ,arg-list
