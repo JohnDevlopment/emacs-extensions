@@ -4,10 +4,11 @@
 
 ;;; Code:
 
+(require 'company-capf)
+(require 'rustic)
+(require 'rust-mode)
+
 (eval-when-compile
-  (require 'company-capf)
-  (require 'rust-mode)
-  (require 'rustic)
   (require 'skeleton))
 
 ;; Variables
@@ -93,7 +94,7 @@ This calls `rustic-cargo-run' with a non-nil argument."
   (interactive)
   (customize-group 'rustic))
 
-;;;###autoload
+;;;###autoload (autoload 'rust-ext-scratch-buffer "rust-ext" "Open a scratch buffer in `rustic-mode'." t)
 (define-scratch-buffer-function rust-ext-scratch-buffer "rust" nil
   "Open a scratch buffer in `rustic-mode'."
   nil
