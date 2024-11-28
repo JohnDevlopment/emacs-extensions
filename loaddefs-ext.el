@@ -1,4 +1,4 @@
-;;; loaddefs-ext.el --- Autoloads                    -*- lexical-binding: t; -*-
+;;; loaddefs-ext.el ---                              -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2024  John
 
@@ -19,10 +19,14 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
+
 ;;
 
 ;;; Code:
 
+;; (provide 'loaddefs-ext)
+
+;;; loaddefs-ext.el ends here
 
 ;;;### (autoloads nil "bbcode-ext" "bbcode-ext.el" (0 0 0 0))
 ;;; Generated autoloads from bbcode-ext.el
@@ -427,9 +431,7 @@ This calls `rustic-cargo-run' with a non-nil argument." t nil)
 
 (autoload 'rust-ext-docstring "rust-ext" "\
 Open a temporary buffer to write a docstring." t nil)
-
-(define-scratch-buffer-function rust-ext-scratch-buffer "rust" nil "\
-Open a scratch buffer in `rustic-mode'." nil (rustic-mode))
+ (autoload 'rust-ext-scratch-buffer "rust-ext" "Open a scratch buffer in `rustic-mode'." t)
 
 (autoload 'rust--custom-hook "rust-ext" "\
 Hook for `rustic-mode' extension." nil nil)
@@ -516,7 +518,3 @@ Extra hook for `toml-mode'." nil nil)
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "abbrev-ext" '("abbrev-ext-insert-hook")))
 
 ;;;***
-
-(provide 'loaddefs-ext)
-
-;;; loaddefs-ext.el ends here
