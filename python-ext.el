@@ -277,6 +277,25 @@ Examples of what get matched:
 (define-key python-mode-map (kbd "M-e")        #'yas-expand)
 (define-key python-mode-map (kbd "C-c C-j")    #'imenu)
 
+(define-prefix-command 'python-ext-hide-show-command)
+(define-key python-mode-map (kbd "C-c f") #'python-ext-hide-show-command)
+
+(define-key python-ext-hide-show-command (kbd "#") #'py-hide-comment)
+(define-key python-ext-hide-show-command (kbd "B") #'py-hide-block-or-clause)
+(define-key python-ext-hide-show-command (kbd "C") #'py-hide-clause)
+(define-key python-ext-hide-show-command (kbd "D") #'py-hide-def-or-class)
+(define-key python-ext-hide-show-command (kbd "E") #'py-hide-elif-block)
+(define-key python-ext-hide-show-command (kbd "E") #'py-hide-except-block)
+(define-key python-ext-hide-show-command (kbd "S") #'py-hide-statement)
+(define-key python-ext-hide-show-command (kbd "b") #'py-hide-block)
+(define-key python-ext-hide-show-command (kbd "c") #'py-hide-class)
+(define-key python-ext-hide-show-command (kbd "d") #'py-hide-def)
+(define-key python-ext-hide-show-command (kbd "e") #'py-hide-else-block)
+(define-key python-ext-hide-show-command (kbd "f") #'py-hide-for-block)
+(define-key python-ext-hide-show-command (kbd "i") #'py-hide-if-block)
+(define-key python-ext-hide-show-command (kbd "s") #'py-hide-show)
+(define-key python-ext-hide-show-command (kbd "x") #'py-hide-expression)
+
 ;; company-capf
 (define-key python-mode-map (kbd "M-S-SPC") #'company-capf)
 (define-key python-mode-map (kbd "C-c M-c") #'python-ext-finish-variable-type)
@@ -301,6 +320,7 @@ Examples of what get matched:
 	      '((< '(backward-delete-char-untabify (min python-indent-offset
                                                  (current-column))))
 		(^ '(- (1+ (current-indentation))))))
+  (origami-mode -1)
   (outline-minor-mode -1))
 
 ;;;###autoload
