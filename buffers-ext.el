@@ -124,6 +124,13 @@ of the arguments is the BODY of function NAME."
       (insert face)
       (newline))))
 
+(define-scratch-buffer-function text-scratch "text" nil
+  "Open a scratch buffer for basic text."
+  nil
+  (text-mode)
+  (setq header-line-format "Type C-c C-c to exit.")
+  (local-set-key (kbd "C-c C-c") #'kill-and-quit))
+
 ;; (define-scratch-buffer-function docstring-scratch "docstring"
 ;; 				(&optional fill-number)
 ;;   "Open a scratch buffer for documentation strings.
