@@ -8,6 +8,7 @@
 (require 'debug-ext)
 (require 'python-mode)
 (require 'python)
+(require 'lsp)
 
 (eval-when-compile
   (require 'dash))
@@ -119,6 +120,12 @@ Examples of what get matched:
 	    (add-text-properties beg end '(face user-ext-python-pydoc-keyword))))))))
 
 (defun python-ext-finish-variable-type ()
+  "Finish the type of the variable at point.
+
+In order for this to work, the current buffer must be using
+LSP and the underlying server must support inlay hints.  To
+see if that is available, call \\[lsp-describe-session] and
+look for \`inlayHintProvider'."
   (interactive)
   (let (start end res)
     (save-excursion
