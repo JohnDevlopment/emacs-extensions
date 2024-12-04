@@ -297,6 +297,10 @@ Examples of what get matched:
 (defun python--extra-hook ()
   "Hook for `python-mode' for this extension."
   (setq-local beginning-of-defun-function #'py-backward-def-or-class)
+  (setq-local skeleton-further-elements
+	      '((< '(backward-delete-char-untabify (min python-indent-offset
+                                                 (current-column))))
+		(^ '(- (1+ (current-indentation))))))
   (outline-minor-mode -1))
 
 ;;;###autoload
