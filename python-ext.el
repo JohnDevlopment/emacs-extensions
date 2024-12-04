@@ -23,11 +23,34 @@
   :type 'integer
   :group 'python-ext)
 
+(defface user-ext-python-pydoc-keyword
+  '((t . (:inherit font-lock-keyword-face)))
+  "Face used for keywords."
+  :group 'python-ext)
+
 (defcustom user-ext-python-docstring-major-mode 'markdown-mode
   "Major mode for editing Python docstring."
   :type 'symbol
   :group 'python-ext
   :safe t)
+
+(defconst user-ext-python-identifier-regex
+  (rx word-start
+      (group
+       (any (?A . ?Z) (?a . ?z) ?_)
+       (+ (any (?A . ?Z) (?a . ?z) ?_ "0-9"))
+       (* ?.
+	  (any (?A . ?Z) (?a . ?z) ?_)
+	  (+ (any (?A . ?Z) (?a . ?z) ?_ "0-9"))))
+      word-end)
+  "Regular expression for matching identifiers to be documented.
+Group 1 matches the whole identifier.
+
+Examples of what get matched:
+   $ a = 'some string'
+   $ a.upper()
+     ^^^^^^^
+   $ str.make_trans({})")
 
 (defvar user-ext-python--orig-position nil
   "Position in the original buffer when editing Python docstring.")
@@ -56,6 +79,44 @@
 ;;          ,(or doc
 ;;               (format "Insert %s statement." name))
 ;;          ,@skel))))
+
+(defun python-ext--pydoc (what)
+  (assert (stringp what) (format "what = %s" what))
+  (let (code)
+    (with-temp-buffer
+      (setq code (call-process "/bin/bash" nil t nil "-c" (concat "pydoc3 " what)))
+      (assert (integerp code))
+      (unless (= code 0)
+	(user-error "Non-zero error returned from Pydoc."))
+      (buffer-string))))
+
+(defun python-ext--get-symbol-at-point ()
+  (let ((bol (cl-save-point
+	       (beginning-of-line)
+	       (point)))
+	bs)
+    (save-excursion
+      (when (looking-back user-ext-python-identifier-regex bol)
+	(setq bs (match-string-no-properties 1))
+	(assert (stringp bs))
+	bs))))
+
+(defun python-ext-pydoc (what)
+  (interactive (list (read-string "What: " (thing-at-point 'word))))
+  (let ((bufname "*pydoc*")
+	(doc (python-ext--pydoc what))
+	beg end)
+    (with-help-window bufname
+      (with-current-buffer bufname
+	(insert doc)
+	(goto-char (point-min))
+	(save-excursion
+	  (when (re-search-forward "^\\(class\\) [A-Za-z0-9_]+" nil t)
+	    (setq beg (match-beginning 1)
+		  end (match-end 1))
+	    (assert (not (null beg)))
+	    (assert (not (null end)))
+	    (add-text-properties beg end '(face user-ext-python-pydoc-keyword))))))))
 
 (defun python-ext-finish-variable-type ()
   (interactive)
