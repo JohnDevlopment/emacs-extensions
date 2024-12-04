@@ -9,7 +9,8 @@
 (require 'lsp-pyright)
 
 (with-eval-after-load 'lsp-mode
-  (setq lsp-keymap-prefix "C-c c l"))
+  (setq lsp-keymap-prefix "C-c c l")
+  (define-key lsp-mode-map (kbd "C-c l T i") #'lsp-inlay-hints-mode))
 
 ;; Faces
 
