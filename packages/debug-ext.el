@@ -33,6 +33,12 @@ FORM should not be quoted."
 	  `(error (format "Assertion failed: %s, %s" ',form ,message))
 	`(error (format "Assertion failed: %s" ',form)))))
 
+(defmacro print-expr (type form)
+  (pcase type
+    ((or 'var 'sexp)
+     `(message ,(concat "DEBUG: " (cl-prin1-to-string form) " = %S") ,form))
+    (_ (error "Unknown type %S" type))))
+
 (defun debug-ext-get-function-body (symbol)
   "Get the function definition of SYMBOL."
   (indirect-function symbol))
