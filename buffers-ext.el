@@ -131,21 +131,6 @@ of the arguments is the BODY of function NAME."
   (setq header-line-format "Type C-c C-c to exit.")
   (local-set-key (kbd "C-c C-c") #'kill-and-quit))
 
-;; (define-scratch-buffer-function docstring-scratch "docstring"
-;; 				(&optional fill-number)
-;;   "Open a scratch buffer for documentation strings.
-
-;; Creates a temporary buffer with the name \"docstring\".  The
-;; newly created buffer has `auto-fill-mode' enabled.  Its
-;; `fill-column' is set to FILL-NUMBER (if non-nil) or 60
-;; otherwise.
-
-;; When called interactively, FILL-NUMBER is the prefix arg."
-;;   "P"
-;;   (text-mode)
-;;   (auto-fill-mode t)
-;;   (set-fill-column (or fill-number 60)))
-
 (define-scratch-buffer-function git-commit-scratch "git commit" nil
   "Open a scratch buffer to let you format a git commit."
   nil
