@@ -56,6 +56,10 @@ Examples of what get matched:
 (defvar user-ext-python--orig-position nil
   "Position in the original buffer when editing Python docstring.")
 
+(defconst user-ext-python--register ?p
+  "The register for `python-ext-docstring'.
+This is passed to `window-configuration-to-register'.")
+
 (defvar user-ext-python--docstring-buffer nil
   "Buffer for Python docstring.")
 
@@ -166,6 +170,34 @@ look for \`inlayHintProvider'."
   nil
   (python-mode))
 
+;;;###autoload
+(defun python-ext-kill-pyi-buffers ()
+  (interactive)
+  (kill-buffers "\\.pyi$"))
+
+(defun python-ext--extract-docstring ()
+  "Extract the docstring at point if inside one.
+Returns a list of the form (CONTENT START END), which
+indicates the docstring and where it was found in relation
+to the current buffer.
+
+START is the beginning of the docstring (after the triple
+quotes), END is the end of the docstring (before the triple
+quotes), and CONTENT is the text between START and END."
+  (cl-destructuring-bind (_ _ _ string-delim _ _ _ _ string-beg _ _) (syntax-ppss)
+    (when (and string-delim
+	       (save-excursion
+		 (goto-char string-beg)
+		 (looking-at-p "\"\\{3\\}")))
+      (let* ((start string-beg)
+	     (end (save-excursion
+		    (goto-char start)
+		    (forward-sexp)
+		    (point)))
+	     (content (buffer-substring-no-properties
+		       (+ start 3) (- end 3))))
+	(list content (+ start 3) (- end 3))))))
+
 (defun python-ext--write-docstring ()
   "Exit the Python docstring buffer and apply the docstring."
   (interactive)
@@ -173,18 +205,19 @@ look for \`inlayHintProvider'."
     (deactivate-mark)
     (untabify (point-min) (point-max))
     (setq num-lines (count-lines (point-min) (point-max))) ; count number of lines
-    ;; extract contents of buffer into a variable
-    (with-current-buffer user-ext-python--docstring-buffer
-      (setq buffer-string (buffer-string)))
-    ;; exit function if string is empty
+    (setq buffer-string (buffer-string))
     (when (string-blank-p buffer-string)
+      ;; string is empty; exit
       (kill-buffer)
-      (jump-to-register py--edit-register)
+      (jump-to-register user-ext-python--register)
+      (setq user-ext-python--orig-position nil)
       (error "Docstring is empty"))
     (kill-buffer)
-    (jump-to-register py--edit-register)
+    (jump-to-register user-ext-python--register)
+    (setq user-ext-python--orig-position (point))
     (insert buffer-string)
-    (assert (markerp user-ext-python--orig-position))
+    ;; TODO: Check this
+    ;; (assert (markerp user-ext-python--orig-position))
     (goto-char user-ext-python--orig-position) ; go back to original position
     (save-excursion
       ;; get leading spaces
@@ -193,6 +226,7 @@ look for \`inlayHintProvider'."
 	    (if (looking-at "^\\([ \t]+\\)")
 		(match-string 1)
 	      "")))
+    (print-expr var prefix)
     ;; go to the beginning of each line and indent it
     ;; starting on the second line
     (move-beginning-of-line 2)
@@ -201,41 +235,81 @@ look for \`inlayHintProvider'."
 	  (move-beginning-of-line 2)	; if blank, go to next line
 	(insert prefix)			; otherwise, insert prefix
 	(move-beginning-of-line 2)))
-    (setq py--edit-register nil)
     (setq user-ext-python--orig-position nil)))
 
-;;;###autoload
-(defun python-ext-kill-pyi-buffers ()
-  (interactive)
-  (kill-buffers "\\.pyi$"))
+(defmacro python-ext--push-mode (mode place)
+  `(progn
+     (when (and (boundp ',mode) ,mode)
+       (cl-pushnew ',mode ,place))))
+
+(defun python-ext--dedent-string (string)
+  (let* ((lines (split-string string "\n"))
+	 (common-indent
+	  (cl-loop
+	   for line in (seq-filter (lambda (line) (not (string-empty-p line))) lines)
+	   with indent = most-positive-fixnum
+	   do
+	   (setq indent
+		 (min indent (progn
+			       (string-match "^[ \t]*" line)
+			       (match-end 0))))
+	   finally return indent)))
+    (mapconcat (lambda (line)
+		 (if (<= (length line) common-indent)
+		     (string-trim-left line)
+		   (substring line common-indent)))
+	       lines
+	       "\n")))
 
 ;;;###autoload
 (defun python-ext-docstring ()
   "Open a temporary buffer to write a docstring."
   (interactive)
   (let ((mode user-ext-python-docstring-major-mode)
-	modes)
-    (window-configuration-to-register py--edit-register)
-    (dolist (mode '(abbrev-mode sphinx-doc-mode))
-      (when (and (boundp mode) mode)
-	(cl-pushnew mode modes)))
-    ;; save position in original buffer
+	modes
+	docstring-data
+	start end content)
+    (python-ext--push-mode abbrev-mode modes)
+    (python-ext--push-mode sphinx-doc-mode modes)
     (setq user-ext-python--orig-position (point-marker))
-    (setq user-ext-python--docstring-buffer (tmpbuf "python-docstring")) ; create a temporary buffer
+    ;; get docstring
+    (setq docstring-data (python-ext--extract-docstring))
+    (unless docstring-data
+      (error "Not inside a docstring"))
+    (setq content (string-trim (python-ext--dedent-string (car docstring-data)))
+	  start (nth 1 docstring-data)
+	  end (nth 2 docstring-data))
+    (window-configuration-to-register user-ext-python--register)
+    (setq user-ext-python--docstring-buffer (tmpbuf "python-docstring")) ; temp buffer
     (assert (not (null user-ext-python--docstring-buffer)))		 ;
-    (split-window-sensibly)				 ;
-    (switch-to-buffer user-ext-python--docstring-buffer) ; Split window and enter temporary buffer
-    (funcall mode)
-    (dolist (mode modes)
-      (princ `(funcall ,mode 1))
-      (funcall mode 1))
-    ;; set fill column and enable auto-fill
-    (set-fill-column user-ext-python-docstring-fill-column)
-    (auto-fill-mode 1)
-    ;; set C-c C-c key to exit
-    (local-set-key (kbd "C-c C-c") #'python-ext--write-docstring)
-    (setq header-line-format "Python Docstring: Type C-c C-c to apply changes")
-    (message "Type C-c C-c to save changes.")))
+    (with-current-buffer user-ext-python--docstring-buffer
+      (unless (string-blank-p content)
+	;; docstring is not empty
+	(insert (string-trim content))
+	(goto-char (point-min)))
+      (funcall mode)
+      (dolist (mode modes)
+	(princ `(funcall ,mode 1))
+	(funcall mode 1))
+      ;; set fill column and enable auto-fill
+      (set-fill-column user-ext-python-docstring-fill-column)
+      (auto-fill-mode 1)
+      ;; set C-c C-c key to exit
+      (local-set-key (kbd "C-c C-c") #'python-ext--write-docstring)
+      (setq header-line-format "Python Docstring: Type C-c C-c to apply changes")
+      (message "Type C-c C-c to save changes."))
+    (unless (string-blank-p content)
+      ;; docstring was not empty
+      (goto-char start)
+      (delete-region start end)
+      (py-newline-and-indent)
+      (py-newline-and-indent)
+      (forward-line -1)
+      (py-indent-line)
+      (window-configuration-to-register user-ext-python--register)
+      (setq user-ext-python--orig-position (point-marker)))
+    (split-window-sensibly)
+    (switch-to-buffer user-ext-python--docstring-buffer)))
 
 (defun python-ext-revert-all-python-buffers ()
   "Revert all Python buffers."
