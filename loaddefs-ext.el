@@ -50,7 +50,7 @@ Otherwise, this function does nothing." t nil)
 ;;;### (autoloads nil "buffers-ext" "buffers-ext.el" (0 0 0 0))
 ;;; Generated autoloads from buffers-ext.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "buffers-ext" '("define-scratch-buffer-function" "faces-buffer" "get-buffer-file-name" "git-commit-scratch" "kill-" "narrow-to-region2" "revert-all-buffers" "tmpbuf" "user-ext-temp-buffers-to-kill" "view-into-buffer")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "buffers-ext" '("define-scratch-buffer-function" "faces-buffer" "get-buffer-file-name" "git-commit-scratch" "kill-" "narrow-to-region2" "revert-all-buffers" "text-scratch" "tmpbuf" "user-ext-temp-buffers-to-kill" "view-into-buffer")))
 
 ;;;***
 
@@ -203,6 +203,25 @@ Modify `html-tag-alist' with our own tags." t nil)
 ;;; Generated autoloads from imenu-ext.el
 
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "imenu-ext" '("bind-imenu" "imenu--python-hook")))
+
+;;;***
+
+;;;### (autoloads nil "jinja2" "jinja2.el" (0 0 0 0))
+;;; Generated autoloads from jinja2.el
+
+(autoload 'jinja2-mode "jinja2" "\
+Minor mode for editing Jinja2 templates within major modes.
+
+If called interactively, enable Jinja2 mode if ARG is positive,
+and disable it if ARG is zero or negative.  If called from Lisp,
+also enable the mode if ARG is omitted or nil, and toggle it if
+ARG is `toggle'; disable the mode otherwise.
+
+\\{jinja2-mode-map}
+
+\(fn &optional ARG)" t nil)
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "jinja2" '("jinja2-")))
 
 ;;;***
 
