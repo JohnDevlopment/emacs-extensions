@@ -23,14 +23,14 @@
     "*Shell Command Output*")
   "A list of buffers to kill when `kill-certain-temp-buffers' is called."
   :type '(repeat string)
-  :safe 'list-p
+  :safe 'listp
   :group 'buffers-ext)
 
 (defcustom user-ext-temp-buffers-to-kill-regex
   '("\\*.*[hH]elp.*" "\\*vc-.*")
   "A list of regexes of buffers to kill when `kill-certain-temp-buffers' is called."
   :type '(repeat regexp)
-  :safe 'list-p
+  :safe 'listp
   :group 'buffers-ext)
 
 ;; Functions to kill buffers matching patterns
