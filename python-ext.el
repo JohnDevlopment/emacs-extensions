@@ -33,7 +33,7 @@
   "Major mode for editing Python docstring."
   :type 'symbol
   :group 'python-ext
-  :safe t)
+  :safe 'symbolp)
 
 (defconst user-ext-python-identifier-regex
   (rx word-start
@@ -86,13 +86,13 @@ This is passed to `window-configuration-to-register'.")
 ;;          ,@skel))))
 
 (defun python-ext--pydoc (what)
-  (assert (stringp what) (format "what = %s" what))
+  (cl-assert (stringp what) t "what = %s" what)
   (let (code)
     (with-temp-buffer
       (setq code (call-process "/bin/bash" nil t nil "-c" (concat "pydoc3 " what)))
-      (assert (integerp code))
+      (cl-assert (cl-typep what 'integer))
       (unless (= code 0)
-	(user-error "Non-zero error returned from Pydoc."))
+	(error "Non-zero error returned from Pydoc."))
       (buffer-string))))
 
 (defun python-ext--get-symbol-at-point ()
@@ -103,7 +103,7 @@ This is passed to `window-configuration-to-register'.")
     (save-excursion
       (when (looking-back user-ext-python-identifier-regex bol)
 	(setq bs (match-string-no-properties 1))
-	(assert (stringp bs))
+	(cl-assert (cl-typep bs 'string))
 	bs))))
 
 (defun python-ext-pydoc (what)
