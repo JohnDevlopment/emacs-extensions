@@ -91,7 +91,15 @@ Internally, calls `kill-buffers' with \"^\*Customize.*\" as the pattern."
     (insert (buffer-file-name))
     (kill-region pos (point))))
 
-;; Functions that create scratch or temp buffers
+;; ---Create scratch or temp buffers
+
+(defun text-scratch--complete-mode ()
+  (let* ((filt (lambda (e)
+		 (string-match-p "-mode\\'"
+				 (if (symbolp e) (symbol-name e) e))))
+	 (str (completing-read
+	       "Mode: " obarray filt t)))
+    (intern str)))
 
 (defmacro define-scratch-buffer-function (name buffer-name arg-list
 					       docstring int-spec
@@ -124,12 +132,26 @@ of the arguments is the BODY of function NAME."
       (insert face)
       (newline))))
 
-(define-scratch-buffer-function text-scratch "text" nil
-  "Open a scratch buffer for basic text."
-  nil
-  (text-mode)
+(define-scratch-buffer-function general-scratch "general scratch" (mode)
+  "Open a general-purpose scratch buffer.
+The buffer will have its major mode set to `text-mode' by
+default, unless ARG is non-nil, in which case the major mode
+is set to MODE.
+
+Interactively, ARG is the prefix argument. The user is
+prompted for MODE."
+  (list  (if current-prefix-arg
+	     (text-scratch--complete-mode)
+	   'text-mode))
+  (assert (symbolp mode) (prin1-to-string mode))
+  (funcall mode)
   (setq header-line-format "Type C-c C-c to exit.")
-  (local-set-key (kbd "C-c C-c") #'kill-and-quit))
+  (local-set-key (kbd "C-c C-c") (lambda ()
+				   "Close this buffer and call `quit', killing buffer contents."
+				   (interactive)
+				   (unless (string-empty-p (buffer-string))
+				     (kill-region (point-min) (point-max)))
+				   (kill-and-quit))))
 
 (define-scratch-buffer-function git-commit-scratch "git commit" nil
   "Open a scratch buffer to let you format a git commit."
