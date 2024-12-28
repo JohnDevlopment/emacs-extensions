@@ -108,6 +108,7 @@ Otherwise, call `org-return'."
 	       (element (car (last struct))))
 	  (cond
 	   ((eq list-type 'unordered)
+	    ;; Unordered list
 	    (setq checkbox (nth 4 element))
 	    (assert `(or (stringp ',checkbox) (null ,checkbox)))
 	    (org-list-insert-item (point) struct
@@ -115,6 +116,7 @@ Otherwise, call `org-return'."
 				  checkbox)
 	    (org-end-of-line))
 	   ((eq list-type 'ordered)
+	    ;; Ordered list
 	    (setq bullet (nth 2 element)
 		  checkbox (nth 4 element))
 	    (message "bullet: %S\nelement: %S" bullet element)
