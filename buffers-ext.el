@@ -33,7 +33,45 @@
   :safe 'listp
   :group 'buffers-ext)
 
-;; Functions to kill buffers matching patterns
+;; Advice
+
+;; (defun --deactivate-mark-after-cloning-buffer (&rest r)
+;;   (let ((f (pop r))
+;; 	(buf (current-buffer))
+;; 	res)
+;;     (setq res (call-interactively f))
+;;     (with-current-buffer buf
+;;       (deactivate-mark))
+;;     (deactivate-mark)
+;;     res))
+
+;; (advice-add #'clone-indirect-buffer :around #'--deactivate-mark-after-cloning-buffer)
+;; (advice-add #'clone-indirect-buffer-other-window :around #'--deactivate-mark-after-cloning-buffer)
+
+;; (advice-remove #'clone-indirect-buffer #'--deactivate-mark-after-cloning-buffer)
+;; (advice-remove #'clone-indirect-buffer-other-window #'--deactivate-mark-after-cloning-buffer)
+
+;; Functions
+
+(defun clone-indirect-buffer-this-window ()
+  "Create an indirect buffer that is a twin copy of the current buffer."
+  (interactive)
+  (cl-loop
+   named make-ind-buf
+   with buf = nil
+   with bufname = (buffer-name (current-buffer))
+   for i from 2 to 9
+   do
+   (setq buf (format "%s<ind-%d>" bufname i))
+   if (null (get-buffer buf))
+   do
+   (setq buf (make-indirect-buffer (current-buffer) buf t))
+   (switch-to-buffer buf)
+   (cl-return-from make-ind-buf)
+   finally do
+   (error "Limit of 8 indirect buffers reached")))
+
+;; ---Kill buffers matching patterns
 
 (defun kill-certain-temp-buffers ()
   "Convenience function to kill certain buffers you do not need.
