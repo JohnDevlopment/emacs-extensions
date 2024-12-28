@@ -103,20 +103,26 @@ Internally, calls `kill-buffers' with \"^\*Customize.*\" as the pattern."
   (interactive)
   (kill-buffers "\\*Customize.*"))
 
+(defun kill-buffers (pattern &optional predicate)
+  "Close all buffers matching PATTERN.
+If PREDICATE is specified, it is a function that accepts a
+buffer object and returns a non-nil value if said buffer
+should be killed.
 (defun kill-flymake-diagnostics ()
   "Close all buffers for flymake diagnostics."
   (interactive)
   (kill-buffers "\\*Flymake diag.*"))
 
-(defun kill-buffers (pattern)
-  "Close all buffers matching PATTERN."
+Called interactively, PREDICATE cannot be specified."
   (interactive "sRegexp: ")
   (let ((bl (buffer-list))
 	idx)
     (dolist (buf bl)
       (setq idx (string-match-p pattern
 				(buffer-name buf)))
-      (when (integerp idx)
+      (when (and (integerp idx)
+		 (or (null predicate)
+		     (funcall predicate buf)))
 	(message "Killed %s" (buffer-name buf))
 	(kill-buffer (buffer-name buf))))))
 
