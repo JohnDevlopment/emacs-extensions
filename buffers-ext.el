@@ -91,12 +91,6 @@ This kills buffers belonging to `user-ext-temp-buffers-to-kill' and
     (dolist (regexp rl)
       (kill-buffers regexp))))
 
-(defun kill-lsp-buffers ()
-  "Kill all buffers that have to do with function `lsp-mode'."
-  (interactive)
-  (kill-buffers "\*.*ls.*")
-  (kill-buffers "\*pyright.*"))
-
 (defun kill-customization-buffers ()
   "Close all customization buffers.
 Internally, calls `kill-buffers' with \"^\*Customize.*\" as the pattern."
@@ -108,10 +102,6 @@ Internally, calls `kill-buffers' with \"^\*Customize.*\" as the pattern."
 If PREDICATE is specified, it is a function that accepts a
 buffer object and returns a non-nil value if said buffer
 should be killed.
-(defun kill-flymake-diagnostics ()
-  "Close all buffers for flymake diagnostics."
-  (interactive)
-  (kill-buffers "\\*Flymake diag.*"))
 
 Called interactively, PREDICATE cannot be specified."
   (interactive "sRegexp: ")

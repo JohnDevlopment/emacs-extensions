@@ -36,6 +36,13 @@
 
 ;; Functions
 
+;;;###autoload
+(defun kill-lsp-buffers ()
+  "Kill all buffers that have to do with function `lsp-mode'."
+  (interactive)
+  (dolist (brx user-ext-lsp-buffers-to-kill)
+    (kill-buffers brx)))
+
 (defun lsp--delete-temp-workspace-folders ()
   "Remove temporary folders from the LSP workspace.
 
