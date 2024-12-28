@@ -416,14 +416,16 @@ quotes), and CONTENT is the text between START and END."
                                                  (current-column))))
 		(^ '(- (1+ (current-indentation))))))
   (origami-mode -1)
-  (outline-minor-mode -1))
+  (outline-minor-mode -1)
+  (add-hook 'lsp-after-open-hook #'python--lsp-hook nil t))
 
 ;;;###autoload
 (defun python--lsp-hook ()
   "Hook for `python-mode' when lsp is enabled."
   (when (eq major-mode 'python-mode)
     (setq completion-at-point-functions
-	  (delq #'py-fast-complete completion-at-point-functions))))
+	  (delq #'py-fast-complete completion-at-point-functions))
+    (remove-hook 'completion-at-point-functions #'py-fast-complete t)))
 
 ;;;###autoload
 (add-hook 'python-mode-hook #'python--extra-hook)
