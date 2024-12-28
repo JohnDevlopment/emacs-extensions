@@ -123,6 +123,21 @@ This is passed to `window-configuration-to-register'.")
 	    (assert (not (null end)))
 	    (add-text-properties beg end '(face user-ext-python-pydoc-keyword))))))))
 
+;; (defun python-ext-organize-imports (&optional start end)
+;;   "Organize imports in current buffer within START and END.
+;; If the region is enabled, only organize inputs within said
+;; region.
+
+;; Interactively, START and END points of the region.  If
+;; called from elisp, they are optional arguments."
+;;   (interactive "r")
+;;   (if (region-active-p)
+;;       (progn
+;; 	(narrow-to-region2 start end)
+;; 	(lsp-pyright-organize-imports)
+;; 	(widen))
+;;     (lsp-pyright-organize-imports)))
+
 (defun python-ext-finish-variable-type ()
   "Finish the type of the variable at point.
 
@@ -226,7 +241,6 @@ quotes), and CONTENT is the text between START and END."
 	    (if (looking-at "^\\([ \t]+\\)")
 		(match-string 1)
 	      "")))
-    (print-expr var prefix)
     ;; go to the beginning of each line and indent it
     ;; starting on the second line
     (move-beginning-of-line 2)
@@ -413,9 +427,6 @@ quotes), and CONTENT is the text between START and END."
 
 ;;;###autoload
 (add-hook 'python-mode-hook #'python--extra-hook)
-
-;;;###autoload
-(add-hook 'lsp-after-open-hook #'python--lsp-hook)
 
 (provide 'python-ext)
 
