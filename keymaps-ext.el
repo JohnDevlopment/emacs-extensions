@@ -90,6 +90,9 @@ of modes using a completion function.
   "global-visual-line-mode"
   "yas-global-mode")
 
+(define-contextual-key-func "h"
+  "hs-minor-mode")
+
 (define-contextual-key-func "s"
   "shell-script-mode"
   "sphinx-doc-mode")
@@ -151,6 +154,7 @@ is non-nil."
 (define-key quick-mode-map (kbd "c") #'contextual-key-c)
 (define-key quick-mode-map (kbd "f") #'contextual-key-f)
 (define-key quick-mode-map (kbd "g") #'contextual-key-g)
+(define-key quick-mode-map (kbd "h") #'contextual-key-h)
 (define-key quick-mode-map (kbd "l") #'lsp-mode)
 (define-key quick-mode-map (kbd "o") #'origami-mode)
 ;; (define-key quick-mode-map (kbd "p") #'p-mode)
