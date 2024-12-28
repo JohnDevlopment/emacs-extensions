@@ -190,6 +190,12 @@ look for \`inlayHintProvider'."
   (interactive)
   (kill-buffers "\\.pyi$"))
 
+;;;###autoload
+(defun python-ext-kill-venv-buffers ()
+  (interactive)
+  (kill-buffers "\\.pyi$" (lambda (buf)
+			    (string-match-p "/\\.venv/.+$" (buffer-file-name buf)))))
+
 (defun python-ext--extract-docstring ()
   "Extract the docstring at point if inside one.
 Returns a list of the form (CONTENT START END), which
