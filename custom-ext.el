@@ -50,11 +50,6 @@
   "Face for time strings in log files."
   :group 'user-extensions)
 
-(defface user-ext-highlight-changes-highlight
-  '((t (:inherit hi-yellow)))
-  "Face for highlight-changes."
-  :group 'user-extensions)
-
 ;; Aliases
 
 (defalias 'log-view-date    'user-ext-log-view-date)
