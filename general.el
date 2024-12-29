@@ -15,10 +15,30 @@
        (interactive)
        (call-interactively #'add-file-local-variable-prop-line)))
 
+;; Variables
+
 (defvar-local user-ext-local-position-ring nil
   "Current file's mark ring.")
 
 ;; Functions
+
+(defun sort-words (separators start end)
+  "Sort words in buffer between START and END via SEPARATORS.
+SEPARATORS is a regular expression used to match the
+characters used to separate the words.  START and END denote
+the region of text to sort.
+
+Interactively, START and END are set the region."
+  (interactive "*sSeparator: \nr")
+  (let* ((content (buffer-substring-no-properties start end))
+	 (sep (if (string-match separators content)
+		  (match-string 0 content)
+		" "))
+	 (words (split-string content separators t))
+	 (swords (cl-sort words #'string-lessp)))
+    (deactivate-mark)
+    (delete-region start end)
+    (insert (string-join swords sep))))
 
 (defun print-saved-positions ()
   (interactive)
