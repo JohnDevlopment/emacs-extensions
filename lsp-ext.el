@@ -60,6 +60,22 @@ temporary folders from the workspace."
 	(setq flag nil)))))
 
 ;;;###autoload
+(defun lsp-workspace-blocklist-add (project-root)
+  "Add PROJECT-ROOT to the workspace blocklist."
+  (interactive
+   (list (read-directory-name "Select folder to add: "
+			      (or (lsp--suggest-project-root) default-directory) nil t)))
+  (setf (lsp-session-folders-blocklist (lsp-session))
+	(cons project-root (lsp-session-folders-blocklist (lsp-session))))
+  (lsp--persist-session (lsp-session)))
+
+;;;###autoload
+(defun lsp-workspace-blocklist-remove-all ()
+  (interactive)
+  (setf (lsp-session-folders-blocklist (lsp-session)) nil)
+  (lsp--persist-session (lsp-session)))
+
+;;;###autoload
 (defun lsp-workspace-folders-add-temp (project-root)
   "Temporarily add PROJECT-ROOT to the list of workspace folders."
   (interactive
