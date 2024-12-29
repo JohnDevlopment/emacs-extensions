@@ -108,6 +108,70 @@
   nil
   "{% " _ " %}")
 
+(jinja2-define-skeleton function
+  "Insert a function call."
+  "Function: "
+  "{% " str
+  "(" ("Argument, %s: "
+       (unless (= (char-before) ?\() ", ")
+       str)
+  resume:
+  ") %}")
+
+(jinja2-define-skeleton set
+  "Insert a variable assignment."
+  "Name: "
+  '(setq v1 (if arg "{%-" "{%"))
+  '(setq v2 (if arg "-%}" "%}"))
+  v1 " set " str " = " _ ?\  v2)
+
+(jinja2-define-skeleton block
+  "Insert a block."
+  "Name: "
+  '(setq v1 (if arg "{%-" "{%"))
+  '(setq v2 (if arg "-%}" "%}"))
+  v1 " block " str ?\  v2 \n
+  _ \n v1 " endblock " v2)
+
+(jinja2-define-skeleton prompt-function
+  "Insert a call to the global prompt function."
+  nil
+  "{{- prompt(\"" (progn
+		   (setq v1 (read-string "Key: "))
+		   (if (string-empty-p v1)
+		       "<undefined key>"
+		     v1))
+  "\", "
+  "\"" (progn
+	 (setq v1 (read-string "Prompt: "))
+	 (if (string-empty-p v1)
+	     "<undefined prompt>"
+	   v1))
+  "\""
+  (when (y-or-n-p "Add `type_'? ")
+    ;; type_=...
+    (setq v1 (read-string "Type: "))
+    (unless (string-empty-p v1)
+      (format ", type_=\"%s\"" v1)))
+  (when (y-or-n-p "Add `default'? ")
+    ;; default=...
+    (setq v1 (read-string "Default (not quoted): "))
+    (unless (string-empty-p v1)
+      (format ", default=%s" v1)))
+  ") -}}")
+
+(jinja2-define-skeleton prompt-list-function
+  "Insert a call to the global prompt-list function."
+  "Key: "
+  "{{- prompt_list(\""
+  ") -}}")
+
+(defun jinja2-insert-expression ()
+  "Insert a variable expansion."
+  (interactive)
+  (insert "{{  }}")
+  (left-char 3))
+
 ;; Functions
 
 (defun jinja2--get-leading-whitespace ()
@@ -116,15 +180,77 @@
     (when (looking-at "\\([ \t]+\\)")
       (match-string 1))))
 
+(defun jinja2-set-tag-trim (&optional arg)
+  (interactive "P")
+  (cond
+   ((= (char-after) ?{)
+    (right-char 3))
+   ((= (char-before) ?})
+    (left-char 3)))
+  (let* ((ppss (make-ppss-easy (syntax-ppss)))
+	 (pcstr "(choices: +, -, or \" \")") ; prompt choices string
+	 (choices (list ?+ ?- ?\ ))
+	 beg
+	 end
+	 c)
+    ;; (message "%s"
+    ;; 	     (with-output-to-string
+    ;; 	       (print-expr sexp )))
+    (cl-save-point
+      (setq beg (progn (goto-char (syntax-ppss-toplevel-pos ppss))
+		       (point-marker))
+	    end (progn (goto-char beg)
+		       (forward-sexp)
+		       ;; (left-char 3)
+		       (point-marker)))
+      (goto-char beg)
+      (when arg
+	(setq c (read-char-from-minibuffer (s-lex-format
+					    "lstrip_blocks and trim_blocks flags ${pcstr}: ")))
+	(unless (cl-member c choices)
+	  (user-error "Invalid choice %c: must be one of +, -, or \" \"" c)))
+      (when (looking-at "{%[+-]?\\s-*")
+	(unless arg
+	  ;; No prefix arg; accept flag for this
+	  (setq c (read-char-from-minibuffer
+		   (s-lex-format "lstrip_blocks flag ${pcstr}: ")))
+	  (unless (cl-member c choices)
+	    (user-error "Invalid choice %c: must be one of +, -, or \" \"" c)))
+	(cl-case c
+	  ((?+ ?-)
+	   (replace-match (format "{%%%c " c)))
+	  (t
+	   (replace-match "{% "))))
+      (goto-char end)
+      (when (looking-back "\\s-*[+-]?\\([}%]\\)}" beg t)
+	(unless arg
+	  ;; No prefix arg; accept flag for this
+	  (setq c (read-char-from-minibuffer
+		   (s-lex-format "trim_blocks flag ${pcstr}: ")))
+	  (unless (cl-member c choices)
+	    (user-error "Invalid choice %c: must be one of +, -, or \" \"" c)))
+	(cl-case c
+	  ((?+ ?-)
+	   (replace-match (format " %c%%}" c)))
+	  (t
+	   (replace-match " %}")))))))
+
 ;; Keybinds
 
 (defvar jinja2-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd (concat jinja2-command-prefix " i")) #'jinja2-skeleton-if)
-    (define-key map (kbd (concat jinja2-command-prefix " f")) #'jinja2-skeleton-for)
-    (define-key map (kbd (concat jinja2-command-prefix " m")) #'jinja2-skeleton-macro)
+    (define-key map (kbd (concat jinja2-command-prefix " b")) #'jinja2-skeleton-block)
     (define-key map (kbd (concat jinja2-command-prefix " #")) #'jinja2-skeleton-comment)
+    (define-key map (kbd (concat jinja2-command-prefix " f")) #'jinja2-skeleton-for)
+    (define-key map (kbd (concat jinja2-command-prefix " F")) #'jinja2-skeleton-function)
+    (define-key map (kbd (concat jinja2-command-prefix " i")) #'jinja2-skeleton-if)
+    (define-key map (kbd (concat jinja2-command-prefix " m")) #'jinja2-skeleton-macro)
+    (define-key map (kbd (concat jinja2-command-prefix " M-p")) #'jinja2-skeleton-prompt-function)
+    (define-key map (kbd (concat jinja2-command-prefix " M-l")) #'jinja2-skeleton-prompt-list-function)
     (define-key map (kbd (concat jinja2-command-prefix " t")) #'jinja2-skeleton-tag)
+    (define-key map (kbd (concat jinja2-command-prefix " s")) #'jinja2-skeleton-set)
+    (define-key map (kbd (concat jinja2-command-prefix " e")) #'jinja2-insert-expression)
+    (define-key map (kbd (concat jinja2-command-prefix " C-t")) #'jinja2-set-tag-trim)
     map)
   "Mode map for Jinja2.")
 
