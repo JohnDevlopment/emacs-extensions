@@ -119,7 +119,13 @@ Call `count-words-region' and"
       (error "Already called this command")
     (visual-line-mode t)))
 
-(defun kill-and-quit ()
+(defun save-and-kill ()
+  "Save the current buffer and then kill it."
+  (interactive)
+  (save-buffer)
+  (kill-buffer))
+
+(defun kill-and-quit (&optional arg)
   "Kill the current buffer and also delete the current window.
 The equivelent of doing C-x k and C-x 0."
   (interactive)

@@ -188,6 +188,7 @@ is non-nil."
 (global-set-key (kbd "C-x C-b") #'ibuffer)
 (global-set-key (kbd "C-x M-f") #'find-file-at-point)
 (global-set-key (kbd "C-x Q")   #'macro-ext-query)
+(global-set-key (kbd "C-x Z")   #'save-and-kill)
 
 ;; Extension-related commands
 (define-prefix-command 'extension-map)
