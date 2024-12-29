@@ -177,7 +177,7 @@ prompted for MODE."
   (list  (if current-prefix-arg
 	     (text-scratch--complete-mode)
 	   'text-mode))
-  (assert (symbolp mode) (prin1-to-string mode))
+  (cl-assert (symbolp mode) t (prin1-to-string mode))
   (funcall mode)
   (setq header-line-format "Type C-c C-c to exit.")
   (local-set-key (kbd "C-c C-c") (lambda ()
