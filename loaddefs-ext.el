@@ -3,7 +3,7 @@
 ;; Copyright (C) 2024  John
 
 ;; Author: John <john@john-System-Product-Name>
-;; Keywords:
+;; Keywords: 
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -20,14 +20,14 @@
 
 ;;; Commentary:
 
-;;
+;; 
 
 ;;; Code:
 
 ;; (provide 'loaddefs-ext)
 
 ;;; loaddefs-ext.el ends here
-
+
 ;;;### (autoloads nil "bbcode-ext" "bbcode-ext.el" (0 0 0 0))
 ;;; Generated autoloads from bbcode-ext.el
 
@@ -46,14 +46,14 @@ Otherwise, this function does nothing." t nil)
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "bbcode-ext" '("bbcode-")))
 
 ;;;***
-
+
 ;;;### (autoloads nil "buffers-ext" "buffers-ext.el" (0 0 0 0))
 ;;; Generated autoloads from buffers-ext.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "buffers-ext" '("define-scratch-buffer-function" "faces-buffer" "get-buffer-file-name" "git-commit-scratch" "kill-" "narrow-to-region2" "revert-all-buffers" "text-scratch" "tmpbuf" "user-ext-temp-buffers-to-kill" "view-into-buffer")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "buffers-ext" '("clone-indirect-buffer-this-window" "define-scratch-buffer-function" "faces-buffer" "git-commit-scratch" "kill-" "narrow-to-region2" "revert-all-buffers" "text-scratch--complete-mode" "tmpbuf" "user-ext-temp-buffers-to-kill" "view-into-buffer")))
 
 ;;;***
-
+
 ;;;### (autoloads nil "c-ext" "c-ext.el" (0 0 0 0))
 ;;; Generated autoloads from c-ext.el
 
@@ -64,14 +64,14 @@ Otherwise, this function does nothing." t nil)
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "c-ext" '("c-skeleton-define")))
 
 ;;;***
-
+
 ;;;### (autoloads nil "codeium-ext" "codeium-ext.el" (0 0 0 0))
 ;;; Generated autoloads from codeium-ext.el
 
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "codeium-ext" '("lookup-key" "user-ext-")))
 
 ;;;***
-
+
 ;;;### (autoloads nil "comment-tags-ext" "comment-tags-ext.el" (0
 ;;;;;;  0 0 0))
 ;;; Generated autoloads from comment-tags-ext.el
@@ -106,21 +106,21 @@ See `comment-tags-mode' for more information on Comment-Tags mode.
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "comment-tags-ext" '("global-comment-tags-regexp" "user-ext-global-comment-tags-exclude")))
 
 ;;;***
-
+
 ;;;### (autoloads nil "custom-ext" "custom-ext.el" (0 0 0 0))
 ;;; Generated autoloads from custom-ext.el
 
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "custom-ext" '("log-view-")))
 
 ;;;***
-
+
 ;;;### (autoloads nil "dired-ext" "dired-ext.el" (0 0 0 0))
 ;;; Generated autoloads from dired-ext.el
 
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "dired-ext" '("dired-")))
 
 ;;;***
-
+
 ;;;### (autoloads nil "dtext-ext" "dtext-ext.el" (0 0 0 0))
 ;;; Generated autoloads from dtext-ext.el
 
@@ -153,9 +153,17 @@ Extra hook for `dtext-mode'." nil nil)
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "dtext-ext" '("dtext-ext-list-regexp")))
 
 ;;;***
-
+
 ;;;### (autoloads nil "elisp-ext" "elisp-ext.el" (0 0 0 0))
 ;;; Generated autoloads from elisp-ext.el
+
+(autoload 'elisp-ext-minify "elisp-ext" "\
+Minify the code between START and END in current buffer.
+If called interactively, START and END are the region,
+provided the region is active.  But if the region is not
+active, the entire buffer is minified.
+
+\(fn START END)" t nil)
 
 (autoload 'elisp-ext-forward-or-backward-sexp "elisp-ext" "\
 Go to the matching parenthesis to the one is adjacent at point.
@@ -163,34 +171,44 @@ With ARG, do it that many times.  A negative arg -N reverses
 the direction of the motion.
 
 \(fn &optional ARG)" t nil)
+
+(autoload 'elisp-ext-update-loadefs "elisp-ext" "\
+Update autoload definitions of Lisp extensions.
+
+Updates the autoload definitions in the Lisp files in
+`user-ext-extension-directory'.  Binds
+`generated-autoload-file' to the concatenation of
+`user-ext-extension-directory' and \"loaddefs-ext.el\".
+
+\(fn &optional INTERACTIVE-P)" t nil)
  (autoload 'elisp-ext-scratch-buffer "elisp-ext" "Create a scratch buffer for Emacs lisp code." t)
 
 (autoload 'elisp-ext-doc-scratch-buffer "elisp-ext" "\
-Create a scratch buffer for Emacs lisp docstrings." t nil)
+Create a scratch buffer for Emacs Lisp docstrings." t nil)
 
 (autoload 'elisp-ext--extra-hook "elisp-ext" "\
 Hook for the `emacs-lisp-mode' extension." nil nil)
 
 (add-hook 'emacs-lisp-mode-hook #'elisp-ext--extra-hook)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "elisp-ext" '("elisp-ext-" "user-ext-elisp--register")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "elisp-ext" '("elisp-ext-" "user-ext-elisp-")))
 
 ;;;***
-
+
 ;;;### (autoloads nil "extensions" "extensions.el" (0 0 0 0))
 ;;; Generated autoloads from extensions.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "extensions" '("--extension-completion" "find-extension" "load-extension")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "extensions" '("--extension-completion" "find-extension" "load-extension" "user-ext-extension-directory")))
 
 ;;;***
-
+
 ;;;### (autoloads nil "general" "general.el" (0 0 0 0))
 ;;; Generated autoloads from general.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "general" '("--add-mode-comment--" "add-mode-comment" "bind-fill-region" "copy-line" "count-words-region2" "date-format-version" "emacs-lisp-mode-abbrev-table" "enable-wrap" "kill-and-quit" "narrow-to-region2" "pop-saved-position" "print-saved-positions" "save-current-position" "user-ext-local-position-ring")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "general" '("--add-mode-comment--" "add-mode-comment" "bind-fill-region" "copy-line" "count-words-region2" "date-format-version" "emacs-lisp-mode-abbrev-table" "enable-wrap" "kill-and-quit" "narrow-to-region2" "pop-saved-position" "print-saved-positions" "save-" "sort-words" "user-ext-local-position-ring")))
 
 ;;;***
-
+
 ;;;### (autoloads nil "html-ext" "html-ext.el" (0 0 0 0))
 ;;; Generated autoloads from html-ext.el
 
@@ -198,14 +216,29 @@ Hook for the `emacs-lisp-mode' extension." nil nil)
 Modify `html-tag-alist' with our own tags." t nil)
 
 ;;;***
+
+;;;### (autoloads nil "ibuffer-ext" "ibuffer-ext.el" (0 0 0 0))
+;;; Generated autoloads from ibuffer-ext.el
 
+(autoload 'ibuffer-toggle-current-filter-group "ibuffer-ext" "\
+Expand/collapse the filter group of point.
+If point is on a buffer, toggle the group it is in." t nil)
+
+(autoload 'ibuffer--extra-hook "ibuffer-ext" nil nil nil)
+
+(add-hook 'ibuffer-mode-hook #'ibuffer--extra-hook)
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "ibuffer-ext" '("ibuffer--after-operation")))
+
+;;;***
+
 ;;;### (autoloads nil "imenu-ext" "imenu-ext.el" (0 0 0 0))
 ;;; Generated autoloads from imenu-ext.el
 
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "imenu-ext" '("bind-imenu" "imenu--python-hook")))
 
 ;;;***
-
+
 ;;;### (autoloads nil "jinja2" "jinja2.el" (0 0 0 0))
 ;;; Generated autoloads from jinja2.el
 
@@ -224,7 +257,7 @@ ARG is `toggle'; disable the mode otherwise.
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "jinja2" '("jinja2-")))
 
 ;;;***
-
+
 ;;;### (autoloads nil "js-ext" "js-ext.el" (0 0 0 0))
 ;;; Generated autoloads from js-ext.el
 
@@ -237,14 +270,14 @@ ARG is `toggle'; disable the mode otherwise.
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "js-ext" '("user-ext-js-indent-")))
 
 ;;;***
-
+
 ;;;### (autoloads nil "keymaps-ext" "keymaps-ext.el" (0 0 0 0))
 ;;; Generated autoloads from keymaps-ext.el
 
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "keymaps-ext" '("define-contextual-key-func" "lookup-function" "map-revert-buffer" "remap-narrow-to-region")))
 
 ;;;***
-
+
 ;;;### (autoloads nil "liquidsoap-ext" "liquidsoap-ext.el" (0 0 0
 ;;;;;;  0))
 ;;; Generated autoloads from liquidsoap-ext.el
@@ -265,7 +298,7 @@ Extra hook for `liquidsoap-mode'." nil nil)
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "liquidsoap-ext" '("liquid" "user-ext-liquidsoap-ext-")))
 
 ;;;***
-
+
 ;;;### (autoloads nil "log4j-ext" "log4j-ext.el" (0 0 0 0))
 ;;; Generated autoloads from log4j-ext.el
 
@@ -292,14 +325,38 @@ Extra hook for `log4j-mode'." nil nil)
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "log4j-ext" '("user-ext-log4j-filtering")))
 
 ;;;***
-
+
 ;;;### (autoloads nil "lsp-ext" "lsp-ext.el" (0 0 0 0))
 ;;; Generated autoloads from lsp-ext.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "lsp-ext" '("lsp-")))
+(advice-add 'lsp--before-save :after #'lsp-ext--before-save)
+
+(autoload 'lsp-ext--before-save "lsp-ext" "\
+Disable LSP inlays and maybe do other things before saving.
+This is supposed to be called before `lsp--before-save'." nil nil)
+
+(autoload 'kill-lsp-buffers "lsp-ext" "\
+Kill all buffers that have to do with function `lsp-mode'." t nil)
+
+(autoload 'lsp-workspace-folders-remove-list "lsp-ext" "\
+Call `lsp-workspace-folders-remove' one or more times in a loop." t nil)
+
+(autoload 'lsp-workspace-blocklist-add "lsp-ext" "\
+Add PROJECT-ROOT to the workspace blocklist.
+
+\(fn PROJECT-ROOT)" t nil)
+
+(autoload 'lsp-workspace-blocklist-remove-all "lsp-ext" nil t nil)
+
+(autoload 'lsp-workspace-folders-add-temp "lsp-ext" "\
+Temporarily add PROJECT-ROOT to the list of workspace folders.
+
+\(fn PROJECT-ROOT)" t nil)
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "lsp-ext" '("lsp--delete-temp-workspace-folders" "user-ext-lsp-")))
 
 ;;;***
-
+
 ;;;### (autoloads nil "lua-ext" "lua-ext.el" (0 0 0 0))
 ;;; Generated autoloads from lua-ext.el
 
@@ -313,14 +370,14 @@ Inserts a require statement at point. MODNAME is the name of a Lua module.
 (add-hook 'lua-mode-hook #'lua--extra-mode-hook)
 
 ;;;***
-
+
 ;;;### (autoloads nil "macro-ext" "macro-ext.el" (0 0 0 0))
 ;;; Generated autoloads from macro-ext.el
 
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "macro-ext" '("macro-ext-query")))
 
 ;;;***
-
+
 ;;;### (autoloads nil "markdown-ext" "markdown-ext.el" (0 0 0 0))
 ;;; Generated autoloads from markdown-ext.el
  (autoload 'markdown-skeleton-id "markdown-ext" "Insert a link with an id field." t)
@@ -347,14 +404,14 @@ Hook for `markdown-mode' extension." nil nil)
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "markdown-ext" '("markdown-")))
 
 ;;;***
-
+
 ;;;### (autoloads nil "nroff-ext" "nroff-ext.el" (0 0 0 0))
 ;;; Generated autoloads from nroff-ext.el
 
 (add-to-list 'auto-mode-alist '("\\.[13]p\\'" . nroff-mode))
 
 ;;;***
-
+
 ;;;### (autoloads nil "org-ext" "org-ext.el" (0 0 0 0))
 ;;; Generated autoloads from org-ext.el
 
@@ -373,7 +430,7 @@ Extra hook for `org-mode'." nil nil)
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "org-ext" '("org-ext-" "user-ext-browse-url-brave-arguments")))
 
 ;;;***
-
+
 ;;;### (autoloads nil "origami-ext" "origami-ext.el" (0 0 0 0))
 ;;; Generated autoloads from origami-ext.el
 
@@ -382,7 +439,16 @@ Extra hook for `org-mode'." nil nil)
 (add-hook 'origami-mode-hook #'origami--extra-hook)
 
 ;;;***
+
+;;;### (autoloads nil "outline-ext" "outline-ext.el" (0 0 0 0))
+;;; Generated autoloads from outline-ext.el
 
+(autoload 'outline--extra-hook "outline-ext" nil nil nil)
+
+(add-hook 'outline-mode-hook #'outline--extra-hook)
+
+;;;***
+
 ;;;### (autoloads nil "perl-ext" "perl-ext.el" (0 0 0 0))
 ;;; Generated autoloads from perl-ext.el
 
@@ -394,12 +460,14 @@ Extra hook for `org-mode'." nil nil)
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "perl-ext" '("perl-ext-scratch-buffer")))
 
 ;;;***
-
+
 ;;;### (autoloads nil "python-ext" "python-ext.el" (0 0 0 0))
 ;;; Generated autoloads from python-ext.el
  (autoload 'python-ext-scratch "python-ext" "Opens a scratch buffer to let you write Python code." t)
 
 (autoload 'python-ext-kill-pyi-buffers "python-ext" nil t nil)
+
+(autoload 'python-ext-kill-venv-buffers "python-ext" nil t nil)
 
 (autoload 'python-ext-docstring "python-ext" "\
 Open a temporary buffer to write a docstring." t nil)
@@ -412,12 +480,10 @@ Hook for `python-mode' when lsp is enabled." nil nil)
 
 (add-hook 'python-mode-hook #'python--extra-hook)
 
-(add-hook 'lsp-after-open-hook #'python--lsp-hook)
-
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "python-ext" '("python-" "user-ext-python-")))
 
 ;;;***
-
+
 ;;;### (autoloads nil "python-sphinx-ext" "python-sphinx-ext.el"
 ;;;;;;  (0 0 0 0))
 ;;; Generated autoloads from python-sphinx-ext.el
@@ -430,7 +496,7 @@ Hook for `sphinx-doc-mode'." nil nil)
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "python-sphinx-ext" '("sphinx-ext-")))
 
 ;;;***
-
+
 ;;;### (autoloads nil "rst-ext" "rst-ext.el" (0 0 0 0))
 ;;; Generated autoloads from rst-ext.el
 
@@ -440,7 +506,7 @@ Extra hook for `rst-mode'." nil nil)
 (add-hook 'rst-mode-hook #'rst-mode--extra-hook)
 
 ;;;***
-
+
 ;;;### (autoloads nil "rust-ext" "rust-ext.el" (0 0 0 0))
 ;;; Generated autoloads from rust-ext.el
 
@@ -460,7 +526,7 @@ Hook for `rustic-mode' extension." nil nil)
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "rust-ext" '("rust-" "user-ext-rust-")))
 
 ;;;***
-
+
 ;;;### (autoloads nil "sh-ext" "sh-ext.el" (0 0 0 0))
 ;;; Generated autoloads from sh-ext.el
 
@@ -468,17 +534,17 @@ Hook for `rustic-mode' extension." nil nil)
 
 (add-hook 'sh-mode-hook #'sh--extra-hook)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "sh-ext" '("sh-ext-" "user-ext-sh-ext-color-escapes")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "sh-ext" '("sh-" "user-ext-sh-")))
 
 ;;;***
-
+
 ;;;### (autoloads nil "syntax-ext" "syntax-ext.el" (0 0 0 0))
 ;;; Generated autoloads from syntax-ext.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "syntax-ext" '("my/mcpyrate-syntax-highlight-setup")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "syntax-ext" '("make-ppss-easy" "my/mcpyrate-syntax-highlight-setup")))
 
 ;;;***
-
+
 ;;;### (autoloads nil "tcl-ext" "tcl-ext.el" (0 0 0 0))
 ;;; Generated autoloads from tcl-ext.el
 
@@ -490,7 +556,7 @@ Extra hook for `tcl mode'." nil nil)
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "tcl-ext" '("tcl-eval-region2")))
 
 ;;;***
-
+
 ;;;### (autoloads nil "text-ext" "text-ext.el" (0 0 0 0))
 ;;; Generated autoloads from text-ext.el
 
@@ -498,7 +564,7 @@ Extra hook for `tcl mode'." nil nil)
 Highlight every even-numbered line in the current buffer." t nil)
 
 ;;;***
-
+
 ;;;### (autoloads nil "toml-ext" "toml-ext.el" (0 0 0 0))
 ;;; Generated autoloads from toml-ext.el
 
@@ -507,17 +573,17 @@ Extra hook for `toml-mode'." nil nil)
 
 (add-hook 'toml-mode-hook #'toml-mode--extra-hook)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "toml-ext" '("toml-ext-indent")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "toml-ext" '("toml-ext-")))
 
 ;;;***
-
+
 ;;;### (autoloads nil "wrap-mode" "wrap-mode.el" (0 0 0 0))
 ;;; Generated autoloads from wrap-mode.el
 
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "wrap-mode" '("global-visual-line-mode" "user-ext-visual-line-global-modes" "visual-line-mode-turn-on")))
 
 ;;;***
-
+
 ;;;### (autoloads nil "yasnippets-ext" "yasnippets-ext.el" (0 0 0
 ;;;;;;  0))
 ;;; Generated autoloads from yasnippets-ext.el
@@ -525,12 +591,12 @@ Extra hook for `toml-mode'." nil nil)
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "yasnippets-ext" '("yas-ext-")))
 
 ;;;***
-
+
 ;;;### (autoloads nil nil ("faces-ext.el" "liquidsoap-bootstrap.el"
 ;;;;;;  "modes.el") (0 0 0 0))
 
 ;;;***
-
+
 ;;;### (autoloads nil "abbrev-ext" "abbrev-ext.el" (0 0 0 0))
 ;;; Generated autoloads from abbrev-ext.el
 
