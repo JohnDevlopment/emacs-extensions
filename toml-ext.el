@@ -4,10 +4,15 @@
 
 ;;; Code:
 
-(require 'toml-mode)
-(require 'json-mode)
+(eval-when-compile
+  (require 'toml-mode)
+  (require 'json-mode))
+
+(declare-function 'js--proper-indentation "js" (parse-status))
 
 ;;; Code:
+
+;; Functions
 
 (defun toml-ext-indent ()
   "Indent function for `toml-mode'."
@@ -18,6 +23,8 @@
     (unless (nth 3 parse-status)	; unless point is inside a string
       (indent-line-to (js--proper-indentation parse-status))
       (when (> offset 0) (forward-char offset)))))
+
+;; Hooks
 
 ;;;###autoload
 (defun toml-mode--extra-hook ()
