@@ -6,6 +6,8 @@
 
 (require 'debug-ext)
 
+;; Variables
+
 (defconst user-ext-elisp--register ?e
   "Used with `window-configuration-to-register'.")
 
@@ -57,7 +59,7 @@ the direction of the motion."
 	 (backward-char))))
 
 ;;;###autoload
-(defun elisp-ext-update-loadefs (&optional noninteractive)
+(defun elisp-ext-update-loadefs (&optional interactive-p)
   "Update autoload definitions of Lisp extensions.
 
 Updates the autoload definitions in the Lisp files in
@@ -65,7 +67,7 @@ Updates the autoload definitions in the Lisp files in
 `generated-autoload-file' to the concatenation of
 `user-ext-extension-directory' and \"loaddefs-ext.el\"."
   (interactive "p")
-  (unless noninteractive
+  (unless interactive-p
     (error "This must be called interactively"))
   (let ((generated-autoload-file "~/.emacs.d/extensions/loaddefs-ext.el"))
     (update-directory-autoloads "~/.emacs.d/extensions/"))
