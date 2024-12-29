@@ -12,26 +12,22 @@
   (setq lsp-keymap-prefix "C-c c l")
   (define-key lsp-mode-map (kbd "C-c l T i") #'lsp-inlay-hints-mode))
 
-;; Faces
+;; Customizations
 
-;; (defface lsp-flycheck-info-unnecessary
-;;   '((t :inherit lsp-flycheck-info-unnecessary-face))
-;;   "Lsp Flycheck Info Unnecessary Face."
-;;   :group 'user-extensions)
+(defgroup lsp-ext nil
+  "LSP extension."
+  :group 'user-extensions)
 
-;; (defface lsp-flycheck-info-unnecessary-face
-;;   '((t :inherit default :foreground "Gray"
-;;        :underline '(:style 'wave :color "ForestGreen")))
-;;   "Lsp Flycheck Info Unnecessary Face."
-;;   :group 'user-extensions)
+(defcustom user-ext-lsp-buffers-to-kill
+  nil
+  "A list of buffers to kill when `kill-lsp-buffers' is called."
+  :type '(repeat string)
+  :safe 'listp
+  :group 'lsp-ext)
 
-;; (defface lsp-flycheck-info-unnecessary
-;;   '((t :inherit default :foreground "Gray"
-;;        :underline '(:style 'wave :color "ForestGreen")))
-;;   "Lsp Flycheck Info Unnecessary Face."
-;;   :group 'user-extensions)
+;; Variables
 
-(defvar lsp-temporary-workspace-folders nil
+(defvar user-ext-lsp-temporary-workspace-folders nil
   "Folders added with `lsp-workspace-folders-add-temp'.")
 
 ;; Functions
@@ -46,10 +42,10 @@
 (defun lsp--delete-temp-workspace-folders ()
   "Remove temporary folders from the LSP workspace.
 
-Remove the contents of `lsp-temporary-workspace-folders'
+Remove the contents of `user-ext-lsp-temporary-workspace-folders'
 from the workspace list.  Effectively, this removes
 temporary folders from the workspace."
-  (dolist (dir lsp-temporary-workspace-folders)
+  (dolist (dir user-ext-lsp-temporary-workspace-folders)
     (lsp-workspace-folders-remove dir)))
 
 (defun lsp-workspace-folders-remove-list ()
@@ -63,14 +59,14 @@ temporary folders from the workspace."
 	  (call-interactively 'lsp-workspace-folders-remove)
 	(setq flag nil)))))
 
+;;;###autoload
 (defun lsp-workspace-folders-add-temp (project-root)
   "Temporarily add PROJECT-ROOT to the list of workspace folders."
   (interactive
    (list (read-directory-name "Select folder to add: "
 			      (or (lsp--suggest-project-root) default-directory) nil t)))
-  ;; TODO: check that folder is not already in `lsp-temporary-workspace-folders'
   (lsp-workspace-folders-add project-root)
-  (cl-pushnew project-root lsp-temporary-workspace-folders))
+  (cl-pushnew project-root user-ext-lsp-temporary-workspace-folders :test #'string=))
 
 ;; Keymaps
 
