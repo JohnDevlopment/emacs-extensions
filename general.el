@@ -28,7 +28,7 @@ SEPARATORS is a regular expression used to match the
 characters used to separate the words.  START and END denote
 the region of text to sort.
 
-Interactively, START and END are set the region."
+Interactively, START and END are the region."
   (interactive "*sSeparator: \nr")
   (let* ((content (buffer-substring-no-properties start end))
 	 (sep (if (string-match separators content)
@@ -42,8 +42,8 @@ Interactively, START and END are set the region."
 
 (defun print-saved-positions ()
   (interactive)
-  (assert (> (length user-ext-local-position-ring) 0)
-      "The local position ring is empty!")
+  (cl-assert (> (length user-ext-local-position-ring) 0) t
+	     "The local position ring is empty!")
   (let (msg)
     (setq msg
 	  (string-join
@@ -71,8 +71,8 @@ This pops the last-saved position from
 `user-ext-local-position-ring'."
   (interactive)
   (let (pos)
-    (assert (> (length user-ext-local-position-ring) 0)
-	"The local position ring is empty!")
+    (cl-assert (> (length user-ext-local-position-ring) 0) t
+	       "The local position ring is empty!")
     (setq pos (pop user-ext-local-position-ring))
     (goto-char pos)
     (message "Restored to position %s." pos)))
