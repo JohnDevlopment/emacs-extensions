@@ -1,5 +1,7 @@
 ;; -*- lexical-binding: t; -*-
 
+(defconst user-ext-extension-directory "~/.emacs.d/extensions")
+
 (add-to-list 'load-path "~/.emacs.d/extensions")
 (add-to-list 'load-path "~/.emacs.d/extensions/packages")
 
