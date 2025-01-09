@@ -4,7 +4,8 @@
 
 ;;; Code:
 
-(add-to-list 'completion-at-point-functions #'yasnippet-capf)
+(eval-when-compile
+  (require 'yasnippet))
 
 (defun yas-ext-org-very-safe-expand ()
   (let ((yas-fallback-behavior 'return-nil))
@@ -12,7 +13,7 @@
 
 (defun yas-ext-enable-company-completion ()
   (interactive)
-  (add-to-list 'completion-at-point-functions #'yasnippet-capf nil #'eq))
+  (add-to-list 'completion-at-point-functions #'company-yasnippet nil #'eq))
 
 (defun yas-ext-compile-snippet-dir (&optional is-interactive)
   "Call this function to compile a snippet directory.
@@ -32,6 +33,18 @@ was called interactively."
 			       (yas-snippet-dirs)
 			       nil "confirm"))
     (yas-compile-directory dir)))
+(put 'yas-ext-compile-snippet-dir 'interactive-only t)
+
+(defun yas--extra-hook ()
+  "Extra hook for `yasnippet-minor-mode'."
+  (interactive)
+  ;; (add-hook 'completion-at-point-functions #'company-yasnippet nil t)
+  )
+
+(when nil
+  (remove-hook 'completion-at-point-functions #'company-yasnippet t))
+
+(add-hook 'yas-minor-mode-hook #'yas--extra-hook)
 
 (eval-and-compile
   (define-key yas-minor-mode-map (kbd "C-c & c") #'yas-ext-compile-snippet-dir))
