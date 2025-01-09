@@ -10,6 +10,18 @@
 (require 'cl-ext)
 (require 'debug-ext)
 
+(cl-defgeneric seq-union (sequence1 sequence2 &optional testfn)
+  "Return a list of all the elements that appear in either SEQUENCE1 or SEQUENCE2.
+\"Equality\" of elements is defined by the function TESTFN, which
+defaults to `equal'."
+  (let* ((accum (lambda (acc elt)
+                  (if (seq-contains-p acc elt testfn)
+                      acc
+                    (cons elt acc))))
+         (result (seq-reduce accum sequence2
+                          (seq-reduce accum sequence1 '()))))
+    (nreverse result)))
+
 (define-abbrev emacs-lisp-mode-abbrev-table "propline"
   "" (lambda ()
        (interactive)
