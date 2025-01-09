@@ -1,7 +1,7 @@
 ;;; debug-ext.el --- Debug extension                     -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2024  John
-;; Author: John <john@john-System-Product-Name>
+;; Author: John
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
