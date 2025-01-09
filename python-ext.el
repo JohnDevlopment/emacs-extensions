@@ -4,14 +4,17 @@
 
 ;;; Code:
 
-(require 'cl-lib)
+
 (require 'debug-ext)
+(require 'function-ext)
 (require 'python-mode)
 (require 'python)
 (require 'lsp)
 
 (eval-when-compile
-  (require 'dash))
+  (require 'abbrev-ext)
+  (require 'cl-lib)
+  (require 'abbrev-ext))
 
 ;; Variables
 
@@ -68,22 +71,24 @@ This is passed to `window-configuration-to-register'.")
 
 ;; Functions
 
-;; (defmacro python-skeleton-define (name doc &rest skel)
-;;   "Define a `python-mode' skeleton using NAME DOC and SKEL.
-;; The skeleton will be bound to python-skeleton-NAME and will
-;; be added to `python-mode-skeleton-abbrev-table'."
-;;   (declare (indent 2))
-;;   (let* ((name (symbol-name name))
-;;          (function-name (intern (concat "python-skeleton-" name))))
-;;     `(progn
-;;        (define-abbrev python-mode-skeleton-abbrev-table
-;;          ,name "" ',function-name :system t)
-;;        (setq python-skeleton-available
-;;              (cons ',function-name python-skeleton-available))
-;;        (define-skeleton ,function-name
-;;          ,(or doc
-;;               (format "Insert %s statement." name))
-;;          ,@skel))))
+;; (function-ext-replace-function py-hide-base old-py-hide-base (form &optional beg end)
+;;   "Hide visibility of existing form at point.
+;; This function was replaced with a custom function
+;; definition.  The old function definition is in symbol
+;; `old-py-hide-base'."
+;;   (hs-minor-mode 1)
+;;   (save-excursion
+;;     (let* ((form (prin1-to-string form))
+;;            (beg (or beg (or (funcall (intern-soft (concat "py--beginning-of-" form "-p")))
+;;                             (funcall (intern-soft (concat "py-backward-" form))))))
+;;            (end (or end (funcall (intern-soft (concat "py-forward-" form)))))
+;;            (modified (buffer-modified-p))
+;;            (inhibit-read-only t))
+;;       (if (and beg end)
+;;           (progn
+;;             (hs-make-overlay beg end 'code)
+;;             (set-buffer-modified-p modified))
+;;         (error (concat "No " (format "%s" form) " at point"))))))
 
 (defun python-ext--pydoc (what)
   (cl-assert (stringp what) t "what = %s" what)
@@ -122,21 +127,6 @@ This is passed to `window-configuration-to-register'.")
 	    (assert (not (null beg)))
 	    (assert (not (null end)))
 	    (add-text-properties beg end '(face user-ext-python-pydoc-keyword))))))))
-
-;; (defun python-ext-organize-imports (&optional start end)
-;;   "Organize imports in current buffer within START and END.
-;; If the region is enabled, only organize inputs within said
-;; region.
-
-;; Interactively, START and END points of the region.  If
-;; called from elisp, they are optional arguments."
-;;   (interactive "r")
-;;   (if (region-active-p)
-;;       (progn
-;; 	(narrow-to-region2 start end)
-;; 	(lsp-pyright-organize-imports)
-;; 	(widen))
-;;     (lsp-pyright-organize-imports)))
 
 (defun python-ext-finish-variable-type ()
   "Finish the type of the variable at point.
@@ -178,6 +168,7 @@ look for \`inlayHintProvider'."
 		  (insert label)
 		  (cl-return-from found-inlay))))
 	    (message "label: %s, position: %s" label pos)))))))
+;; (put 'python-ext-finish-variable-type 'disabled t)
 
 ;;;###autoload (autoload 'python-ext-scratch "python-ext" "Opens a scratch buffer to let you write Python code." t)
 (define-scratch-buffer-function python-ext-scratch "python" nil
@@ -359,6 +350,27 @@ quotes), and CONTENT is the text between START and END."
 
 ;; Skeletons
 
+(defmacro python-ext-skeleton-define (name doc type &rest skel)
+  "Define a skeleton for the Python extension.
+
+\(fn NAME DOC TYPE BODY...)"
+  (declare (indent 1))
+  (cl-check-type type string-or-null)
+  (cl-check-type doc string-or-null)
+  (let* ((name (symbol-name name))
+         (function-name (intern (concat "python-ext-skeleton-" name))))
+    `(progn
+       (define-skeleton ,function-name
+         ,(or doc (format "Insert %s %s." name (or type "statement")))
+         ,@skel))))
+
+(python-ext-skeleton-define ivar
+  "Insert instance variable assignment."
+  nil
+  "Name: "
+  "self." str ": " (read-string "Type: ") | -2
+  " = " _)
+
 ;; Key bindings
 
 (define-prefix-command 'python-ext-command-prefix)
@@ -394,7 +406,7 @@ quotes), and CONTENT is the text between START and END."
 (define-key python-ext-hide-show-command (kbd "e") #'py-hide-else-block)
 (define-key python-ext-hide-show-command (kbd "f") #'py-hide-for-block)
 (define-key python-ext-hide-show-command (kbd "i") #'py-hide-if-block)
-(define-key python-ext-hide-show-command (kbd "s") #'py-hide-show)
+(define-key python-ext-hide-show-command (kbd "s") #'py-show)
 (define-key python-ext-hide-show-command (kbd "x") #'py-hide-expression)
 
 ;; company-capf
@@ -421,20 +433,19 @@ quotes), and CONTENT is the text between START and END."
 	      '((< '(backward-delete-char-untabify (min python-indent-offset
                                                  (current-column))))
 		(^ '(- (1+ (current-indentation))))))
-  (origami-mode -1)
   (outline-minor-mode -1)
-  (add-hook 'lsp-after-open-hook #'python--lsp-hook nil t))
+  (add-hook 'lsp-after-open-hook #'python--after-save-hook nil t))
 
 ;;;###autoload
-(defun python--lsp-hook ()
+(defun python--after-save-hook ()
   "Hook for `python-mode' when lsp is enabled."
-  (when (eq major-mode 'python-mode)
-    (setq completion-at-point-functions
-	  (delq #'py-fast-complete completion-at-point-functions))
-    (remove-hook 'completion-at-point-functions #'py-fast-complete t)))
+  (lsp-inlay-hints-mode -1))
 
 ;;;###autoload
 (add-hook 'python-mode-hook #'python--extra-hook)
+
+;;;###autoload
+(add-hook 'after-save-hook #'python--after-save-hook)
 
 (provide 'python-ext)
 
