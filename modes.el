@@ -4,7 +4,7 @@
 (load-extension "dired-ext" t)
 
 ;; Minor modes
-(load-extension "yasnippets-ext")
+;; (load-extension "yasnippets-ext")
 
 ;; Liquidsoap
-(load-extension "liquidsoap-bootstrap" t)
+;; (load-extension "liquidsoap-bootstrap" t)
