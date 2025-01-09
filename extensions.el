@@ -1,5 +1,10 @@
 ;; -*- lexical-binding: t; -*-
 
+(eval-when-compile
+  (require 'package))
+
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+
 (defconst user-ext-extension-directory "~/.emacs.d/extensions")
 
 (add-to-list 'load-path "~/.emacs.d/extensions")
@@ -50,13 +55,13 @@ Optional args NOERROR and NOMESSAGE are forwarded to `load'."
       (switch-to-buffer (find-file-noselect
 			 (concat "~/.emacs.d/extensions/" extension ".el")))))
 
-(desktop+-default-bindings)
+;; (desktop+-default-bindings)
 
 ;; Autoloads
-(load-extension "loaddefs-ext")
+(load-extension "loaddefs-ext" t)
 
-(load-extension "abbrev-ext")
-(load-extension "codeium-ext")
+;; (load-extension "abbrev-ext")
+;; (load-extension "codeium-ext")
 (load-extension "custom-ext")
 
 (load-extension "general")
@@ -66,7 +71,7 @@ Optional args NOERROR and NOMESSAGE are forwarded to `load'."
 (load-extension "lsp-ext")
 (load-extension "buffers-ext")
 (load-extension "imenu-ext")
-(load-extension "syntax-ext")
+;; (load-extension "syntax-ext")
 
 ;; mode extensions
 (load-extension "modes")
