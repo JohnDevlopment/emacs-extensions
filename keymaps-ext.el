@@ -5,11 +5,11 @@
 ;;; Code:
 
 (require 'move-text)
-(require 'desktop+)
+;; (require 'desktop+)
 (require 'ido)
 
 (move-text-default-bindings)
-(desktop+-default-bindings)
+;; (desktop+-default-bindings)
 
 (defmacro define-contextual-key-func (key &rest args)
   "Define a function that enables one of the modes listed in ARGS.
@@ -156,8 +156,6 @@ is non-nil."
 (define-key quick-mode-map (kbd "g") #'contextual-key-g)
 (define-key quick-mode-map (kbd "h") #'contextual-key-h)
 (define-key quick-mode-map (kbd "l") #'lsp-mode)
-(define-key quick-mode-map (kbd "o") #'origami-mode)
-;; (define-key quick-mode-map (kbd "p") #'p-mode)
 (define-key quick-mode-map (kbd "s") #'contextual-key-s)
 (define-key quick-mode-map (kbd "v") #'view-mode)
 (define-key quick-mode-map (kbd "w") #'enable-wrap)
@@ -170,7 +168,7 @@ is non-nil."
 (define-key command-map (kbd "M-%") #'nonincremental-re-search-backward)
 (define-key command-map (kbd "M-s") #'nonincremental-search-backward)
 (define-key command-map (kbd "c")   #'comment-region)
-(define-key command-map (kbd "d")   #'copy-text-down)
+;; (define-key command-map (kbd "d")   #'copy-text-down)
 (define-key command-map (kbd "p")   #'elisp-ext-forward-or-backward-sexp)
 (define-key command-map (kbd "s")   #'nonincremental-search-forward)
 (define-key command-map (kbd "'")   #'save-current-position)
@@ -185,7 +183,6 @@ is non-nil."
 (global-set-key (kbd "C-c M-q") #'kill-and-quit)
 (global-set-key (kbd "C-n")     #'nonincremental-repeat-search-forward)
 (global-set-key (kbd "M-=")     #'count-words-region2)
-;; (global-set-key (kbd "C-x C-b") #'list-buffers-ex)
 (global-set-key (kbd "C-x C-b") #'ibuffer)
 (global-set-key (kbd "C-x M-f") #'find-file-at-point)
 (global-set-key (kbd "C-x Q")   #'macro-ext-query)
