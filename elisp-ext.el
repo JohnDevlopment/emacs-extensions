@@ -4,7 +4,7 @@
 
 ;;; Code:
 
-(require 'debug-ext)
+;; (require 'debug-ext)
 
 ;; Variables
 
