@@ -5,12 +5,11 @@
 ;;; Code:
 
 (require 'lsp-mode)
-(require 'lsp-origami)
 (require 'lsp-pyright)
 
 (with-eval-after-load 'lsp-mode
-  (setq lsp-keymap-prefix "C-c c l")
-  (define-key lsp-mode-map (kbd "C-c l T i") #'lsp-inlay-hints-mode))
+  (require 's)
+  (define-key lsp-mode-map (kbd (s-lex-format "${lsp-keymap-prefix} T i")) #'lsp-inlay-hints-mode))
 
 ;; Customizations
 
@@ -90,8 +89,6 @@ temporary folders from the workspace."
 
 ;; Exit hook
 (add-hook 'kill-emacs-hook #'lsp--delete-temp-workspace-folders)
-
-;; (add-hook 'lsp-after-open-hook #'lsp-origami-try-enable)
 
 (provide 'lsp-ext)
 
