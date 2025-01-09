@@ -2,7 +2,7 @@
 
 ;; Copyright (C) 2024  John
 
-;; Author: John <john@john-System-Product-Name>
+;; Author: John
 ;; Keywords: 
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -72,9 +72,9 @@ Otherwise, this function does nothing." t nil)
 
 ;;;***
 
-;;;### (autoloads nil "comment-tags-ext" "comment-tags-ext.el" (0
-;;;;;;  0 0 0))
-;;; Generated autoloads from comment-tags-ext.el
+;;;### (autoloads nil "comment-tags-ext" "comment-tags-ext.el.gz"
+;;;;;;  (0 0 0 0))
+;;; Generated autoloads from comment-tags-ext.el.gz
 
 (autoload 'comment-tags-mode-turn-on "comment-tags-ext" "\
 Turn on `comment-tags-mode' if the buffer has TODO-ish comments." t nil)
@@ -114,43 +114,17 @@ See `comment-tags-mode' for more information on Comment-Tags mode.
 
 ;;;***
 
+;;;### (autoloads nil "debug-ext" "debug-ext.el" (0 0 0 0))
+;;; Generated autoloads from debug-ext.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "debug-ext" '("assert" "debug-ext-get-function-body" "print-expr")))
+
+;;;***
+
 ;;;### (autoloads nil "dired-ext" "dired-ext.el" (0 0 0 0))
 ;;; Generated autoloads from dired-ext.el
 
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "dired-ext" '("dired-")))
-
-;;;***
-
-;;;### (autoloads nil "dtext-ext" "dtext-ext.el" (0 0 0 0))
-;;; Generated autoloads from dtext-ext.el
-
-(autoload 'dtext-ext-shift-return "dtext-ext" "\
-Handle S-<return>.
-If point is inside a list, then start a new item." t nil)
-
-(autoload 'dtext-ext-insert-ext-link "dtext-ext" "\
-Insert a link to URL at point with TEXT.
-
-If the arguments SITENAME and SEP are provided, the link
-will say something like \"TEXT SEP SITENAME\".  Without, the
-link will just have text.  If SEP is not provided, it
-defaults to \"-\".
-
-Interactively, prompts the user for URL, TEXT, and SITENAME.
-
-\(fn URL TEXT &optional SITENAME SEP)" t nil)
-
-(autoload 'dtext-ext-insert-ext-danbooru-link "dtext-ext" "\
-Insert a link pointing to URL with TEXT.
-This simply calls `dtext-ext-insert-ext-link' with
-\"Danbooru\" as SITENAME and \"on\" as SEP.
-
-\(fn URL TEXT)" t nil)
-
-(autoload 'dtext--ext-hook "dtext-ext" "\
-Extra hook for `dtext-mode'." nil nil)
-
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "dtext-ext" '("dtext-ext-list-regexp")))
 
 ;;;***
 
@@ -191,7 +165,7 @@ Hook for the `emacs-lisp-mode' extension." nil nil)
 
 (add-hook 'emacs-lisp-mode-hook #'elisp-ext--extra-hook)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "elisp-ext" '("elisp-ext-" "user-ext-elisp-")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "elisp-ext" '("elisp-ext-" "user-ext-elisp--register")))
 
 ;;;***
 
@@ -329,17 +303,8 @@ Extra hook for `log4j-mode'." nil nil)
 ;;;### (autoloads nil "lsp-ext" "lsp-ext.el" (0 0 0 0))
 ;;; Generated autoloads from lsp-ext.el
 
-(advice-add 'lsp--before-save :after #'lsp-ext--before-save)
-
-(autoload 'lsp-ext--before-save "lsp-ext" "\
-Disable LSP inlays and maybe do other things before saving.
-This is supposed to be called before `lsp--before-save'." nil nil)
-
 (autoload 'kill-lsp-buffers "lsp-ext" "\
 Kill all buffers that have to do with function `lsp-mode'." t nil)
-
-(autoload 'lsp-workspace-folders-remove-list "lsp-ext" "\
-Call `lsp-workspace-folders-remove' one or more times in a loop." t nil)
 
 (autoload 'lsp-workspace-blocklist-add "lsp-ext" "\
 Add PROJECT-ROOT to the workspace blocklist.
@@ -353,7 +318,7 @@ Temporarily add PROJECT-ROOT to the list of workspace folders.
 
 \(fn PROJECT-ROOT)" t nil)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "lsp-ext" '("lsp--delete-temp-workspace-folders" "user-ext-lsp-")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "lsp-ext" '("lsp-" "user-ext-lsp-")))
 
 ;;;***
 
@@ -405,6 +370,13 @@ Hook for `markdown-mode' extension." nil nil)
 
 ;;;***
 
+;;;### (autoloads nil "menu-ext" "menu-ext.el" (0 0 0 0))
+;;; Generated autoloads from menu-ext.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "menu-ext" '("define-menu")))
+
+;;;***
+
 ;;;### (autoloads nil "nroff-ext" "nroff-ext.el" (0 0 0 0))
 ;;; Generated autoloads from nroff-ext.el
 
@@ -449,6 +421,13 @@ Extra hook for `org-mode'." nil nil)
 
 ;;;***
 
+;;;### (autoloads nil "p-mode" "p-mode.el" (0 0 0 0))
+;;; Generated autoloads from p-mode.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "p-mode" '("electric-pair-mode-turn-on" "global-electric-pair-mode" "user-ext-electric-pair-global-modes")))
+
+;;;***
+
 ;;;### (autoloads nil "perl-ext" "perl-ext.el" (0 0 0 0))
 ;;; Generated autoloads from perl-ext.el
 
@@ -475,10 +454,12 @@ Open a temporary buffer to write a docstring." t nil)
 (autoload 'python--extra-hook "python-ext" "\
 Hook for `python-mode' for this extension." nil nil)
 
-(autoload 'python--lsp-hook "python-ext" "\
+(autoload 'python--after-save-hook "python-ext" "\
 Hook for `python-mode' when lsp is enabled." nil nil)
 
 (add-hook 'python-mode-hook #'python--extra-hook)
+
+(add-hook 'after-save-hook #'python--after-save-hook)
 
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "python-ext" '("python-" "user-ext-python-")))
 
@@ -524,6 +505,14 @@ Hook for `rustic-mode' extension." nil nil)
 (add-hook 'rust-mode-hook #'rust--custom-hook)
 
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "rust-ext" '("rust-" "user-ext-rust-")))
+
+;;;***
+
+;;;### (autoloads nil "server-view-ext" "server-view-ext.el" (0 0
+;;;;;;  0 0))
+;;; Generated autoloads from server-view-ext.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "server-view-ext" '("server-ext-")))
 
 ;;;***
 
@@ -573,7 +562,7 @@ Extra hook for `toml-mode'." nil nil)
 
 (add-hook 'toml-mode-hook #'toml-mode--extra-hook)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "toml-ext" '("toml-ext-")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "toml-ext" '("toml-ext-indent")))
 
 ;;;***
 
@@ -588,7 +577,7 @@ Extra hook for `toml-mode'." nil nil)
 ;;;;;;  0))
 ;;; Generated autoloads from yasnippets-ext.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "yasnippets-ext" '("yas-ext-")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "yasnippets-ext" '("yas-")))
 
 ;;;***
 
