@@ -5,8 +5,8 @@
 ;;; Code:
 
 (eval-when-compile
-  (require 'toml-mode)
-  (require 'json-mode))
+  (require 'toml)
+  (require 'json))
 
 (declare-function 'js--proper-indentation "js" (parse-status))
 
