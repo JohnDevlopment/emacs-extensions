@@ -11,6 +11,13 @@
 (defconst user-ext-elisp--register ?e
   "Used with `window-configuration-to-register'.")
 
+(defconst user-ext-elisp-defun-regexp
+  (rx ?\( (or "defun" "defmacro") (+ (syntax whitespace))
+      (group (+ (or (syntax word) (syntax symbol)))))
+  "Regular expression for function-like definitions (e.g. defun).
+Group 1 matches the name of the definition (usually the
+first argument).")
+
 ;; Functions
 
 ;;;###autoload
