@@ -70,6 +70,9 @@
 
 ;; Skeletons
 
+(defun jinja2--around-skeleton ()
+  )
+
 (defmacro jinja2-define-auxiliary-skeleton (name &optional doc &rest skel)
   (declare (indent 1) (doc-string 2))
   (cl-assert (symbolp name))
@@ -84,7 +87,7 @@
 	 ,@skel))))
 
 (defmacro jinja2-define-skeleton (name doc &rest skel)
-  (declare (indent 1) (doc-string 2))
+  (declare (debug (sexp form body)) (indent 1) (doc-string 2))
   (cl-assert (symbolp name))
   (let* ((function-name (intern (format "jinja2-skeleton-%S" name))))
     `(progn
@@ -110,6 +113,7 @@
   "Variable: "
   "{% for " str " in " (setq v1 (read-string "Iterable: ")) " %}"
   \n _ \n "{% endfor %}")
+
 
 (jinja2-define-skeleton macro
   "Insert a macro definition."
@@ -184,6 +188,7 @@
       (format ", default=%s" v1)))
   ") -}}")
 
+;; TODO: This function is incomplete
 (jinja2-define-skeleton prompt-list-function
   "Insert a call to the global prompt-list function."
   "Key: "
@@ -217,7 +222,7 @@ The following keywords are recognized:
             created function
 :end-tag    If VALUE is provided, it specifies the ending
             tag (e.g., \"endblock\")
-:int-spec   VALUE is the argument to `interactive' 
+:int-spec   VALUE is the argument to `interactive'
 :tag        VALUE is the name of the tag.  If it is not
             provided, NAME is used
 :tag-args   ...
@@ -321,33 +326,71 @@ compare with the \\=`category' property of each overlay."
 	  (and cat (eq cat category)))
    return ov))
 
+(defun jinja2--all-overlays (category)
+  "Get all overlays in the buffer."
+  (setq category (jinja2--create-or-load-category category))
+  (cl-destructuring-bind (beg end) (jinja2--get-visible-bounds)
+    (cl-loop
+     named find
+     with cat = nil
+     for ov in (overlays-in beg end)
+     collect (progn
+	       (setq cat (overlay-get ov 'category))
+	       (when (and cat (eq cat category))
+		 ov)))))
 
-
-
-
-(defun jinja2--handle-change-deletion (pos length)
+(defun jinja2--handle-change-deletion (pos _length)
   "Handle deletion changes."
   (let ((tag-position (jinja2-inside-tag-p pos))
-	tag-match
-	ov
-	beg end)
-    (when tag-position
-      (unless (jinja2-overlay-at "tag" pos)
-	;; Create overlay at TAG-POSITION
-	(setq tag-match (jinja2--find-next-tag (point-max) pos))
-	(print-expr var tag-match)
-	(cl-assert tag-match t "No tag at %d" pos)
-	)
-      )))
+	(ov (jinja2-overlay-at "tag" pos))
+	(cat (jinja2--create-or-load-category "tag"))
+	tag-match)
+    (cond
+     ((and tag-position (not ov))
+      ;; Deleting the character(s) resulted in a tag
+      ;; Create overlay at TAG-POSITION
+      (setq tag-match (jinja2--find-next-tag (point-max) tag-position))
+      (cl-assert (tag-match-p tag-match) t)
+      (setq ov (make-overlay (tag-match-start tag-match)
+			     (tag-match-end tag-match)))
+      (overlay-put ov 'category cat))
+     ((and (not tag-position) ov)
+      ;; Tag is no longer valid; remove the overlay
+      (delete-overlay ov))
+     ((and tag-position ov)
+      ;; Inside a tag but an overlay already exists
+      t))))
+
+(defun jinja2--handle-change-insertion (start end length)
+  "Handle insertion changes."
+  (if (= length 1)
+      (let* ((pos start)
+	     (tag-position (jinja2-inside-tag-p pos))
+	     (ov (jinja2-overlay-at "tag" pos))
+	     (cat (jinja2--create-or-load-category "tag"))
+	     tag)
+	(print-expr sexp (list tag-position ov))
+	(cond
+	 ((and tag-position (not ov))
+	  ;; Created a tag during insertion
+	  ;; Create an overlay surrounding tag
+	  (setq tag (jinja2--find-next-tag (point-max) tag-position))
+	  (cl-assert (tag-match-p tag) t)
+	  (setq ov (make-overlay (tag-match-start tag) (tag-match-end tag)))
+	  (overlay-put ov 'category cat))
+	 ((and tag-position ov)
+	  ;; Inside a tag but an overlay already exists
+	  t)
+	 ((not tag-position)
+	  ;; Not inside of a tag
+	  (when ov
+	    (delete-overlay ov)))
+	 (t (message "No conditions met."))))
+    (print-expr sexp (list start end length))))
 
 (when nil
-  (cl-prettyprint (symbol-function 'jinja2--handle-change-deletion)))
-
-
-
-
-
-
+  (cl-prettyprint (symbol-function 'jinja2--handle-change-deletion))
+  (cl-prettyprint (symbol-function 'jinja2--handle-change-insertion)))
 
 (defun jinja2--set-face-on-change (start end length)
   "Called when the buffer is changed."
@@ -360,7 +403,7 @@ compare with the \\=`category' property of each overlay."
 	(jinja2--handle-change-deletion start length))
        ((= length 0)
 	;; Insertion
-	"...")
+	(jinja2--handle-change-insertion start end (- end start)))
        (t
 	;; Text is rearranged; no insertions or deletions
 	;; Actually, this only when characters are replaced
@@ -407,10 +450,11 @@ beginning and end of buffer respectively."
     (with-silent-modifications
       (jinja2-clear-tags beg end)
       (dolist (tag tags)
-	(setq ovbeg (tag-match-start tag)
-	      ovend (tag-match-end tag)
-	      ov (make-overlay ovbeg ovend))
-	(overlay-put ov 'category cat)))))
+	(when (tag-match-p tag)
+	  (setq ovbeg (tag-match-start tag)
+		ovend (tag-match-end tag)
+		ov (make-overlay ovbeg ovend))
+	  (overlay-put ov 'category cat))))))
 
 ;; (jinja2-mark-tags)
 
