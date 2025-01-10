@@ -30,7 +30,18 @@
 (defvar user-ext-lsp-temporary-workspace-folders nil
   "Folders added with `lsp-workspace-folders-add-temp'.")
 
+;; Advice
+
+;;;###autoload
+(advice-add 'lsp--before-save :after #'lsp-ext--before-save)
+
 ;; Functions
+
+;;;###autoload
+(defun lsp-ext--before-save ()
+  "Disable LSP inlays and maybe do other things before saving.
+This is supposed to be called before `lsp--before-save'."
+  (lsp-inlay-hints-mode -1))
 
 ;;;###autoload
 (defun kill-lsp-buffers ()
