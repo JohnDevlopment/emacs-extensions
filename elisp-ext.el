@@ -113,12 +113,15 @@ If REVERSE is non-nil, search backwards."
       (search-forward "\"")
       (point))))
 
+(defsubst elisp-ext-enable-hs-minor-mode ()
+  (unless (and (boundp 'hs-minor-mode) hs-minor-mode)
+    (hs-minor-mode 1)))
+
 (defun elisp-ext-hide-all ()
   "Hide all toplevel forms in buffer.
 Automatically activates `hs-minor-mode' when called."
   (interactive)
-  (unless hs-minor-mode
-    (hs-minor-mode 1))
+  (elisp-ext-enable-hs-minor-mode)
   (hs-hide-all))
 
 (defun elisp-ext-show ()
@@ -126,9 +129,17 @@ Automatically activates `hs-minor-mode' when called."
   (interactive)
   (when (= (char-before) ?\))
     (left-char))
-  (when (not hs-minor-mode)
-    (hs-minor-mode 1))
+  (elisp-ext-enable-hs-minor-mode)
   (hs-show-block))
+
+(defun elisp-ext-show-only ()
+  "Hide every block except for the one containing point."
+  (interactive)
+  (when (= (char-before) ?\))
+    (left-char))
+  (cl-save-point
+    (elisp-ext-hide-all)
+    (elisp-ext-show)))
 
 (defun elisp-ext-hide-toplevel-form ()
   "Hide the function containing point.
@@ -145,8 +156,7 @@ Automatically activates `hs-minor-mode' when called."
 	(setq p tl)))
     (when p
       (goto-char p)
-      (when (not hs-minor-mode)
-	(hs-minor-mode 1))
+      (elisp-ext-enable-hs-minor-mode)
       (hs-hide-block))))
 
 ;; Elisp doc minor mode
@@ -205,6 +215,7 @@ Automatically activates `hs-minor-mode' when called."
 (define-key emacs-lisp-mode-map (kbd "C-c f") #'user-ext-elisp-fold-map)
 (define-key user-ext-elisp-fold-map (kbd "t") #'elisp-ext-hide-toplevel-form)
 (define-key user-ext-elisp-fold-map (kbd "s") #'elisp-ext-show)
+(define-key user-ext-elisp-fold-map (kbd "C-o") #'elisp-ext-show-only)
 (define-key user-ext-elisp-fold-map (kbd "C-a") #'elisp-ext-hide-all)
 
 (define-key emacs-lisp-mode-map (kbd "C-c C-j") #'imenu)
