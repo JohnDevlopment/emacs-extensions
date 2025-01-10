@@ -61,6 +61,7 @@ temporary folders from the workspace."
   (dolist (dir user-ext-lsp-temporary-workspace-folders)
     (lsp-workspace-folders-remove dir)))
 
+;;;###autoload
 (defun lsp-workspace-folders-remove-list ()
   "Call `lsp-workspace-folders-remove' one or more times in a loop."
   (interactive)
