@@ -24,9 +24,18 @@
 
 ;;; Code:
 
-(require 'cl-lib)
+(eval-when-compile
+  (require 'cl-lib)
+  (require 's))
+
 (require 'cl-ext)
 (require 'debug-ext)
+
+(cl-defstruct tag-match
+  "A match for a tag."
+  (start nil :type integer-or-marker-p)
+  (end nil :type integer-or-marker-p)
+  (string nil :type stringp))
 
 ;; Customize
 
@@ -44,11 +53,26 @@
   :type 'string
   :group 'jinja2)
 
+(defface jinja2-tag
+  '((default (:inherit default :background "honeydew"))
+    (((background light)) (:background "honeydew"))
+    (((background dark)) (:background "lemon chiffon")))
+  "Face for tags in Jinja2 mode."
+  :group 'jinja2)
+
+;; Variables
+
+(defconst jinja2-tag-regex
+  (rx ?{ (any "{%") (? (any ?- ?+))
+      (+? nonl)
+      (? (any ?- ?+)) (any "%}") ?})
+  "Regular expression for tags.")
+
 ;; Skeletons
 
 (defmacro jinja2-define-auxiliary-skeleton (name &optional doc &rest skel)
   (declare (indent 1) (doc-string 2))
-  (assert (symbolp name))
+  (cl-assert (symbolp name))
   (let* ((function-name (intern (format "jinja2--skeleton-%S" name)))
 	 (msg (format "Insert %s clause? " name)))
     `(progn
@@ -61,7 +85,7 @@
 
 (defmacro jinja2-define-skeleton (name doc &rest skel)
   (declare (indent 1) (doc-string 2))
-  (assert (symbolp name))
+  (cl-assert (symbolp name))
   (let* ((function-name (intern (format "jinja2-skeleton-%S" name))))
     `(progn
        (define-skeleton ,function-name
@@ -101,7 +125,7 @@
 (jinja2-define-skeleton comment
   "Insert a comment."
   nil
-  "{# " _ \n "#}")
+  "{# " (when arg "\n") _ (if arg "\n" ?\ ) "#}")
 
 (jinja2-define-skeleton tag
   "Insert a tag."
@@ -174,11 +198,221 @@
 
 ;; Functions
 
+(when nil
+  (cl-defmacro jinja2-define-insert-tag-function
+      (name &key (doc (format "Insert a %s tag." name))
+	    (arglist (&optional arg))
+	    end-tag
+	    (int-spec "P")
+	    (tag (symbol-name name))
+	    (tag-args nil))
+    "Define a function to insert a tag.
+NAME will be used for both the function name and the tag.
+The rest of the arguments are keywords of the form
+   [KEYWORD VALUE ...]
+
+The following keywords are recognized:
+:arglist    VALUE is the ARGLIST argument for `defun'
+:doc        VALUE is the documentation string of the
+            created function
+:end-tag    If VALUE is provided, it specifies the ending
+            tag (e.g., \"endblock\")
+:int-spec   VALUE is the argument to `interactive' 
+:tag        VALUE is the name of the tag.  If it is not
+            provided, NAME is used
+:tag-args   ...
+
+\(fn NAME &key :arglist :doc :end-tag :int-spec :tag :tag-args)"
+    (declare (indent 1))
+    (cl-check-type name symbol)
+    (cl-check-type doc string)
+    (cl-check-type end-tag (or string null))
+    (when arglist
+      (cl-check-type arglist list))
+    (let* ((fname (intern (concat "jinja2-insert-tag-" (symbol-name name))))
+	   (body (list (if int-spec
+			   `(interactive ,int-spec)
+			 '(interactive)))))
+      (if tag-args
+	  (progn
+	    (setq tag (s-lex-format "{% ${tag} %}"))
+	    (setq body (append body `((insert ,tag)))))
+	nil)
+      `(progn
+	 (defun ,fname ,arglist
+	   ,doc
+	   ,@body))))
+
+  (cl-prettyexpand '(jinja2-define-insert-tag-function block
+		      :arglist (name &optional arg)
+		      :int-spec "sName: \nP"
+		      :tag-args "${name}"
+		      :end-tag "endblock ${name}")))
+
 (defun jinja2--get-leading-whitespace ()
   (cl-save-point
     (beginning-of-line)
     (when (looking-at "\\([ \t]+\\)")
       (match-string 1))))
+
+(defun jinja2--find-next-tag (limit &optional start)
+  (let (match)
+    (cl-save-point
+      (when start
+	(cl-check-type start integer-or-marker)
+	(goto-char start))
+      (setq match (re-search-forward jinja2-tag-regex limit t))
+      (when match
+	(make-tag-match :start (match-beginning 0)
+			:end (match-end 0)
+			:string (match-string-no-properties 0))))))
+
+(defun jinja2--find-tags (start end)
+  (let (match matches)
+    (save-excursion
+      (goto-char start)
+      (setq matches
+	    (cl-loop
+	     named find
+	     until (>= (point) end)
+	     collect (progn
+		       (setq match (jinja2--find-next-tag end (point)))
+		       (if match
+			   (goto-char (tag-match-end match))
+			 (goto-char end))
+		       match))))
+    matches))
+
+(defsubst jinja2--get-visible-bounds ()
+  (list (max (window-start) (point-min))
+	(min (window-end) (point-max))))
+
+(defun jinja2-inside-tag-p (&optional pos)
+  "If POS is inside a tag, returns tag beginning, else nil.
+If POS is not provided, it defaults to point."
+  (cl-check-type pos (or integer null))
+  (cl-save-point
+    (if pos
+	(goto-char pos)
+      (setq pos (point)))
+    (let* ((ppss (make-ppss-easy (syntax-ppss)))
+	   (tl (syntax-ppss-toplevel-pos ppss)))
+      (when tl
+	(goto-char tl)
+	(when (looking-at jinja2-tag-regex)
+	  (match-beginning 0))))))
+
+(defun jinja2-overlay-at (category &optional pos)
+  "Return the overlay at POS with the given CATEGORY.
+Checks all overlays at POS and returns the first match with
+its category property set to CATEGORY.
+
+CATEGORY is a string which gets passed to
+`jinja2--create-or-load-category'.  Its value is used to
+compare with the \\=`category' property of each overlay."
+  (cl-check-type category string)
+  (setq category (jinja2--create-or-load-category category))
+  (cl-loop
+   named find
+   with cat = nil
+   for ov in (overlays-at (or pos (point)) t)
+   when (progn
+	  (setq cat (overlay-get ov 'category))
+	  (and cat (eq cat category)))
+   return ov))
+
+
+
+
+
+(defun jinja2--handle-change-deletion (pos length)
+  "Handle deletion changes."
+  (let ((tag-position (jinja2-inside-tag-p pos))
+	tag-match
+	ov
+	beg end)
+    (when tag-position
+      (unless (jinja2-overlay-at "tag" pos)
+	;; Create overlay at TAG-POSITION
+	(setq tag-match (jinja2--find-next-tag (point-max) pos))
+	(print-expr var tag-match)
+	(cl-assert tag-match t "No tag at %d" pos)
+	)
+      )))
+
+(when nil
+  (cl-prettyprint (symbol-function 'jinja2--handle-change-deletion)))
+
+
+
+
+
+
+
+(defun jinja2--set-face-on-change (start end length)
+  "Called when the buffer is changed."
+  (save-excursion
+    (save-match-data
+      (cond
+       ((and (= start end) (> length 0))
+	;; Deletion; start and end are the same
+	;; length = number of characters deleted
+	(jinja2--handle-change-deletion start length))
+       ((= length 0)
+	;; Insertion
+	"...")
+       (t
+	;; Text is rearranged; no insertions or deletions
+	;; Actually, this only when characters are replaced
+	;; (e.g., via `overwrite-mode')
+	"...")))))
+
+(defun jinja2--create-or-load-category (name)
+  "Create or load category NAME.
+Returns a symbol `category-jinja-NAME'.  NAME can be either
+\"tag\" or \"expression\"."
+  (let* ((valid-names '("tag" "expression"))
+	 (sn (s-lex-format "category-jinja-${name}"))
+	 (symbol (intern-soft sn)))
+    (unless (cl-member name valid-names :test #'string=)
+      (error "Invalid name '%s': can be one of %s" name (string-join valid-names ", ")))
+    (if symbol
+	symbol
+      (setq symbol (intern sn))
+      (if (string= name "tag")
+	  (progn
+	    (cl-assert (null (symbol-plist symbol)))
+	    (setplist symbol '(evaporate t face jinja2-tag))
+	    symbol)
+	(error (s-lex-format "Category ${name} should not be used"))))))
+
+(defun jinja2-clear-tags (&optional beg end)
+  "Delete all tag overlays between BEG and END.
+If they are not provided, BEG and END default to the
+beginning and end of buffer respectively."
+  (let* ((beg (or beg (point-min)))
+	 (end (or end (point-max)))
+	 (cat (jinja2--create-or-load-category "tag")))
+    (dolist (ov (overlays-in beg end))
+      (when (eq (overlay-get ov 'category) cat)
+	(delete-overlay ov)))))
+
+(defun jinja2-mark-tags ()
+  "Mark all tags within buffer."
+  (let* ((beg (point-min))
+	 (end (point-max))
+	 (cat (jinja2--create-or-load-category "tag"))
+	 (tags (jinja2--find-tags beg end))
+	 ov ovbeg ovend)
+    (with-silent-modifications
+      (jinja2-clear-tags beg end)
+      (dolist (tag tags)
+	(setq ovbeg (tag-match-start tag)
+	      ovend (tag-match-end tag)
+	      ov (make-overlay ovbeg ovend))
+	(overlay-put ov 'category cat)))))
+
+;; (jinja2-mark-tags)
 
 (defun jinja2-set-tag-trim (&optional arg)
   (interactive "P")
@@ -254,6 +488,23 @@
     map)
   "Mode map for Jinja2.")
 
+(defun jinja2-deactivate-all ()
+  "Deactivate Jinja2 mode in all buffers."
+  (interactive)
+  (dolist (buf (buffer-list))
+    (with-current-buffer buf
+      (jinja2-mode 0))))
+
+(defun jinja2-activate ()
+  "Activate Jinja2 mode."
+  (jinja2-mark-tags)
+  (add-hook 'after-change-functions #'jinja2--set-face-on-change nil t))
+
+(defun jinja2-deactivate ()
+  "Deactivate Jinja2 mode."
+  (jinja2-clear-tags)
+  (remove-hook 'after-change-functions #'jinja2--set-face-on-change t))
+
 ;;;###autoload
 (define-minor-mode jinja2-mode
   "Minor mode for editing Jinja2 templates within major modes.
@@ -262,15 +513,9 @@
   :lighter jinja2-lighter
   :require 'jinja2
   :keymap jinja2-mode-map
-  (setq-local skeleton-further-elements
-	      '((abbrev-mode nil)
-		(^ '(- (1+ (current-indentation))))
-		(|| ''(progn
-			(when (> (current-indentation) v1)
-			  (message "%S" v1)
-			  (just-one-space)
-			  (backward-delete-char-untabify 1)
-			  (insert (or v2 ""))))))))
+  (if jinja2-mode
+      (jinja2-activate)
+    (jinja2-deactivate)))
 
 (provide 'jinja2)
 
