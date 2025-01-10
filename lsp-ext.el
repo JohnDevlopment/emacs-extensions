@@ -10,7 +10,9 @@
 
 (with-eval-after-load 'lsp-mode
   (setq lsp-keymap-prefix "C-c c l")
-  (define-key lsp-mode-map (kbd "C-c l T i") #'lsp-inlay-hints-mode))
+  (define-key lsp-mode-map (kbd "C-c l T i") #'lsp-inlay-hints-mode)
+  (define-key lsp-mode-map (kbd "<double-mouse-1>") #'imenu)
+  (define-key lsp-mode-map (kbd "M-R") #'revert-buffer))
 
 ;; Customizations
 
