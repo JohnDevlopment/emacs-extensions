@@ -39,15 +39,13 @@ Each key can be any valid lisp object, but symbols have to
 be quoted.
 
 \(fn KEY VALUE ...)"
-  (declare (indent 2))
   (unless (= (mod (length pairs) 2) 0)
     (error "alist-ext-define requires an even number of arguments (key-value pairs)."))
-  (let (al key value)
+  (let (res key value)
     (while pairs
-      (setq key (pop pairs)
-	    value (pop pairs))
-      (push `(cons ,key ,value) al))
-    `(list ,@al)))
+      (setq key (pop pairs) value (pop pairs))
+      (cl-append-list (list 'cons key value) res))
+    `(list ,@res)))
 
 (provide 'alist-ext)
 ;;; alist-ext.el ends here

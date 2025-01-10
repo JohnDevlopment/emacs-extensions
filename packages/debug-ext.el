@@ -22,20 +22,24 @@
 
 ;;; Code:
 
-(defmacro assert (form &optional message)
-  (declare (indent 2))
-  "Assert that FORM evaluates to non-nil.
-Otherwise throw an error.
+(eval-when-compile
+  (require 'cl-lib))
 
-FORM should not be quoted."
-  `(unless ,form
-     ,(if message
-	  `(error (format "Assertion failed: %s, %s" ',form ,message))
-	`(error (format "Assertion failed: %s" ',form)))))
+(defalias 'assert #'cl-assert)
+(make-obsolete 'assert #'cl-assert "2024-12-24")
 
 (defmacro print-expr (type form)
+  "Print the result of FORM.
+TYPE is used to indicate how FORM should be handled.
+Currently, it can be either symbol `var' or symbol `sexp'.
+
+FORM should not be quoted."
   (pcase type
-    ((or 'var 'sexp)
+    ('var
+     (cl-check-type form symbol)
+     ;; `(message ,(format "DEBUG: %s = %S" (cl-prin1-to-string form) form))
+     `(message "DEBUG: %s = %S" ,(cl-prin1-to-string form) ,form))
+    ('sexp
      `(message ,(concat "DEBUG: " (cl-prin1-to-string form) " = %S") ,form))
     (_ (error "Unknown type %S" type))))
 
