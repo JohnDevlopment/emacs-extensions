@@ -1,6 +1,8 @@
-;;; buffers-ext --- Buffers extension.  -*- lexical-binding: t; -*-
+;;; buffers-ext.el --- Buffers extension.            -*- lexical-binding: t; -*-
 
 ;;; Commentary:
+
+;; 
 
 ;;; Code:
 
@@ -32,24 +34,6 @@
   :type '(repeat regexp)
   :safe 'listp
   :group 'buffers-ext)
-
-;; Advice
-
-;; (defun --deactivate-mark-after-cloning-buffer (&rest r)
-;;   (let ((f (pop r))
-;; 	(buf (current-buffer))
-;; 	res)
-;;     (setq res (call-interactively f))
-;;     (with-current-buffer buf
-;;       (deactivate-mark))
-;;     (deactivate-mark)
-;;     res))
-
-;; (advice-add #'clone-indirect-buffer :around #'--deactivate-mark-after-cloning-buffer)
-;; (advice-add #'clone-indirect-buffer-other-window :around #'--deactivate-mark-after-cloning-buffer)
-
-;; (advice-remove #'clone-indirect-buffer #'--deactivate-mark-after-cloning-buffer)
-;; (advice-remove #'clone-indirect-buffer-other-window #'--deactivate-mark-after-cloning-buffer)
 
 ;; Functions
 
