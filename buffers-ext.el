@@ -136,10 +136,19 @@ of the arguments is the BODY of function NAME."
 	 ,(if int-spec
 	      (list 'interactive int-spec)
 	    '(interactive))
-	 (let (buffer)
+	 (let (buffer window)
 	   (setq buffer (tmpbuf ,buffer-name))
-	   (switch-to-buffer-other-window buffer)
-	   ,@body)))))
+	   (unwind-protect
+	       (with-current-buffer buffer
+		 ,@body)
+	     (setq window (display-buffer
+			   buffer
+			   '((display-buffer--maybe-same-window
+			      display-buffer-reuse-window
+			      display-buffer--maybe-pop-up-frame-or-window)
+			     (frame . nil)
+			     (dedicated . t))))
+	     (select-window window)))))))
 
 (define-scratch-buffer-function faces-buffer "faces" nil
   "Open a buffer listing all the faces."
@@ -174,14 +183,19 @@ prompted for MODE."
 (define-scratch-buffer-function git-commit-scratch "git commit" nil
   "Open a scratch buffer to let you format a git commit."
   nil
-  (auto-fill-mode t)
+  (auto-fill-mode 1)
+  (outline-minor-mode 1)
   (set-fill-column 50)
   (setq header-line-format "Type C-c C-c when finished, C-x k to cancel editing.")
   (local-set-key (kbd "C-c C-c")
-		 (lambda ()
-		   (interactive)
-		   (kill-region (point-min) (point-max))
-		   (kill-and-quit))))
+		 (lambda (&optional arg)
+		   "Kill text text in buffer and quit the window.
+ARG, which is the prefix arg, is passed to `kill-and-quit'
+(which see)."
+		   (interactive "P")
+		   (kill-region (point-min)
+				(point-max))
+		   (kill-and-quit arg))))
 
 ;; ---
 
