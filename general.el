@@ -147,12 +147,13 @@ Call `count-words-region' and"
 
 (defun kill-and-quit (&optional arg)
   "Kill the current buffer and also delete the current window.
-The equivelent of doing C-x k and C-x 0."
+The equivelent of doing \\[kill-buffer] and \\[quit-window]."
   (interactive "P")
-  (kill-buffer)
   (if arg
-      (delete-window)
-    (quit-window)))
+      (progn
+	(kill-buffer)
+	(delete-window))
+    (quit-window t)))
 
 (defun narrow-to-region2 (start end)
   "Narrow to region and cancel region.
