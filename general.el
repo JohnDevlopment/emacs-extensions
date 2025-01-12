@@ -149,7 +149,11 @@ Call `count-words-region' and"
 
 (defun kill-and-quit (&optional arg)
   "Kill the current buffer and also delete the current window.
-The equivelent of doing \\[kill-buffer] and \\[quit-window]."
+The equivelent of doing \\[kill-buffer] and
+\\[quit-window].  If ARG is non-nil, kill the selected
+window instead of quitting it.
+
+Interactively, ARG is the prefix argument."
   (interactive "P")
   (if arg
       (progn
