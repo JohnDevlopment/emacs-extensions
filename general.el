@@ -41,6 +41,8 @@ Interactively, START and END are the region."
     (insert (string-join swords sep))))
 
 (defun print-saved-positions ()
+  "Print the positions that are currently in the local ring.
+This merely prints the contents of `user-ext-local-position-ring'."
   (interactive)
   (cl-assert (> (length user-ext-local-position-ring) 0) t
 	     "The local position ring is empty!")
