@@ -8,6 +8,9 @@
 (require 'lsp-origami)
 (require 'lsp-pyright)
 
+(eval-when-compile
+  (require 'alist-ext))
+
 (with-eval-after-load 'lsp-mode
   (setq lsp-keymap-prefix "C-c c l")
   (define-key lsp-mode-map (kbd "C-c l T i") #'lsp-inlay-hints-mode)
@@ -35,7 +38,8 @@
 ;; Advice
 
 ;;;###autoload
-(advice-add 'lsp--before-save :after #'lsp-ext--before-save)
+(advice-add 'lsp--before-save :after #'lsp-ext--before-save
+	    (alist-ext-define 'name "lsp-after-before-save"))
 
 ;; Functions
 
