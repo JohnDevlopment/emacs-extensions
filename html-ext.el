@@ -4,23 +4,53 @@
 
 ;;; Code:
 
+(require 'alist-ext)
+
 (eval-when-compile
   (require 'mhtml-mode)
+  (require 'ido)
   (require 'sgml-mode))
 
-;;;###autoload
-(defun modify-html-tag-alist ()
-  "Modify `html-tag-alist' with our own tags."
-  (interactive)
-  (setq-local
-   html-tag-alist
-   (let ((tag-alist html-tag-alist)
-	 (div-atts '(("id") ("class"))))
-     (assq-delete-all "section" tag-alist)
-     (cl-pushnew `("section" \n ,@div-atts) tag-alist)
-     tag-alist)))
+(defconst user-ext-mhtml-entities
+  (alist-ext-define "QUOTATION MARK (\")" "&quot;"
+		    "AMPERSAND (&)" "&amp;"
+		    "LESS-THAN SIGN (<)" "&lt;"
+		    "GREATER-THAN SIGN (>)" "&gt;"
+		    "NO-BREAK SPACE" "&nbsp;"
+		    "CENT SIGN ¢" "&cent;"
+		    "POUND SIGN (£)" "&pound;"
+		    "CURRENCY SIGN (¤)" "&curren;"
+		    "YEN SIGN (¥)" "&yen;"
+		    "BROKEN BAR (¦)" "&brvbar;"
+		    "SECTION SIGN (§)" "&sect;"
+		    "COPYRIGHT SIGN (©)" "&copy;"
+		    "LEFT-POINTING DOUBLE ANGLE QUOTATION MARK («)" "&laquo;"
+		    "SOFT HYPHEN" "&shy;"
+		    "REGISTERED SIGN (®)" "&reg;"
+		    "MACRON (¯)" "&macr;"
+		    "DEGREE SIGN (°)" "&deg;"
+		    "PLUS-MINUS SIGN (±)" "&plusmn;"))
 
 (define-key mhtml-mode-map (kbd "C-M-i") #'completion-at-point)
+(define-key mhtml-mode-map (kbd "C-c C-e") #'mhtml-ext-insert-entity)
+
+(defun mhtml-ext--entities ()
+  (cl-loop
+   for i below (length user-ext-mhtml-entities)
+   collect (car (nth i user-ext-mhtml-entities))))
+
+(defun mhtml-ext-insert-entity (name)
+  ""
+  (interactive (list (ido-completing-read "Name: " (mhtml-ext--entities))))
+  (let ((entity (alist-get name user-ext-mhtml-entities)))
+    (insert entity)))
+
+;;;###autoload
+(defun mhtml--extra-hook ()
+  t)
+
+;;;###autoload
+(add-hook 'mhtml-mode-hook #'mhtml--extra-hook)
 
 (provide 'html-ext)
 
