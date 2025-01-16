@@ -10,6 +10,12 @@
 (require 'cl-ext)
 (require 'debug-ext)
 
+;; Types
+
+(cl-deftype list-or-null () '(or list null))
+
+;; Abbrevs
+
 (define-abbrev emacs-lisp-mode-abbrev-table "propline"
   "" (lambda ()
        (interactive)
