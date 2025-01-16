@@ -10,6 +10,5 @@
 # Undo-tree save-files
 *.~undo-tree
 
-commiter.yml
-src
 .bash_history
+.venv/
