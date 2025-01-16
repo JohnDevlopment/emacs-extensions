@@ -87,14 +87,15 @@ The skeleton will be bound to markdown-skeleton-NAME."
   nil
   (markdown-mode))
 
+(define-key markdown-mode-style-map (kbd "i") #'markdown-skeleton-id)
+(define-key markdown-mode-style-map (kbd "f") #'markdown-ext-insert-footnote)
+(define-key quick-mode-map (kbd "t") #'markdown-toc-mode)
+
 ;; Hook
 
 ;;;###autoload
 (defun markdown--extra-hook ()
-  "Hook for `markdown-mode' extension."
-  (define-key markdown-mode-style-map (kbd "i") #'markdown-skeleton-id)
-  (define-key markdown-mode-style-map (kbd "f") #'markdown-ext-insert-footnote)
-  (define-key quick-mode-map (kbd "t") #'markdown-toc-mode))
+  "Hook for `markdown-mode' extension.")
 
 ;;;###autoload
 (add-hook 'markdown-mode-hook #'markdown--extra-hook)
