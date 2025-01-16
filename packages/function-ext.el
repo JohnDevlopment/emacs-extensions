@@ -23,8 +23,8 @@ via `declare-function'.
   (cl-check-type arglist (or list null))
   (let* ((backup-symbol (intern (concat (prin1-to-string symbol) "--old")))
 	 (code (symbol-function backup-symbol)))
+    (declare-function ,backup-symbol ,file ,arglist)
     `(progn
-       (declare-function ,backup-symbol ,file ,arglist)
        (unless (fboundp ',backup-symbol)
 	 (defalias ',backup-symbol ,(if (listp code)
 					`',code
