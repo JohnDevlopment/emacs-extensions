@@ -26,9 +26,9 @@ via `declare-function'.
     `(progn
        (declare-function ,backup-symbol ,file ,arglist)
        (unless (fboundp ',backup-symbol)
-	 (defalias ,backup-symbol ,(if (listp code)
-				       `',code
-				     code)))
+	 (defalias ',backup-symbol ,(if (listp code)
+					`',code
+				      code)))
        (defun ,symbol ,arglist ,docstring ,@body))))
 
 (provide 'function-ext)
