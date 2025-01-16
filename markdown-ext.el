@@ -5,6 +5,7 @@
 ;;; Code:
 
 (eval-when-compile
+  (require 'cl-lib)
   (require 'markdown-mode))
 
 (defvar markdown-footnote-counter)
@@ -64,7 +65,7 @@ The skeleton will be bound to markdown-skeleton-NAME."
   ""
   (interactive "fFile: \nsAlt text: \nsTitle (optional): \nP")
   ;; ![alt text](link "optional title")
-  (assert (or (stringp title) (null title)) "Title must be a string or nil.")
+  (cl-assert (or (stringp title) (null title)) "Title must be a string or nil.")
   (let* ((file (if prefix
 		   (file-relative-name file)
 		 (expand-file-name file)))
