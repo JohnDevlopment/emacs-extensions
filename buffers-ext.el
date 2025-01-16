@@ -100,7 +100,7 @@ Called interactively, PREDICATE cannot be specified."
 	(message "Killed %s" (buffer-name buf))
 	(kill-buffer (buffer-name buf))))))
 
-;;; ---
+;; ---
 
 (defun get-buffer-file-name ()
   "Print the file belonging to the current buffer."
