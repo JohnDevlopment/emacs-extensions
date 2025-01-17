@@ -1,12 +1,11 @@
 ;;; general --- General extension functions.  -*- lexical-binding: t; -*-
 
-;;; Commentary:
-
 ;;; Code:
 
 ;; Types
 
 (cl-deftype list-or-null () '(or list null))
+(cl-deftype marker-or-null () '(or marker null))
 
 ;; Abbrevs
 
