@@ -31,7 +31,10 @@ the file '~/.emacs.d/extensions/general.el' is loaded.
 
 Optional args NOERROR and NOMESSAGE are forwarded to `load'."
   (interactive (--extension-completion))
-  (load (concat "~/.emacs.d/extensions/" extension) noerror nomessage))
+  (if noerror
+      (with-demoted-errors "Error from `load-extension': %S"
+	(load (concat "~/.emacs.d/extensions/" extension) t nomessage))
+    (load (concat "~/.emacs.d/extensions/" extension) nil nomessage)))
 
 (defun find-extension (extension)
   "Find the Emacs Lisp source of EXTENSION."
