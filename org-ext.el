@@ -110,7 +110,7 @@ Otherwise, call `org-return'."
 	   ((eq list-type 'unordered)
 	    ;; Unordered list
 	    (setq checkbox (nth 4 element))
-	    (assert `(or (stringp ',checkbox) (null ,checkbox)))
+	    (cl-check-type checkbox string-or-null)
 	    (org-list-insert-item (point) struct
 				  (org-list-prevs-alist struct)
 				  checkbox)
@@ -213,10 +213,8 @@ to the result.  It is expected to contain a currency symbol."
 ;;;###autoload
 (defun org--extra-hook ()
   "Extra hook for `org-mode'."
-  (setq yas-trigger-key [tab])					;
-  (add-hook 'org-tab-first-hook #'yas-ext-org-very-safe-expand) ;
-  (define-key yas-keymap [tab] #'yas-next-field)		;
-  (ignore))
+  (add-hook 'org-tab-first-hook #'yas-ext-org-very-safe-expand)
+  (define-key yas-keymap [tab] #'yas-next-field))
 
 ;;;###autoload
 (add-hook 'org-mode-hook #'org--extra-hook)
