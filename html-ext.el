@@ -39,8 +39,9 @@
    for i below (length user-ext-mhtml-entities)
    collect (car (nth i user-ext-mhtml-entities))))
 
+;;;###autoload
 (defun mhtml-ext-insert-entity (name)
-  ""
+  "Insert an entity symbol called NAME."
   (interactive (list (ido-completing-read "Name: " (mhtml-ext--entities))))
   (let ((entity (alist-get name user-ext-mhtml-entities)))
     (insert entity)))
