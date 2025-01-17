@@ -247,8 +247,7 @@ quotes), and CONTENT is the text between START and END."
     (jump-to-register user-ext-python--register)
     (setq user-ext-python--orig-position (point))
     (insert buffer-string)
-    ;; TODO: Check this
-    ;; (assert (markerp user-ext-python--orig-position))
+    (cl-check-type user-ext-python--orig-position marker)
     (goto-char user-ext-python--orig-position) ; go back to original position
     (save-excursion
       ;; get leading spaces
