@@ -12,7 +12,11 @@
 
 (eval-when-compile
   (declare-function python-ext-hide-show-command "python-ext")
-  (require 'dash))
+  (defvar python-ext-hide-show-command)
+  (declare-function python-ext-command-prefix "python-ext")
+  (defvar python-ext-command-prefix)
+  (require 'dash)
+  (require 'skeleton))
 
 ;; Variables
 
