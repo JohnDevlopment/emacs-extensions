@@ -5,7 +5,6 @@
 ;;; Code:
 
 (require 'cl-lib)
-(require 'debug-ext)
 (require 'python-mode)
 (require 'python)
 (require 'lsp)
@@ -68,22 +67,6 @@ This is passed to `window-configuration-to-register'.")
 
 ;; Functions
 
-;; (defmacro python-skeleton-define (name doc &rest skel)
-;;   "Define a `python-mode' skeleton using NAME DOC and SKEL.
-;; The skeleton will be bound to python-skeleton-NAME and will
-;; be added to `python-mode-skeleton-abbrev-table'."
-;;   (declare (indent 2))
-;;   (let* ((name (symbol-name name))
-;;          (function-name (intern (concat "python-skeleton-" name))))
-;;     `(progn
-;;        (define-abbrev python-mode-skeleton-abbrev-table
-;;          ,name "" ',function-name :system t)
-;;        (setq python-skeleton-available
-;;              (cons ',function-name python-skeleton-available))
-;;        (define-skeleton ,function-name
-;;          ,(or doc
-;;               (format "Insert %s statement." name))
-;;          ,@skel))))
 
 (defun python-ext--pydoc (what)
   (cl-assert (stringp what) t "what = %s" what)
@@ -119,24 +102,9 @@ This is passed to `window-configuration-to-register'.")
 	  (when (re-search-forward "^\\(class\\) [A-Za-z0-9_]+" nil t)
 	    (setq beg (match-beginning 1)
 		  end (match-end 1))
-	    (assert (not (null beg)))
-	    (assert (not (null end)))
+	    (cl-assert (not (null beg)))
+	    (cl-assert (not (null end)))
 	    (add-text-properties beg end '(face user-ext-python-pydoc-keyword))))))))
-
-;; (defun python-ext-organize-imports (&optional start end)
-;;   "Organize imports in current buffer within START and END.
-;; If the region is enabled, only organize inputs within said
-;; region.
-
-;; Interactively, START and END points of the region.  If
-;; called from elisp, they are optional arguments."
-;;   (interactive "r")
-;;   (if (region-active-p)
-;;       (progn
-;; 	(narrow-to-region2 start end)
-;; 	(lsp-pyright-organize-imports)
-;; 	(widen))
-;;     (lsp-pyright-organize-imports)))
 
 (defun python-ext-finish-variable-type ()
   "Finish the type of the variable at point.
@@ -301,7 +269,7 @@ quotes), and CONTENT is the text between START and END."
 	  end (nth 2 docstring-data))
     (window-configuration-to-register user-ext-python--register)
     (setq user-ext-python--docstring-buffer (tmpbuf "python-docstring")) ; temp buffer
-    (assert (not (null user-ext-python--docstring-buffer)))		 ;
+    (cl-assert (not (null user-ext-python--docstring-buffer)))		 ;
     (with-current-buffer user-ext-python--docstring-buffer
       (unless (string-blank-p content)
 	;; docstring is not empty
@@ -357,7 +325,7 @@ quotes), and CONTENT is the text between START and END."
   (forward-line -1)
   (py-indent-or-complete))
 
-;; Skeletons
+
 
 ;; Key bindings
 
@@ -429,8 +397,6 @@ quotes), and CONTENT is the text between START and END."
 (defun python--lsp-hook ()
   "Hook for `python-mode' when lsp is enabled."
   (when (eq major-mode 'python-mode)
-    (setq completion-at-point-functions
-	  (delq #'py-fast-complete completion-at-point-functions))
     (remove-hook 'completion-at-point-functions #'py-fast-complete t)))
 
 ;;;###autoload
