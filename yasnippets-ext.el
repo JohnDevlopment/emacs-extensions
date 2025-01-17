@@ -35,8 +35,7 @@ was called interactively."
     (yas-compile-directory dir)))
 (put 'yas-ext-compile-snippet-dir 'interactive-only t)
 
-(eval-and-compile
-  (define-key yas-minor-mode-map (kbd "C-c & c") #'yas-ext-compile-snippet-dir))
+(define-key yas-minor-mode-map (kbd "C-c & c") #'yas-ext-compile-snippet-dir)
 
 (provide 'yasnippets-ext)
 
