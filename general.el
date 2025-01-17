@@ -4,12 +4,6 @@
 
 ;;; Code:
 
-;; Abbreviations
-
-(require 'cl-lib)
-(require 'cl-ext)
-(require 'debug-ext)
-
 ;; Types
 
 (cl-deftype list-or-null () '(or list null))

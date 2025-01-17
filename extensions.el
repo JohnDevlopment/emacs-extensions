@@ -52,6 +52,11 @@ Optional args NOERROR and NOMESSAGE are forwarded to `load'."
 
 (desktop+-default-bindings)
 
+(require 'cl-lib)
+(require 'cl-ext)
+(require 'alist-ext)
+(require 'debug-ext)
+
 ;; Autoloads
 (load-extension "loaddefs-ext")
 
