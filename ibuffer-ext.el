@@ -1,15 +1,11 @@
 ;;; ibuffer-ext.el --- Extension for IBuffer.        -*- lexical-binding: t; -*-
 
-;;; Commentary:
-
-;; 
-
-;;; Code:
-
 (eval-when-compile
   (require 'ibuffer))
 
 (require 'alist-ext)
+
+;; Advice
 
 (advice-add 'ibuffer-do-revert :after #'ibuffer--after-operation
 	    (alist-ext-define 'name "after-revert"))
@@ -22,6 +18,8 @@
 	    (alist-ext-define 'name "after-view"))
 
 (define-key ibuffer-mode-map (kbd "/ T") #'ibuffer-toggle-current-filter-group)
+
+;; FUnctions
 
 (defun ibuffer--after-operation ()
   (ibuffer-unmark-all-marks))
@@ -43,4 +41,5 @@ If point is on a buffer, toggle the group it is in."
 (add-hook 'ibuffer-mode-hook #'ibuffer--extra-hook)
 
 (provide 'ibuffer-ext)
+
 ;;; ibuffer-ext.el ends here
