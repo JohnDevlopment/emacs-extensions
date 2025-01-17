@@ -4,16 +4,24 @@
 
 ;;; Code:
 
-(require 'debug-ext)
-(require 'org)
-(require 'org-element)
+(eval-when-compile
+  (declare-function org-ext-custom-command "org-ext")
+  (defvar org-ext-custom-command)
+
+  (declare-function org-ext-insert-command "org-ext")
+  (defvar org-ext-insert-command)
+
+  (require 'org)
+  (require 'org-element)
+  (require 'cl-lib))
+
 (require 'yasnippet)
 
 (declare-function yas-ext-org-very-safe-expand "yasnippets-ext")
 (load-extension "yasnippets-ext")
 
-(define-prefix-command 'org-mode-custom-command-prefix)
-(define-prefix-command 'org-mode-custom-insert-command-prefix)
+(define-prefix-command 'org-ext-custom-command)
+(define-prefix-command 'org-ext-insert-command)
 (make-variable-buffer-local 'yas-trigger-key)
 
 ;;; Variables
@@ -186,18 +194,19 @@ to the result.  It is expected to contain a currency symbol."
   "Scan STRINGS for numbers and return them as a list."
   (mapcar #'org-ext-scan-number strings))
 
+
+
 (local-set-key (kbd "M-e") #'yas-expand)
 
-;; Commands: C-c M-c ...
-(define-key org-mode-map (kbd "C-c M-c") #'org-mode-custom-command-prefix)
-(define-key org-mode-custom-command-prefix "<tab>"
+(define-key org-mode-map (kbd "C-c M-c") #'org-ext-custom-command)
+(define-key org-ext-custom-command "<tab>"
   (lambda ()
     "Call `org-set-startup-visibility'."
     (interactive)
     (org-set-startup-visibility)))
-;; Insertion commands: C-c i ...
-(local-set-key (kbd "C-c i") #'org-mode-custom-insert-command-prefix)
-(define-key org-mode-custom-insert-command-prefix "h"
+
+(local-set-key (kbd "C-c i") #'org-ext-insert-command)
+(define-key org-ext-insert-command "h"
   (lambda ()
     "Insert a horizontal rule."
     (interactive)
