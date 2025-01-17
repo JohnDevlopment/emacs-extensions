@@ -35,17 +35,6 @@ was called interactively."
     (yas-compile-directory dir)))
 (put 'yas-ext-compile-snippet-dir 'interactive-only t)
 
-(defun yas--extra-hook ()
-  "Extra hook for `yasnippet-minor-mode'."
-  (interactive)
-  ;; (add-hook 'completion-at-point-functions #'company-yasnippet nil t)
-  )
-
-(when nil
-  (remove-hook 'completion-at-point-functions #'company-yasnippet t))
-
-(add-hook 'yas-minor-mode-hook #'yas--extra-hook)
-
 (eval-and-compile
   (define-key yas-minor-mode-map (kbd "C-c & c") #'yas-ext-compile-snippet-dir))
 
