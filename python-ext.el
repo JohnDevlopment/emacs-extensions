@@ -89,6 +89,7 @@ This is passed to `window-configuration-to-register'.")
 	(cl-assert (cl-typep bs 'string))
 	bs))))
 
+;;;###autoload
 (defun python-ext-pydoc (what)
   (interactive (list (read-string "What: " (thing-at-point 'word))))
   (let ((bufname "*pydoc*")
@@ -106,6 +107,7 @@ This is passed to `window-configuration-to-register'.")
 	    (cl-assert (not (null end)))
 	    (add-text-properties beg end '(face user-ext-python-pydoc-keyword))))))))
 
+;;;###autoload
 (defun python-ext-finish-variable-type ()
   "Finish the type of the variable at point.
 
