@@ -8,8 +8,10 @@
 (require 'python-mode)
 (require 'python)
 (require 'lsp)
+(require 'function-ext)
 
 (eval-when-compile
+  (declare-function python-ext-hide-show-command "python-ext")
   (require 'dash))
 
 ;; Variables
@@ -67,6 +69,44 @@ This is passed to `window-configuration-to-register'.")
 
 ;; Functions
 
+;; ---Python hs integration
+
+;;;###autoload (autoload 'py-hide-base "python-ext" nil t)
+(fext-replace-function py-hide-base "python-ext" (form &optional beg end)
+  "Hide form at point."
+  (hs-minor-mode 1)
+  (save-excursion
+    (let* ((form (prin1-to-string form))
+           (beg (or beg (or (funcall (intern-soft (concat "py--beginning-of-" form "-p")))
+                            (funcall (intern-soft (concat "py-backward-" form))))))
+           (end (or end (funcall (intern-soft (concat "py-forward-" form)))))
+           (modified (buffer-modified-p))
+           (inhibit-read-only t))
+      (if (and beg end)
+          (progn
+	    (setq beg (progn
+			(goto-char beg)
+			(py-forward-statement)))
+            (hs-make-overlay beg end 'code)
+            (set-buffer-modified-p modified))
+        (error (concat "No " (format "%s" form) " at point"))))))
+
+;;;###autoload
+(defun python-ext-show ()
+  "Toggle visibility of existing forms at point."
+  (interactive)
+  (hs-minor-mode 1)
+  (save-excursion
+    (let* ((ov (hs-overlay-at (point)))
+	   (beg (and ov (overlay-start ov)))
+	   (end (and ov (overlay-end ov)))
+	   (modified (buffer-modified-p))
+           (inhibit-read-only t))
+      (when (and ov beg end)
+	(hs-discard-overlays beg end))
+      (set-buffer-modified-p modified))))
+
+;; ---
 
 (defun python-ext--pydoc (what)
   (cl-assert (stringp what) t "what = %s" what)
@@ -364,7 +404,7 @@ quotes), and CONTENT is the text between START and END."
 (define-key python-ext-hide-show-command (kbd "e") #'py-hide-else-block)
 (define-key python-ext-hide-show-command (kbd "f") #'py-hide-for-block)
 (define-key python-ext-hide-show-command (kbd "i") #'py-hide-if-block)
-(define-key python-ext-hide-show-command (kbd "s") #'py-hide-show)
+(define-key python-ext-hide-show-command (kbd "s") #'python-ext-show)
 (define-key python-ext-hide-show-command (kbd "x") #'py-hide-expression)
 
 ;; company-capf
