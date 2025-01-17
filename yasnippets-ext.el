@@ -7,13 +7,16 @@
 (eval-when-compile
   (require 'yasnippet))
 
+(when (and (boundp 'yas-minor-mode) yas-minor-mode)
+  (add-hook 'completion-at-point-functions #'yasnippet-capf))
+
 (defun yas-ext-org-very-safe-expand ()
   (let ((yas-fallback-behavior 'return-nil))
     (yas-expand)))
 
 (defun yas-ext-enable-company-completion ()
   (interactive)
-  (add-to-list 'completion-at-point-functions #'company-yasnippet nil #'eq))
+  (add-hook 'completion-at-point-functions #'yasnippet-capf))
 
 (defun yas-ext-compile-snippet-dir (&optional is-interactive)
   "Call this function to compile a snippet directory.
