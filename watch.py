@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import logging
+import os
 import re
-import signal
 import shutil
+import signal
 from itertools import chain
 from pathlib import Path
 from threading import Event
@@ -11,16 +12,34 @@ from threading import Event
 from typing_extensions import assert_never
 from watchfiles import Change, DefaultFilter, watch
 
-ROOT = Path(__file__).parent
+ROOT: Path = Path(__file__).parent
 
 class ElispFiles(DefaultFilter):
-    def __call__(self, change: Change, path: str):
+    def __call__(self, change: Change, path: str) -> bool:
         return (
             super().__call__(change, path) and
             re.match(r'[a-z-]+\.el', path) is not None
         )
 
-def copy_file(src: Path):
+def get_logging_env() -> int:
+    """
+    Get default logging level from environment WATCH_LEVEL.
+    """
+    DEFAULT = logging.INFO
+    level = os.getenv("WATCH_LEVEL", DEFAULT)
+    if isinstance(level, int):
+        return level
+
+    LEVELS: dict[str, int] = {
+        'debug': logging.DEBUG,
+        'info': logging.INFO,
+        'warning': logging.WARNING,
+        'error': logging.ERROR,
+        'critical': logging.CRITICAL,
+    }
+    return LEVELS.get(level, DEFAULT)
+
+def copy_file(src: Path) -> None:
     dst = ROOT / src.name
 
     match src.parts:
@@ -36,7 +55,10 @@ def copy_file(src: Path):
     else:
         logging.info("Copied '%s'", src)
 
-def on_change(change: Change, path: Path):
+def on_change(change: Change, path: Path) -> None:
+    """
+    Called for every file change.
+    """
     match change:
         case Change.added:
             logging.debug("'%s' was added", path)
@@ -52,12 +74,14 @@ def on_change(change: Change, path: Path):
         case _:
             assert_never(change)
 
-def on_keyboard_interrupt(event: Event):
+def on_keyboard_interrupt(event: Event) -> None:
     logging.info("Keyboard interrupt detected. Ending file watches.")
     event.set()
 
 def main():
-    logging.basicConfig(level=logging.DEBUG)
+    level = get_logging_env()
+    logging.basicConfig(level=level)
+    logging.info("Set logging level to '%s'", logging.getLevelName(level))
     event = Event()
     it = chain(
         Path("~/.emacs.d/extensions").expanduser().glob("*.el"),
