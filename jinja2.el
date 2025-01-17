@@ -343,7 +343,7 @@ compare with the \\=`category' property of each overlay."
       ;; Inside a tag but an overlay already exists
       t))))
 
-(defun jinja2--handle-change-insertion (start end length)
+(defun jinja2--handle-change-insertion (start _end length)
   "Handle insertion changes."
   (if (= length 1)
       (let* ((pos start)
@@ -351,7 +351,6 @@ compare with the \\=`category' property of each overlay."
 	     (ov (jinja2-overlay-at "tag" pos))
 	     (cat (jinja2--create-or-load-category "tag"))
 	     tag)
-	(print-expr sexp (list tag-position ov))
 	(cond
 	 ((and tag-position (not ov))
 	  ;; Created a tag during insertion
@@ -367,8 +366,7 @@ compare with the \\=`category' property of each overlay."
 	  ;; Not inside of a tag
 	  (when ov
 	    (delete-overlay ov)))
-	 (t (message "No conditions met."))))
-    (print-expr sexp (list start end length))))
+	 (t (message "No conditions met."))))))
 
 (when nil
   (cl-prettyprint (symbol-function 'jinja2--handle-change-deletion))
@@ -453,9 +451,6 @@ beginning and end of buffer respectively."
 	 beg
 	 end
 	 c)
-    ;; (message "%s"
-    ;; 	     (with-output-to-string
-    ;; 	       (print-expr sexp )))
     (cl-save-point
       (setq beg (progn (goto-char (syntax-ppss-toplevel-pos ppss))
 		       (point-marker))
