@@ -1,9 +1,5 @@
 ;;; log4j-ext --- Log4j mode extension.  -*- lexical-binding: t; -*-
 
-;;; Commentary:
-
-;;; Code:
-
 (eval-when-compile
   (require 'log4j-mode))
 
