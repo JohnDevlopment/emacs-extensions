@@ -4,6 +4,7 @@
 
 ;;; Code:
 
+;;;###autoload
 (defun bind-imenu ()
   "Binds `imenu' to the right-mouse button locally.
 The bindings are local to the active keymap, which means
@@ -15,6 +16,7 @@ buffers sharing the same major mode will be affected."
 	(message "Locally bound `imenu' to the right mouse button"))
     (user-error "`bind-imenu' is not meant to be used in Python mode")))
 
+;;;###autoload
 (defun bind-imenu-lsp ()
   "Binds `imenu' to the double left-click mouse button locally.
 The bindings are local to the active keymap, which means
@@ -37,6 +39,7 @@ buffers sharing the same major mode will be affected."
 ;; 		     (group (* (syntax symbol)))
 ;; 		     (* (syntax whitespace)) (opt "()"))))))
 
+;;;###autoload
 (defun imenu--python-hook ()
   "Imenu Hook for Python mode."
   (setq imenu-generic-expression
@@ -49,7 +52,7 @@ buffers sharing the same major mode will be affected."
 		     (* nonl) ":")
 		1))))
 
-;; (add-hook 'sh-mode-hook #'imenu--sh-hook)
+;;;###autoload
 (add-hook 'python-mode-hook #'imenu--python-hook)
 
 (provide 'imenu-ext)
