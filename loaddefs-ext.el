@@ -180,7 +180,7 @@ Hook for the `emacs-lisp-mode' extension." nil nil)
 ;;;### (autoloads nil "extensions" "extensions.el" (0 0 0 0))
 ;;; Generated autoloads from extensions.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "extensions" '("--extension-completion" "find-extension" "load-extension" "user-ext-extension-directory")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "extensions" '("--extension-completion" "feature-loaded" "find-extension" "load-extension" "user-ext-extension-directory")))
 
 ;;;***
 
@@ -194,8 +194,16 @@ Hook for the `emacs-lisp-mode' extension." nil nil)
 ;;;### (autoloads nil "html-ext" "html-ext.el" (0 0 0 0))
 ;;; Generated autoloads from html-ext.el
 
-(autoload 'modify-html-tag-alist "html-ext" "\
-Modify `html-tag-alist' with our own tags." t nil)
+(autoload 'mhtml-ext-insert-entity "html-ext" "\
+Insert an entity symbol called NAME.
+
+\(fn NAME)" t nil)
+
+(autoload 'mhtml--extra-hook "html-ext" nil nil nil)
+
+(add-hook 'mhtml-mode-hook #'mhtml--extra-hook)
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "html-ext" '("mhtml-ext--entities" "user-ext-mhtml-entities")))
 
 ;;;***
 
@@ -217,7 +225,20 @@ If point is on a buffer, toggle the group it is in." t nil)
 ;;;### (autoloads nil "imenu-ext" "imenu-ext.el" (0 0 0 0))
 ;;; Generated autoloads from imenu-ext.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "imenu-ext" '("bind-imenu" "imenu--python-hook")))
+(autoload 'bind-imenu "imenu-ext" "\
+Binds `imenu' to the right-mouse button locally.
+The bindings are local to the active keymap, which means
+buffers sharing the same major mode will be affected." t nil)
+
+(autoload 'bind-imenu-lsp "imenu-ext" "\
+Binds `imenu' to the double left-click mouse button locally.
+The bindings are local to the active keymap, which means
+buffers sharing the same major mode will be affected." t nil)
+
+(autoload 'imenu--python-hook "imenu-ext" "\
+Imenu Hook for Python mode." nil nil)
+
+(add-hook 'python-mode-hook #'imenu--python-hook)
 
 ;;;***
 
@@ -311,7 +332,7 @@ Extra hook for `log4j-mode'." nil nil)
 ;;;### (autoloads nil "lsp-ext" "lsp-ext.el" (0 0 0 0))
 ;;; Generated autoloads from lsp-ext.el
 
-(advice-add 'lsp--before-save :after #'lsp-ext--before-save)
+(advice-add 'lsp--before-save :after #'lsp-ext--before-save (alist-ext-define 'name "lsp-after-before-save"))
 
 (autoload 'lsp-ext--before-save "lsp-ext" "\
 Disable LSP inlays and maybe do other things before saving.
@@ -445,6 +466,23 @@ Extra hook for `org-mode'." nil nil)
 
 ;;;### (autoloads nil "python-ext" "python-ext.el" (0 0 0 0))
 ;;; Generated autoloads from python-ext.el
+ (autoload 'py-hide-base "python-ext" nil t)
+
+(autoload 'python-ext-show "python-ext" "\
+Toggle visibility of existing forms at point." t nil)
+
+(autoload 'python-ext-pydoc "python-ext" "\
+
+
+\(fn WHAT)" t nil)
+
+(autoload 'python-ext-finish-variable-type "python-ext" "\
+Finish the type of the variable at point.
+
+In order for this to work, the current buffer must be using
+LSP and the underlying server must support inlay hints.  To
+see if that is available, call \\[lsp-describe-session] and
+look for `inlayHintProvider'." t nil)
  (autoload 'python-ext-scratch "python-ext" "Opens a scratch buffer to let you write Python code." t)
 
 (autoload 'python-ext-kill-pyi-buffers "python-ext" nil t nil)
