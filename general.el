@@ -1,7 +1,5 @@
 ;;; general --- General extension functions.  -*- lexical-binding: t; -*-
 
-;;; Code:
-
 ;; Types
 
 (cl-deftype list-or-null () '(or list null))
@@ -78,6 +76,8 @@ This pops the last-saved position from
     (goto-char pos)
     (message "Restored to position %s." pos)))
 
+;; ---Add mode comment
+
 (defun --add-mode-comment--mode-without-suffix (obj)
   (let (str)
     (when (or (stringp obj) (symbolp obj))
@@ -101,6 +101,8 @@ When called interactively, it prompts the user for MODE."
   (let ((mode (--add-mode-comment--complete-mode)))
     (message "%s" mode)
     (add-file-local-variable-prop-line 'mode mode t)))
+
+;; ---
 
 (defun bind-fill-region ()
   "Bind `fill-region' to M-F."
@@ -132,6 +134,7 @@ Call `count-words-region' and"
   "Formats a version string in YYYYMMDD.HHMM format."
   (interactive)
   (insert (format-time-string "%Y%m%d.%H%M")))
+(make-obsolete 'date-format-version nil "2025-01-20")
 
 (defun enable-wrap ()
   "Enable line wrap if it is not already."
