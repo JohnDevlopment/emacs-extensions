@@ -6,6 +6,9 @@
 
 (require 'debug-ext)
 
+(eval-when-compile
+  (require 'hideshow))
+
 ;; Variables
 
 (defconst user-ext-elisp--register ?e
