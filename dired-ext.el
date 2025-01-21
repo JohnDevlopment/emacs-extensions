@@ -1,9 +1,5 @@
 ;;; dired-ext --- Dired mode extension  -*- lexical-binding: t; -*-
 
-;;; Commentary:
-
-;;; Code:
-
 (require 'dired)
 
 ;; Enable `dired-find-alternate-file'
@@ -38,13 +34,16 @@ individually, so list-sorting options are pointless."
     (pop-to-buffer-same-window newbuf)
     (kill-buffer curbuf)))
 
-;;; Hook
+;; Hook
 
+(define-key dired-mode-map "^" #'dired-ext-find-alternate-updir)
+(define-key dired-mode-map "k" #'dired-ext-quit-kill-window)
+
+;;;###autoload
 (defun dired-mode--extra-hook ()
-  "Extra hook for `dired-mode'."
-  (define-key dired-mode-map "^" #'dired-ext-find-alternate-updir)
-  (define-key dired-mode-map "k" #'dired-ext-quit-kill-window))
+  "Extra hook for `dired-mode'.")
 
+;;;###autoload
 (add-hook 'dired-mode-hook #'dired-mode--extra-hook)
 
 (provide 'dired-ext)
