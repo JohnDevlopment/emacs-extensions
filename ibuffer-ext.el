@@ -13,7 +13,6 @@
 (advice-add 'ibuffer-do-view :after
 	    (lambda (&rest args)
 	      (interactive)
-	      ;; (message "Current buffer: %s" (current-buffer))
 	      (view-mode))
 	    (alist-ext-define 'name "after-view"))
 
