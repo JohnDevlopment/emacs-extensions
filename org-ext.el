@@ -1,9 +1,5 @@
 ;;; org-ext --- Org mode extension.  -*- lexical-binding: t; -*-
 
-;;; Commentary:
-
-;;; Code:
-
 (eval-when-compile
   (declare-function org-ext-custom-command "org-ext")
   (defvar org-ext-custom-command)
@@ -13,6 +9,7 @@
 
   (require 'org)
   (require 'org-element)
+  (require 'org-table)
   (require 'cl-lib))
 
 (require 'yasnippet)
@@ -194,7 +191,11 @@ to the result.  It is expected to contain a currency symbol."
   "Scan STRINGS for numbers and return them as a list."
   (mapcar #'org-ext-scan-number strings))
 
-
+;;;###autoload
+(defun org-ext-tbl-minor-mode ()
+  "Turn on `orgtbl-mode'."
+  (interactive)
+  (orgtbl-mode))
 
 (local-set-key (kbd "M-e") #'yas-expand)
 
