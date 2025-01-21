@@ -1,12 +1,10 @@
 ;;; elisp-ext --- Emacs Lisp mode extension.  -*- lexical-binding: t;  -*-
 
-;;; Commentary:
-
-;;; Code:
-
 (require 'debug-ext)
 
 (eval-when-compile
+  (require 'cl-lib)
+  (require 'autoload)
   (require 'hideshow))
 
 ;; Variables
@@ -80,6 +78,7 @@ Updates the autoload definitions in the Lisp files in
   (unless interactive-p
     (error "This must be called interactively"))
   (let ((generated-autoload-file "~/.emacs.d/extensions/loaddefs-ext.el"))
+    (cl-check-type generated-autoload-file string)
     (update-directory-autoloads "~/.emacs.d/extensions/"))
   (when (y-or-n-p "Open buffer \"loaddefs-ext.el\"? ")
     (switch-to-buffer "loaddefs-ext.el")))
