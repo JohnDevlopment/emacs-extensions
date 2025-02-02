@@ -1,9 +1,5 @@
 ;;; rust-ext --- Rust mode extension.  -*- lexical-binding: t; -*-
 
-;;; Commentary:
-
-;;; Code:
-
 (require 'company-capf)
 (require 'rustic)
 (require 'rust-mode)
@@ -22,7 +18,7 @@
   :type 'integer
   :group 'rust-ext)
 
-(defvar user-ext-rust--register ?r)
+(defconst user-ext-rust--register ?r)
 
 (defvar user-ext-rust--docstring-buffer nil
   "Docstring buffer in `rust-mode'.")
@@ -89,6 +85,7 @@ This calls `rustic-cargo-run' with a non-nil argument."
     (setq header-line-format "Rust Docstring: Type C-c C-c to apply changes")
     (message "Type C-c C-c to save changes.")))
 
+;;;###autoload
 (defun rust-ext-customize-group ()
   "Customize the group for `rusti-mode'."
   (interactive)
@@ -182,14 +179,14 @@ The skeleton will be bound to rust-skeleton-NAME."
     ["Customize This Group" rust-ext-customize-group]))
 
 ;;;###autoload
-(defun rust--custom-hook ()
+(defun rust--extra-hook ()
   "Hook for `rustic-mode' extension."
   (setq-local skeleton-further-elements
 	      '((< '(- (min rust-indent-offset (current-column))))))
   (visual-line-mode t))
 
 ;;;###autoload
-(add-hook 'rust-mode-hook #'rust--custom-hook)
+(add-hook 'rust-mode-hook #'rust--extra-hook)
 
 (provide 'rust-ext)
 
