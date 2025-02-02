@@ -23,7 +23,131 @@
 (defvar user-ext-rust--docstring-buffer nil
   "Docstring buffer in `rust-mode'.")
 
+(defconst user-ext-rust-function-regexp
+  (rx (* whitespace)
+      (group "fn" (+ whitespace)
+	     (+ (or (syntax word) (syntax symbol)))) ; function name
+      (? ?< (+ nonl) ?>)			     ; type parameter list (i.e., <S: ToString>)
+      ?\( (* nonl) ?\)				     ; parameter list
+      (* whitespace) "->" (* whitespace)
+      (+ (or (syntax word) (syntax symbol))) ; return type (i.e., "-> Self")
+      (* (any "\n" whitespace)))
+  "Matches the signature of a function.")
+
+(defconst user-ext-rust-impl-regexp
+  (rx bol (* whitespace)
+      (group "impl" (+ whitespace) (+ (syntax word)))))
+
 ;; Functions
+
+;; ---Syntax functions
+
+(defun rust-ext-forward-statement ()
+  (unless (eobp)
+    (let ((ppss (make-ppss-easy (syntax-ppss)))
+	  pos)
+      (cond
+       ))))
+
+(defun rust-ext--re-search-backward (regexp &optional group)
+  "Search backward for REGEXP and return the position.
+This matches the entire regular expression unless GROUP is
+non-nil, in which case that group is matched."
+  (cl-check-type regexp string)
+  (cl-check-type group integer-or-null)
+  (let* ((group (or group 0))
+	 (match (re-search-backward regexp nil t))
+	 (pos (when match (match-beginning group))))
+    (when pos (goto-char pos))
+    pos))
+
+(defun rust-ext--jump-backward (what)
+  "Jump backward to the form WHAT.
+WHAT is a symbol designating what form to choose."
+  (cl-check-type what symbol)
+  (unless (bobp)
+    (let* ((args (rust-ext--jump-forward-backward-args what))
+	   (pos (apply #'rust-ext--re-search-backward args)))
+      (when pos
+	(goto-char pos)))))
+
+(defun rust-ext--re-search-forward (regexp &optional group)
+  "Search forward for REGEXP and return the position.
+This matches the entire regular expression unless GROUP is
+non-nil, in which case that group is matched."
+  (cl-check-type regexp string)
+  (cl-check-type group integer-or-null)
+  (let* ((group (or group 0))
+	 (count (if (looking-at-p regexp) 2 nil))
+	 (match (re-search-forward regexp nil t count))
+	 (pos (and match (match-beginning group))))
+    (print-expr var count)
+    (when pos (goto-char pos))
+    pos))
+
+(defun rust-ext--jump-forward (what)
+  "Jump forward to the form WHAT."
+  (cl-check-type what symbol)
+  (unless (bobp)
+    (let* ((args (rust-ext--jump-forward-backward-args what))
+	   (pos (apply #'rust-ext--re-search-forward args)))
+      (when pos (goto-char pos)))))
+
+(defun rust-ext--jump-args (what)
+  (cl-ecase what
+    (fn (list user-ext-rust-function-regexp 1))
+    (impl (list user-ext-rust-impl-regexp 1))))
+(defalias 'rust-ext--jump-forward-backward-args #'rust-ext--jump-args)
+(make-obsolete 'rust-ext--jump-forward-backward-args #'rust-ext--jump-args "2025.02.02")
+
+(cl-defmacro rust-ext-define-jump-function (name direction &key doc-name)
+  "Create a motion function called rust-ext-jump-DIRECTION-NAME.
+DIRECTION is either symbol `backward' or symbol `forward'.
+NAME is a symbol.
+
+This creates a function called rust-ext-jump-DIRECTION-
+NAME.  The documentation string will use NAME and
+DIRECTION when describing what the function does.  The lone
+keyword argument :DOC-NAME replaces NAME in the
+documentation string."
+  (cl-check-type name symbol)
+  (cl-check-type direction symbol)
+  (cl-assert (memq direction '(forward backward))
+	     nil "Must be %S" name '(forward backward))
+  (cl-check-type doc-name string-or-null)
+  (when (> (length doc-name) 15)
+    (error "Invalid :doc-name '%s', length must be <= 15 characters" doc-name))
+  (let* ((fname (intern (format "rust-ext-%s-%s" direction name)))
+	 (doc-name (or doc-name (symbol-name name)))
+	 (prev-or-next (if (eq direction 'backward)
+			   "previous"
+			 "next"))
+	 (docstring (s-lex-format "Jump ${direction} to the beginning of a ${doc-name}.
+If point is inside a ${doc-name}, move to the beginning,
+else move to the beginning of a ${prev-or-next} ${doc-name}.")))
+    `(progn
+       (defun ,fname ()
+	 ,docstring
+	 (interactive)
+	 (,(intern-soft (format "rust-ext--jump-%S" direction)) ',name)))))
+
+(rust-ext-define-jump-function fn backward :doc-name "function")
+(rust-ext-define-jump-function impl backward :doc-name "implementation")
+
+(rust-ext-define-jump-function fn forward :doc-name "function")
+(rust-ext-define-jump-function impl forward :doc-name "implementation")
+
+;; ---Hide-show functions
+
+(defun rust-ext-hide-base (form)
+  (cl-check-type form symbol)
+  (hs-minor-mode 1)
+  (let* ((form (prin1-to-string form))
+	 (func (intern-soft (s-lex-format "rust-ext-backward-${form}")))
+	 (beg (save-excursion (funcall func)))))
+  beg)
+
+;; ---
 
 (defun rust-ext-finish-variable-type ()
   "Complete the type of a variable using `company-capf'.
@@ -73,7 +197,7 @@ This calls `rustic-cargo-run' with a non-nil argument."
       (when (and (boundp mode) mode)	; that were enabled in the
 	(cl-pushnew mode modes)))	; original buffer
     (setq user-ext-rust--docstring-buffer (tmpbuf "rust-docstring"))
-    (assert (not (null user-ext-rust--docstring-buffer)))
+    (cl-assert (not (null user-ext-rust--docstring-buffer)))
     (split-window-sensibly)				 ;
     (switch-to-buffer user-ext-rust--docstring-buffer)   ; Split window and enter temporary buffer
     (markdown-mode)
@@ -133,9 +257,15 @@ The skeleton will be bound to rust-skeleton-NAME."
 
 (define-prefix-command 'user-ext-rust-skeleton-map)
 (define-key rust-mode-map (kbd "C-c C-t") #'user-ext-rust-skeleton-map)
-
 (define-key user-ext-rust-skeleton-map (kbd "f") #'rust-skeleton-function)
 (define-key user-ext-rust-skeleton-map (kbd "m") #'rust-skeleton-match)
+
+(define-prefix-command 'user-ext-rust-motion-map)
+(define-key rust-mode-map (kbd "C-c C-m") #'user-ext-rust-motion-map)
+(define-key user-ext-rust-motion-map (kbd "f") #'rust-ext-forward-fn)
+(define-key user-ext-rust-motion-map (kbd "M-f") #'rust-ext-backward-fn)
+(define-key user-ext-rust-motion-map (kbd "i") #'rust-ext-forward-impl)
+(define-key user-ext-rust-motion-map (kbd "M-i") #'rust-ext-backward-impl)
 
 (define-key rust-mode-map (kbd "C-c C-j") #'imenu)
 
@@ -171,7 +301,14 @@ The skeleton will be bound to rust-skeleton-NAME."
      ["Finish Variable Type" rust-ext-finish-variable-type]
      ("Skeletons"
       ["Function" rust-skeleton-function]
-      ["Match Statement" rust-skeleton-match]))
+      ["Match Statement" rust-skeleton-match])
+     ("Motion"
+      ("Backward"
+       ["Move Backward Function" rust-ext-backward-fn]
+       ["Move Backward Implementation" rust-ext-backward-impl])
+      ("Forward"
+       ["Move Forward Function" rust-ext-forward-fn]
+       ["Move Forward Implementation" rust-ext-forward-impl])))
     ["Compile Program" rustic-compile]
     ["Recompile Program" rustic-recompile]
     ["Format This Buffer" rustic-format-buffer]
