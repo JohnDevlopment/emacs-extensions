@@ -13,6 +13,8 @@
 ;; Enable `narrow-to-region'
 (put 'narrow-to-region 'disabled nil)
 
+;; ---Loading/finding extensions
+
 (defun --extension-completion (&optional initial-input)
   (let* (completion-ignored-extensions
 	 (path "~/.emacs.d/extensions"))
@@ -22,19 +24,25 @@
 					    (get-load-suffixes))
 			   nil nil initial-input))))
 
-(defun load-extension (extension &optional noerror nomessage)
+(defun load-extension (extension &rest _args)
   "Load an extension.
 
 EXTENSION is a file '~/.emacs.d/extensions' without its file
 extension.  For example, with an extension named 'general',
-the file '~/.emacs.d/extensions/general.el' is loaded.
-
-Optional args NOERROR and NOMESSAGE are forwarded to `load'."
+the file '~/.emacs.d/extensions/general.el' is loaded."
   (interactive (--extension-completion))
-  (if noerror
-      (with-demoted-errors "Error from `load-extension': %S"
-	(load (concat "~/.emacs.d/extensions/" extension) t nomessage))
-    (load (concat "~/.emacs.d/extensions/" extension) nil nomessage)))
+  (load (concat "~/.emacs.d/extensions/" extension)))
+(set-advertised-calling-convention 'load-extension '(extension) "2025.02.02")
+
+(defmacro load-extension-safe (extension)
+  "Load EXTENSION.
+This calls `load-extension' but captures the error condition
+`file-missing'.  If such an error occurs, the resulting
+error is demoted to a simple message."
+  (cl-check-type extension string)
+  `(condition-case err (load-extension ,extension)
+     (file-missing
+      (message "%s" (error-message-string err)))))
 
 (defun find-extension (extension)
   "Find the Emacs Lisp source of EXTENSION."
@@ -53,7 +61,7 @@ Optional args NOERROR and NOMESSAGE are forwarded to `load'."
       (switch-to-buffer (find-file-noselect
 			 (concat "~/.emacs.d/extensions/" extension ".el")))))
 
-(desktop+-default-bindings)
+;; ---
 
 (require 'cl-lib)
 (require 'cl-ext)
@@ -61,20 +69,19 @@ Optional args NOERROR and NOMESSAGE are forwarded to `load'."
 (require 'debug-ext)
 
 ;; Autoloads
-(load-extension "loaddefs-ext")
+(load-extension "loaddefs-ext" t)
 
-(load-extension "abbrev-ext")
-(load-extension "codeium-ext")
+(load-extension-safe "abbrev-ext")
+(load-extension-safe "codeium-ext")
 (load-extension "custom-ext")
 
 (load-extension "general")
-(load-extension "keymaps-ext")
 (load-extension "macro-ext")
 
-(load-extension "lsp-ext")
+(load-extension-safe "lsp-ext")
 (load-extension "buffers-ext")
 (load-extension "imenu-ext")
 (load-extension "syntax-ext")
 
-;; mode extensions
+(load-extension "keymaps-ext")
 (load-extension "modes")
