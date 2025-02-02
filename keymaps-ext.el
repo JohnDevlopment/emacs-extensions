@@ -178,6 +178,7 @@ is non-nil."
 (define-key command-map (kbd "^")   #'print-saved-positions)
 (define-key command-map (kbd "M")   #'add-mode-comment)
 (define-key command-map (kbd "P")   #'add-file-local-variable-prop-line)
+(define-key command-map (kbd "M-P")   #'add-file-local-variable)
 
 ;; Misc commands which do not use my custom prefix
 (global-set-key (kbd "C-M-k")   #'copy-line)
