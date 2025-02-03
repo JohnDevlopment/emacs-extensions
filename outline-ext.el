@@ -12,8 +12,7 @@
 (define-key outline-mode-map (kbd "<S-return>") #'outline-insert-heading)
 
 ;;;###autoload
-(defun outline--extra-hook ()
-  t)
+(defun outline--extra-hook () t)
 
 ;;;###autoload
 (add-hook 'outline-mode-hook #'outline--extra-hook)
