@@ -26,7 +26,7 @@
 (defcustom user-ext-lsp-buffers-to-kill
   nil
   "A list of buffers to kill when `kill-lsp-buffers' is called."
-  :type '(repeat string)
+  :type '(repeat regexp)
   :safe 'listp
   :group 'lsp-ext)
 
