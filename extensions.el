@@ -84,4 +84,5 @@ error is demoted to a simple message."
 (load-extension "syntax-ext")
 
 (load-extension "keymaps-ext")
-(load-extension "modes")
+(load-extension-safe "yasnippets-ext")
+(load-extension-safe "liquidsoap-bootstrap")
