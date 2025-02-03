@@ -1,9 +1,5 @@
 ;;; yasnippets-ext --- Yasnippets mode extension.
 
-;;; Commentary:
-
-;;; Code:
-
 (eval-when-compile
   (require 'yasnippet))
 
