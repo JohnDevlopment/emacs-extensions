@@ -30,6 +30,12 @@
   :safe 'listp
   :group 'lsp-ext)
 
+(defcustom user-ext-lsp-safe-inlay-modes
+  nil
+  "A list of major modes in which inlay hints are not disabled."
+  :type '(repeat function)
+  :group 'lsp-ext)
+
 ;; Variables
 
 (defvar user-ext-lsp-temporary-workspace-folders nil
@@ -47,7 +53,8 @@
 (defun lsp-ext--before-save ()
   "Disable LSP inlays and maybe do other things before saving.
 This is supposed to be called before `lsp--before-save'."
-  (lsp-inlay-hints-mode -1))
+  (unless (memq major-mode user-ext-lsp-safe-inlay-modes)
+    (lsp-inlay-hints-mode -1)))
 
 ;;;###autoload
 (defun kill-lsp-buffers ()
