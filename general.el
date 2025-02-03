@@ -1,5 +1,9 @@
 ;;; general --- General extension functions.  -*- lexical-binding: t; -*-
 
+;; Errors
+
+(define-error 'invalid-argument "Invalid argument")
+
 ;; Types
 
 (cl-deftype list-or-null () '(or list null))
