@@ -8,7 +8,7 @@
 
 (defmacro fext-replace-function (symbol file arglist &optional docstring &rest body)
   "Replace the function definition of SYMBOL.
-The new definition is 
+The new definition is
 (lambda SYMBOL ARGLIST [DOCSTRING] BODY...).  The arguments
 are the same as `defun', which see.
 
