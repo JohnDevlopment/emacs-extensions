@@ -1,6 +1,7 @@
 ;;; function-ext.el --- Function extension.          -*- lexical-binding: t; -*-
 
-;;; Code:
+(defconst user-ext-fext-valid-advice-classes
+  '(before around after activation deactivation))
 
 (eval-when-compile
   (require 'cl-lib))
@@ -30,6 +31,44 @@ via `declare-function'.
 					`',code
 				      code)))
        (defun ,symbol ,arglist ,docstring ,@body))))
+
+(defmacro fext-defadvice (function args &rest body)
+  "Define a piece of advice for FUNCTION (a symbol).
+The syntax of `fext-defadvice' is as follows:
+
+  (fext-defadvice FUNCTION (CLASS NAME)
+    [DOCSTRING] [INTERACTIVE-FORM]
+    BODY...)
+
+FUNCTION ::= Name of the function being advised.
+CLASS ::= `before' | `around' | `after' | `activation' |
+    `deactivation'
+DOCSTRING ::= Optional documentation string for defined
+    function.
+INTERACTIVE-FORM ::= Optional interactive form.
+BODY ::= Any s-expression.
+
+\(fn FUNCTION (CLASS NAME) BODY...)"
+  (declare (indent 2) (debug (&define name
+				      ([&or "before" "around"
+					    "after" "activation" "deactivation"]
+				       name)
+				      [&optional stringp]
+				      [&optional ("interactive" interactive)]
+				      def-body)))
+  (cl-destructuring-bind (class fname) args
+    (unless (memq class user-ext-fext-valid-advice-classes)
+      (signal-wrong-argument class user-ext-fext-valid-advice-classes))
+    (let* ((aname (intern (format "advice-%S-%S" class fname)))
+	   (fname (intern (format "advice-ext--%S-%S" class fname)))
+	   (arglist (help-function-arglist function))
+	   (class (intern-soft (format ":%S" class))))
+      (cl-assert (not (null class)))
+      `(progn
+	 (defun ,fname ,arglist ,@body)
+	 (unless (advice-member-p ',aname ',function)
+	   (advice-add ',function ,class ',fname
+		       (alist-ext-define 'name ',aname)))))))
 
 (provide 'function-ext)
 
