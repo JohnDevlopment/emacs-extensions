@@ -72,7 +72,6 @@ temporary folders from the workspace."
   (dolist (dir user-ext-lsp-temporary-workspace-folders)
     (lsp-workspace-folders-remove dir)))
 
-;;;###autoload
 (defun lsp-workspace-folders-remove-list ()
   "Call `lsp-workspace-folders-remove' one or more times in a loop."
   (interactive)
@@ -84,7 +83,6 @@ temporary folders from the workspace."
 	  (call-interactively 'lsp-workspace-folders-remove)
 	(setq flag nil)))))
 
-;;;###autoload
 (defun lsp-workspace-blocklist-add (project-root)
   "Add PROJECT-ROOT to the workspace blocklist."
   (interactive
@@ -94,13 +92,11 @@ temporary folders from the workspace."
 	(cons project-root (lsp-session-folders-blocklist (lsp-session))))
   (lsp--persist-session (lsp-session)))
 
-;;;###autoload
 (defun lsp-workspace-blocklist-remove-all ()
   (interactive)
   (setf (lsp-session-folders-blocklist (lsp-session)) nil)
   (lsp--persist-session (lsp-session)))
 
-;;;###autoload
 (defun lsp-workspace-folders-add-temp (project-root)
   "Temporarily add PROJECT-ROOT to the list of workspace folders."
   (interactive
