@@ -9,6 +9,7 @@
 (require 'lsp-pyright)
 
 (eval-when-compile
+  (require 'function-ext)
   (require 'alist-ext))
 
 (with-eval-after-load 'lsp-mode
@@ -43,20 +44,18 @@
 
 ;; Advice
 
-;;;###autoload
-(advice-add 'lsp--before-save :after #'lsp-ext--before-save
-	    (alist-ext-define 'name "lsp-after-before-save"))
+(fext-defadvice lsp-execute-code-action (after lsp-code-action)
+  "Called after `lsp-execute-code-action'."
+  (deactivate-mark))
 
-;; Functions
-
-;;;###autoload
-(defun lsp-ext--before-save ()
+(fext-defadvice lsp--before-save (after lsp-before-save)
   "Disable LSP inlays and maybe do other things before saving.
-This is supposed to be called before `lsp--before-save'."
+This is supposed to be called after `lsp--before-save'."
   (unless (memq major-mode user-ext-lsp-safe-inlay-modes)
     (lsp-inlay-hints-mode -1)))
 
-;;;###autoload
+;; Functions
+
 (defun kill-lsp-buffers ()
   "Kill all buffers that have to do with function `lsp-mode'."
   (interactive)
