@@ -35,7 +35,7 @@ the string found at PLACE and SEQUENCES are combined via
 `concat' and then set as the new value of PLACE."
   `(setq ,place (concat ,place ,@sequences)))
 
-(defmacro cl-save-point (&rest body)
+(defmacro cl-ext-save-point (&rest body)
   "Execute BODY and restore point to its original position.
 Any errors are caught and printed as simple messages.
 
@@ -47,6 +47,8 @@ Any errors are caught and printed as simple messages.
 			,@body))
      (goto-char cl--point)
      cl--result))
+(defalias 'cl-save-point #'cl-ext-save-point)
+(make-obsolete 'cl-save-point 'cl-ext-save-point "2025.02.02")
 
 (provide 'cl-ext)
 
