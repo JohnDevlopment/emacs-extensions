@@ -4,6 +4,7 @@
 
 (cl-deftype list-or-null () '(or list null))
 (cl-deftype marker-or-null () '(or marker null))
+(cl-deftype integer-or-null () '(or integer null))
 
 ;; Abbrevs
 
