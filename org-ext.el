@@ -1,21 +1,20 @@
 ;;; org-ext --- Org mode extension.  -*- lexical-binding: t; -*-
 
+(require 'org)
+(require 'org-element)
+(require 'org-table)
+
 (eval-when-compile
   (declare-function org-ext-custom-command "org-ext")
   (defvar org-ext-custom-command)
-
   (declare-function org-ext-insert-command "org-ext")
   (defvar org-ext-insert-command)
-
-  (require 'org)
-  (require 'org-element)
-  (require 'org-table)
   (require 'cl-lib))
 
 (require 'yasnippet)
 
-(declare-function yas-ext-org-very-safe-expand "yasnippets-ext")
-(load-extension "yasnippets-ext")
+;; (declare-function yas-ext-org-very-safe-expand "yasnippets-ext")
+;; (load-extension "yasnippets-ext")
 
 (define-prefix-command 'org-ext-custom-command)
 (define-prefix-command 'org-ext-insert-command)
