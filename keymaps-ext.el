@@ -1,11 +1,11 @@
 ;;; keymaps-ext --- Keymaps and keybinds.  -*- lexical-binding: t; -*-
 
-(require 'move-text)
 (require 'desktop+)
 (require 'ido)
 
-(move-text-default-bindings)
 (desktop+-default-bindings)
+(eval-after-require move-text
+  (move-text-default-bindings))
 
 (defmacro define-contextual-key-func (key &rest args)
   "Define a function that enables one of the modes listed in ARGS.
