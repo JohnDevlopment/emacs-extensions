@@ -1,9 +1,5 @@
 ;;; custom-ext --- Customization variables.  -*- lexical-binding: t; -*-
 
-;;; Commentary:
-
-;;; Code:
-
 (require 'dash)
 
 (eval-when-compile
