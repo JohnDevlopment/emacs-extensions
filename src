@@ -7,13 +7,25 @@ select tag in readme watch main; do
 done
 
 if [ "$tag" = "readme" ]; then
-    (sleep 2; xdg-open "http://localhost:5010/README.md") &
-    python -m http.server 5010 || return
-    exit
+    set-title README
+    ## usage: run
+    function run {
+	(sleep 2; xdg-open "http://localhost:5010/README.md") &
+	python -m http.server 5010 || return
+	exit
+    }
+    echo "Command: run"
+    return
 elif [ "$tag" = "watch" ]; then
-    source .venv/bin/activate
-    python watch.py || return
-    exit
+    set-title Watcher
+    ## usage: run
+    function run {
+	source .venv/bin/activate
+	python watch.py || return
+	exit
+    }
+    echo "Command: run"
+    return
 fi
 
 declare -r ROOTDIR=$(dirname $(realpath "$0"))
