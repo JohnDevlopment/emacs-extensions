@@ -39,10 +39,10 @@ treated as a single value and formatted appropriately."
 
 ;; Abbrevs
 
-(define-abbrev emacs-lisp-mode-abbrev-table "propline"
-  "" (lambda ()
-       (interactive)
-       (call-interactively #'add-file-local-variable-prop-line)))
+;; (define-abbrev emacs-lisp-mode-abbrev-table "propline"
+;;   "" (lambda ()
+;;        (interactive)
+;;        (call-interactively #'add-file-local-variable-prop-line)))
 
 ;; Variables
 
@@ -130,6 +130,7 @@ This pops the last-saved position from
   "Insert a comment line to change the major mode to MODE.
 When called interactively, it prompts the user for MODE."
   (interactive)
+  ;; TODO: Give the option between `add-file-local-variable-prop-line' and `add-file-local-variable'
   (let ((mode (--add-mode-comment--complete-mode)))
     (message "%s" mode)
     (add-file-local-variable-prop-line 'mode mode t)))
