@@ -192,7 +192,7 @@ Hook for the `emacs-lisp-mode' extension." nil nil)
 ;;;### (autoloads nil "general" "general.el" (0 0 0 0))
 ;;; Generated autoloads from general.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "general" '("--add-mode-comment--" "add-mode-comment" "bind-fill-region" "copy-line" "count-words-region2" "date-format-version" "emacs-lisp-mode-abbrev-table" "enable-wrap" "invalid-argument" "kill-and-quit" "narrow-to-region2" "pop-saved-position" "print-saved-positions" "save-" "signal-wrong-argument" "sort-words" "user-ext-local-position-ring" "wrong-argument")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "general" '("--add-mode-comment--" "add-mode-comment" "bind-fill-region" "copy-line" "count-words-region2" "date-format-version" "enable-wrap" "invalid-argument" "kill-and-quit" "narrow-to-region2" "pop-saved-position" "print-saved-positions" "save-" "signal-wrong-argument" "sort-words" "user-ext-local-position-ring" "wrong-argument")))
 
 ;;;***
 
