@@ -1,13 +1,7 @@
 ;;; buffers-ext.el --- Buffers extension.            -*- lexical-binding: t; -*-
 
-;;; Commentary:
-
-;; 
-
-;;; Code:
-
-(eval-when-compile
-  (require 'dired))
+(require 'cl-lib)
+(require 'custom)
 
 ;; Customization
 
