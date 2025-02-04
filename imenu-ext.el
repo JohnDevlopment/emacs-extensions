@@ -1,8 +1,6 @@
 ;;; imenu-ext --- IMenu extension.  -*- lexical-binding: t; -*-
 
-;;; Commentary:
-
-;;; Code:
+(require 'python-mode)
 
 ;;;###autoload
 (defun bind-imenu ()
