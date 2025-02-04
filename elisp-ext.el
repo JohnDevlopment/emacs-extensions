@@ -4,8 +4,15 @@
 
 (eval-when-compile
   (require 'cl-lib)
+  (require 'cl-ext)
   (require 'autoload)
+  (require 'function-ext)
   (require 'hideshow))
+
+;; Advice
+
+(fext-defadvice eval-region (after eval-region)
+  (deactivate-mark))
 
 ;; Variables
 
