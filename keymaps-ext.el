@@ -1,9 +1,7 @@
 ;;; keymaps-ext --- Keymaps and keybinds.  -*- lexical-binding: t; -*-
 
-(require 'desktop+)
 (require 'ido)
 
-(desktop+-default-bindings)
 (eval-after-require move-text
   (move-text-default-bindings))
 
