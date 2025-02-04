@@ -68,6 +68,18 @@ error is demoted to a simple message."
 
 ;; ---
 
+(defmacro eval-after-require (feature &rest body)
+  "Attempt to load FEATURE and eval BODY if it succeeds.
+If the file provuding FEATURE cannot be found, an error
+message is provided.  On success, the BODY forms are
+evaluated."
+  (declare (indent 1) (debug (sexp body)))
+  `(progn
+     (condition-case err
+	 (prog1 (require (quote ,feature))
+	   ,@body)
+       (file-missing (message "Failed to load %S: %S" (quote ,feature) err)))))
+
 ;; Autoloads
 (load-extension "loaddefs-ext" t)
 
