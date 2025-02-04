@@ -139,7 +139,7 @@ Automatically activates `hs-minor-mode' when called."
   (interactive)
   (when (= (char-before) ?\))
     (left-char))
-  (cl-save-point
+  (cl-ext-save-point
     (elisp-ext-hide-all)
     (elisp-ext-show)))
 
@@ -153,7 +153,7 @@ Automatically activates `hs-minor-mode' when called."
 	 (tl (syntax-ppss-toplevel-pos ppss))
 	 p)
     (when tl
-      (cl-save-point
+      (cl-ext-save-point
 	(goto-char tl)
 	(setq p tl)))
     (when p
