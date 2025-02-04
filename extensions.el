@@ -1,5 +1,10 @@
 ;; -*- lexical-binding: t; -*-
 
+(require 'cl-lib)
+(require 'cl-ext)
+(require 'alist-ext)
+(require 'debug-ext)
+
 (defconst user-ext-extension-directory "~/.emacs.d/extensions")
 
 (add-to-list 'load-path "~/.emacs.d/extensions")
@@ -62,11 +67,6 @@ error is demoted to a simple message."
 			 (concat "~/.emacs.d/extensions/" extension ".el")))))
 
 ;; ---
-
-(require 'cl-lib)
-(require 'cl-ext)
-(require 'alist-ext)
-(require 'debug-ext)
 
 ;; Autoloads
 (load-extension "loaddefs-ext" t)
