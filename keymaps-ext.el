@@ -69,8 +69,8 @@ of modes using a completion function.
 
 (define-contextual-key-func "c"
   "comment-tags-mode"
-  "conf-mode"
-  "company-mode")
+  "company-mode"
+  "conf-mode")
 
 (define-contextual-key-func "f"
   "flycheck-mode")
@@ -151,7 +151,6 @@ is non-nil."
 (define-key quick-mode-map (kbd "h") #'contextual-key-h)
 (define-key quick-mode-map (kbd "l") #'lsp-mode)
 (define-key quick-mode-map (kbd "o") #'origami-mode)
-;; (define-key quick-mode-map (kbd "p") #'p-mode)
 (define-key quick-mode-map (kbd "s") #'contextual-key-s)
 (define-key quick-mode-map (kbd "v") #'view-mode)
 (define-key quick-mode-map (kbd "w") #'enable-wrap)
