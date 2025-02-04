@@ -1,14 +1,14 @@
-;;; loaddefs-ext.el ---                              -*- lexical-binding: t; -*-
-
-;;; Commentary:
-
-;; 
-
+;;; loaddefs-ext.el --- automatically extracted autoloads
+;;
 ;;; Code:
 
-;; (provide 'loaddefs-ext)
+
+;;;### (autoloads nil "abbrev-ext" "abbrev-ext.el" (0 0 0 0))
+;;; Generated autoloads from abbrev-ext.el
 
-;;; loaddefs-ext.el ends here
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "abbrev-ext" '("abbrev-ext-insert-hook" "global-abbrev-table")))
+
+;;;***
 
 ;;;### (autoloads nil "bbcode-ext" "bbcode-ext.el" (0 0 0 0))
 ;;; Generated autoloads from bbcode-ext.el
@@ -99,6 +99,11 @@ See `comment-tags-mode' for more information on Comment-Tags mode.
 ;;;### (autoloads nil "dired-ext" "dired-ext.el" (0 0 0 0))
 ;;; Generated autoloads from dired-ext.el
 
+(autoload 'dired-mode--extra-hook "dired-ext" "\
+Extra hook for `dired-mode'." nil nil)
+
+(add-hook 'dired-mode-hook #'dired-mode--extra-hook)
+
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "dired-ext" '("dired-")))
 
 ;;;***
@@ -180,14 +185,14 @@ Hook for the `emacs-lisp-mode' extension." nil nil)
 ;;;### (autoloads nil "extensions" "extensions.el" (0 0 0 0))
 ;;; Generated autoloads from extensions.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "extensions" '("--extension-completion" "feature-loaded" "find-extension" "load-extension" "user-ext-extension-directory")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "extensions" '("--extension-completion" "find-extension" "load-extension" "user-ext-extension-directory")))
 
 ;;;***
 
 ;;;### (autoloads nil "general" "general.el" (0 0 0 0))
 ;;; Generated autoloads from general.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "general" '("--add-mode-comment--" "add-mode-comment" "bind-fill-region" "copy-line" "count-words-region2" "date-format-version" "emacs-lisp-mode-abbrev-table" "enable-wrap" "kill-and-quit" "narrow-to-region2" "pop-saved-position" "print-saved-positions" "save-" "sort-words" "user-ext-local-position-ring")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "general" '("--add-mode-comment--" "add-mode-comment" "bind-fill-region" "copy-line" "count-words-region2" "date-format-version" "emacs-lisp-mode-abbrev-table" "enable-wrap" "invalid-argument" "kill-and-quit" "narrow-to-region2" "pop-saved-position" "print-saved-positions" "save-" "signal-wrong-argument" "sort-words" "user-ext-local-position-ring" "wrong-argument")))
 
 ;;;***
 
@@ -332,31 +337,7 @@ Extra hook for `log4j-mode'." nil nil)
 ;;;### (autoloads nil "lsp-ext" "lsp-ext.el" (0 0 0 0))
 ;;; Generated autoloads from lsp-ext.el
 
-(advice-add 'lsp--before-save :after #'lsp-ext--before-save (alist-ext-define 'name "lsp-after-before-save"))
-
-(autoload 'lsp-ext--before-save "lsp-ext" "\
-Disable LSP inlays and maybe do other things before saving.
-This is supposed to be called before `lsp--before-save'." nil nil)
-
-(autoload 'kill-lsp-buffers "lsp-ext" "\
-Kill all buffers that have to do with function `lsp-mode'." t nil)
-
-(autoload 'lsp-workspace-folders-remove-list "lsp-ext" "\
-Call `lsp-workspace-folders-remove' one or more times in a loop." t nil)
-
-(autoload 'lsp-workspace-blocklist-add "lsp-ext" "\
-Add PROJECT-ROOT to the workspace blocklist.
-
-\(fn PROJECT-ROOT)" t nil)
-
-(autoload 'lsp-workspace-blocklist-remove-all "lsp-ext" nil t nil)
-
-(autoload 'lsp-workspace-folders-add-temp "lsp-ext" "\
-Temporarily add PROJECT-ROOT to the list of workspace folders.
-
-\(fn PROJECT-ROOT)" t nil)
-
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "lsp-ext" '("lsp--delete-temp-workspace-folders" "user-ext-lsp-")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "lsp-ext" '("kill-lsp-buffers" "lsp-" "user-ext-lsp-")))
 
 ;;;***
 
@@ -424,6 +405,9 @@ _NEW-WINDOW is ignored.
 
 \(fn URL &optional NEW-WINDOW)" t nil)
  (autoload 'org-ext-scratch "org-ext" "Create an `org-mode' scratch buffer." t)
+
+(autoload 'org-ext-tbl-minor-mode "org-ext" "\
+Turn on `orgtbl-mode'." t nil)
 
 (autoload 'org--extra-hook "org-ext" "\
 Extra hook for `org-mode'." nil nil)
@@ -536,12 +520,15 @@ This calls `rustic-cargo-run' with a non-nil argument." t nil)
 
 (autoload 'rust-ext-docstring "rust-ext" "\
 Open a temporary buffer to write a docstring." t nil)
+
+(autoload 'rust-ext-customize-group "rust-ext" "\
+Customize the group for `rusti-mode'." t nil)
  (autoload 'rust-ext-scratch-buffer "rust-ext" "Open a scratch buffer in `rustic-mode'." t)
 
-(autoload 'rust--custom-hook "rust-ext" "\
+(autoload 'rust--extra-hook "rust-ext" "\
 Hook for `rustic-mode' extension." nil nil)
 
-(add-hook 'rust-mode-hook #'rust--custom-hook)
+(add-hook 'rust-mode-hook #'rust--extra-hook)
 
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "rust-ext" '("rust-" "user-ext-rust-")))
 
@@ -593,7 +580,7 @@ Extra hook for `toml-mode'." nil nil)
 
 (add-hook 'toml-mode-hook #'toml-mode--extra-hook)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "toml-ext" '("toml-ext-")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "toml-ext" '("toml-ext-indent")))
 
 ;;;***
 
@@ -612,14 +599,16 @@ Extra hook for `toml-mode'." nil nil)
 
 ;;;***
 
-;;;### (autoloads nil nil ("faces-ext.el" "liquidsoap-bootstrap.el"
-;;;;;;  "modes.el") (0 0 0 0))
+;;;### (autoloads nil nil ("faces-ext.el" "help-ext.el" "liquidsoap-bootstrap.el")
+;;;;;;  (0 0 0 0))
 
 ;;;***
 
-;;;### (autoloads nil "abbrev-ext" "abbrev-ext.el" (0 0 0 0))
-;;; Generated autoloads from abbrev-ext.el
-
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "abbrev-ext" '("abbrev-ext-insert-hook")))
-
-;;;***
+(provide 'loaddefs-ext)
+;; Local Variables:
+;; version-control: never
+;; no-byte-compile: t
+;; no-update-autoloads: t
+;; coding: utf-8
+;; End:
+;;; loaddefs-ext.el ends here
