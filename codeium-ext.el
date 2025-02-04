@@ -1,12 +1,11 @@
 ;;; codeium-ext --- Codeium extension.  -*- lexical-binding: t;  -*-
 
-;;; Commentary:
-
-;;; Code:
-
 (add-to-list 'load-path "~/.emacs.d/codeium.el")
 
 (require 'codeium)
+
+(eval-when-compile
+  (require 'easymenu))
 
 ;; Variables
 
