@@ -1,0 +1,51 @@
+# -*- mode: sh; -*-
+
+select tag in readme watch main; do
+    if [ -n "$tag" ]; then
+	break
+    fi
+done
+
+if [ "$tag" = "readme" ]; then
+    (sleep 2; xdg-open "http://localhost:5010/README.md") &
+    python -m http.server 5010 || return
+    exit
+elif [ "$tag" = "watch" ]; then
+    source .venv/bin/activate
+    python watch.py || return
+    exit
+fi
+
+declare -r ROOTDIR=$(dirname $(realpath "$0"))
+
+## usage: __cleanup
+function __cleanup {
+    jbackup compress emacs-extensions
+}
+trap __cleanup EXIT
+
+source ~/src/.gitprojectrc
+source ~/src/.fzf-history
+
+alias emacs="execnohup emacs; unalias emacs; history -s execnohup emacs"
+alias git-gui="execnohup --sleep 2 -n 2 git gui; unalias git-gui; history -s execnohup --sleep 2 -n 2 git gui"
+
+## usage: list-commands
+function list-commands {
+    cat <<EOF
+Commands:
+  * emacs (once, modifies history)
+  * git-gui (once, modifies history)
+EOF
+}
+
+history -c
+HISTFILE="$ROOTDIR/.bash_history"
+HISTSIZE=500
+HISTFILESIZE=500
+export HISTFILE HISTSIZE HISTFILESIZE
+history -r
+
+list-commands
+
+source .venv/bin/activate
