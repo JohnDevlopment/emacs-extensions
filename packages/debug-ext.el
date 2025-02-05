@@ -15,8 +15,7 @@ FORM should not be quoted."
   (pcase type
     ('var
      (cl-check-type form symbol)
-     ;; `(message ,(format "DEBUG: %s = %S" (cl-prin1-to-string form) form))
-     `(message "DEBUG: %s = %S" ,(cl-prin1-to-string form) ,form))
+     `(message "DEBUG: %s = %S" (quote ,form) ,form))
     ('sexp
      `(message ,(concat "DEBUG: " (cl-prin1-to-string form) " = %S") ,form))
     (_ (error "Unknown type %S" type))))
