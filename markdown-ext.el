@@ -4,9 +4,9 @@
 
 ;;; Code:
 
-(eval-when-compile
-  (require 'cl-lib)
-  (require 'markdown-mode))
+(require 'cl-lib)
+(require 'markdown-mode)
+(require 'org-table)
 
 (defvar markdown-footnote-counter)
 (defvar markdown-mode-style-map)
