@@ -1,14 +1,14 @@
 ;; -*- lexical-binding: t; -*-
 
-(require 'cl-lib)
-(require 'cl-ext)
-(require 'alist-ext)
-(require 'debug-ext)
-
 (defconst user-ext-extension-directory "~/.emacs.d/extensions")
 
 (add-to-list 'load-path "~/.emacs.d/extensions")
 (add-to-list 'load-path "~/.emacs.d/extensions/packages")
+
+(require 'cl-lib)
+(require 'cl-ext)
+(require 'alist-ext)
+(require 'debug-ext)
 
 (setq read-process-output-max 10485760)
 
