@@ -218,6 +218,8 @@ ARG is passed to the function."
 (define-key org-mode-map (kbd "<C-tab>") #'tab-next)
 (define-key org-mode-map (kbd "M-F") #'fill-region)
 
+(define-key orgtbl-mode-map (kbd "C-c TAB") #'org-table-toggle-column-width)
+
 ;; Hooks
 
 ;;;###autoload
