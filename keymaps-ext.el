@@ -87,6 +87,8 @@ of modes using a completion function.
 (define-contextual-key-func "h"
   "hs-minor-mode")
 
+(define-contextual-key-func "o" "org-ext-tbl-minor-mode")
+
 (define-contextual-key-func "s"
   "shell-script-mode"
   "sphinx-doc-mode")
@@ -150,7 +152,7 @@ is non-nil."
 (define-key quick-mode-map (kbd "g") #'contextual-key-g)
 (define-key quick-mode-map (kbd "h") #'contextual-key-h)
 (define-key quick-mode-map (kbd "l") #'lsp-mode)
-(define-key quick-mode-map (kbd "o") #'origami-mode)
+(define-key quick-mode-map (kbd "o") #'contextual-key-o)
 (define-key quick-mode-map (kbd "s") #'contextual-key-s)
 (define-key quick-mode-map (kbd "v") #'view-mode)
 (define-key quick-mode-map (kbd "w") #'enable-wrap)
