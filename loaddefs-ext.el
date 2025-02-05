@@ -185,7 +185,7 @@ Hook for the `emacs-lisp-mode' extension." nil nil)
 ;;;### (autoloads nil "extensions" "extensions.el" (0 0 0 0))
 ;;; Generated autoloads from extensions.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "extensions" '("--extension-completion" "find-extension" "load-extension" "user-ext-extension-directory")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "extensions" '("--extension-completion" "eval-after-require" "find-extension" "load-extension" "user-ext-extension-directory")))
 
 ;;;***
 
@@ -385,7 +385,7 @@ Hook for `markdown-mode' extension." nil nil)
 
 (add-hook 'markdown-mode-hook #'markdown--extra-hook)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "markdown-ext" '("markdown-")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "markdown-ext" '("markdown-" "orgtbl-to-markdown")))
 
 ;;;***
 
@@ -407,7 +407,10 @@ _NEW-WINDOW is ignored.
  (autoload 'org-ext-scratch "org-ext" "Create an `org-mode' scratch buffer." t)
 
 (autoload 'org-ext-tbl-minor-mode "org-ext" "\
-Turn on `orgtbl-mode'." t nil)
+Turn on `orgtbl-mode'.
+ARG is passed to the function.
+
+\(fn &optional ARG)" t nil)
 
 (autoload 'org--extra-hook "org-ext" "\
 Extra hook for `org-mode'." nil nil)
@@ -548,7 +551,7 @@ Hook for `rustic-mode' extension." nil nil)
 ;;;### (autoloads nil "syntax-ext" "syntax-ext.el" (0 0 0 0))
 ;;; Generated autoloads from syntax-ext.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "syntax-ext" '("make-ppss-easy" "my/mcpyrate-syntax-highlight-setup")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "syntax-ext" '("make-ppss-easy")))
 
 ;;;***
 
