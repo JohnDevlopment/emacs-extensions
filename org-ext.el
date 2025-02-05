@@ -191,10 +191,11 @@ to the result.  It is expected to contain a currency symbol."
   (mapcar #'org-ext-scan-number strings))
 
 ;;;###autoload
-(defun org-ext-tbl-minor-mode ()
-  "Turn on `orgtbl-mode'."
-  (interactive)
-  (orgtbl-mode))
+(defun org-ext-tbl-minor-mode (&optional arg)
+  "Turn on `orgtbl-mode'.
+ARG is passed to the function."
+  (interactive "P")
+  (orgtbl-mode (or arg 'toggle)))
 
 (local-set-key (kbd "M-e") #'yas-expand)
 
