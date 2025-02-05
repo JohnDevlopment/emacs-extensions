@@ -1,5 +1,23 @@
 # -*- mode: sh; -*-
 
+temp=$(getopt -o :p: -l port: -- "$@")
+eval set -- "$temp"
+
+while [ "$1" != '--' ]; do
+    case "$1" in
+	-p|--port)
+	    PORT=${2}
+	    shift 2
+	    ;;
+	--)
+	    shift
+	    echo --
+	    ;;
+	*)
+	    
+    esac
+done
+
 select tag in readme watch main; do
     if [ -n "$tag" ]; then
 	break
@@ -10,8 +28,8 @@ if [ "$tag" = "readme" ]; then
     set-title README
     ## usage: run
     function run {
-	(sleep 2; xdg-open "http://localhost:5010/README.md") &
-	python -m http.server 5010 || return
+	(sleep 2; xdg-open "http://localhost:${PORT:=5010}/README.md") &
+	python -m http.server $PORT || return
 	exit
     }
     echo "Command: run"
