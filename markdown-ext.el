@@ -36,6 +36,41 @@ The skeleton will be bound to markdown-skeleton-NAME."
 
 ;; Functions
 
+(defun markdown-ext--cell-to-list (cell)
+  (let ((buf (tmpbuf "cell"))
+	elts)
+    (with-current-buffer buf
+      (insert cell)
+      (move-beginning-of-line 1)
+      (setq elts (mapcar #'csv--unquote-value (csv--collect-fields (line-end-position)))))
+    (kill-buffer buf)
+    (string-join elts "\n")))
+
+(defun markdown-ext--process-table (table)
+  (cl-loop
+   for row in table			; is a list
+   collect
+   (if (listp row)
+       (cl-loop
+	for cell in row			; is a string
+	collect (cond
+		 ((string-match "^@list[[:space:]]+\\(.\\)" cell)
+		  (markdown-ext--cell-to-list (substring cell
+							 (match-beginning 1))))
+		 (t cell)))
+     row)))
+
+(defun orgtbl-to-markdown (table params)
+  "Convert TABLE to a Markdown table."
+  (let* ((alignment (mapconcat (lambda (x) (if x "|--:" "|---"))
+			       org-table-last-alignment ""))
+	 (table (markdown-ext--process-table table))
+	 (params2 (list :splice t
+			:hline (concat alignment "|")
+			:sep " | "
+			:lstart "| " :lend " |")))
+    (orgtbl-to-generic table (org-combine-plists params2 params))))
+
 ;;;###autoload
 (defun markdown-ext-insert-footnote ()
   "Insert a footnote with a new number and move point to footnote definition."
