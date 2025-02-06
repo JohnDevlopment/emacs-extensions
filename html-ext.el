@@ -27,7 +27,9 @@
 		    "REGISTERED SIGN (®)" "&reg;"
 		    "MACRON (¯)" "&macr;"
 		    "DEGREE SIGN (°)" "&deg;"
-		    "PLUS-MINUS SIGN (±)" "&plusmn;"))
+		    "PLUS-MINUS SIGN (±)" "&plusmn;"
+		    "BALLOT BOX WITH CHECK (☑)" "&#9745;"
+		    "BALLOT BOX WITH X (☒)" "&#9746;"))
 
 (define-key mhtml-mode-map (kbd "C-M-i") #'completion-at-point)
 (define-key mhtml-mode-map (kbd "C-c C-e") #'mhtml-ext-insert-entity)
