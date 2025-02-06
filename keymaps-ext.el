@@ -193,6 +193,7 @@ is non-nil."
 
 (define-key extension-map "l" #'load-extension)
 (define-key extension-map "F" #'find-extension-at-point)
+(define-key extension-map "h" #'get-extension-documentation)
 (define-key extension-map "f" #'find-extension)
 
 (provide 'keymaps-ext)

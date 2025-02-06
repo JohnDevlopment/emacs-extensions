@@ -9,11 +9,24 @@
 (require 'cl-ext)
 (require 'alist-ext)
 (require 'debug-ext)
+(require 'documentation-ext)
 
 (setq read-process-output-max 10485760)
 
 (setq frame-title-format
       (concat multiple-frames " %b " invocation-name "@" (system-name)))
+
+(document-extension "extensions"
+  "The main loader for custom extensions."
+  :functions
+  (document-extension eval-after-require
+    find-extension
+    find-extension-at-point
+    get-extension-documentation
+    load-extension
+    load-extension-safe)
+  :variables
+  ((user-ext-extension-directory constant)))
 
 ;; Enable `narrow-to-region'
 (put 'narrow-to-region 'disabled nil)
@@ -65,6 +78,15 @@ error is demoted to a simple message."
   (prog1
       (switch-to-buffer (find-file-noselect
 			 (concat "~/.emacs.d/extensions/" extension ".el")))))
+
+(defun get-extension-documentation (extension)
+  "Display the full documentation for EXTENION (a string)."
+  (interactive (--extension-completion))
+  (let ((var (intern-soft (format "user-ext-%s-documentation" extension))))
+    (print-expr sexp (list var extension))
+    (unless var
+      (user-error "No documentation exists for %s" extension))
+    (describe-variable var)))
 
 ;; ---
 

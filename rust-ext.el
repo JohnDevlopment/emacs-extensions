@@ -9,6 +9,24 @@
 
 ;; Variables
 
+(document-extension "rust-ext"
+  "An extension for Rustic mode."
+  :requires
+  (rust-mode rustic)
+
+  :variables
+  ((user-ext-rust-docstring-fill-column custom)
+   (user-ext-rust-function-regexp constant)
+   (user-ext-rust-impl-regexp constant))
+
+  :functions
+  (rust-ext-hide-base
+   rust-ext-finish-variable-type
+   rust-ext-cargo-run-with-args
+   rust-ext-docstring
+   rust-ext-customize-group
+   rust-skeleton-define))
+
 (defgroup rust-ext nil
   "A group for Rust extension."
   :group 'user-extensions)

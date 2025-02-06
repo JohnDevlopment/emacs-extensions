@@ -37,14 +37,34 @@ treated as a single value and formatted appropriately."
 (cl-deftype marker-or-null () '(or marker null))
 (cl-deftype integer-or-null () '(or integer null))
 
-;; Abbrevs
-
-;; (define-abbrev emacs-lisp-mode-abbrev-table "propline"
-;;   "" (lambda ()
-;;        (interactive)
-;;        (call-interactively #'add-file-local-variable-prop-line)))
-
 ;; Variables
+
+(document-extension "general"
+  "General extension functions."
+  :functions
+  (add-mode-comment
+   bind-fill-region
+   copy-line
+   count-words-region2
+   date-format-version
+   enable-wrap
+   kill-and-quit
+   narrow-to-region2
+   pop-saved-position
+   print-saved-positions
+   save-and-kill
+   save-current-position
+   signal-wrong-argument
+   sort-words
+   wrap)
+
+  :variables
+  ((user-ext-local-position-ring local))
+
+  :types
+  (list-or-null
+   marker-or-null
+   integer-or-null))
 
 (defvar-local user-ext-local-position-ring nil
   "Current file's mark ring.")

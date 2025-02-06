@@ -2,6 +2,12 @@
 
 (require 'python-mode)
 
+(document-extension "imenu-ext"
+  "Extension for configuring IMenu in certain modes."
+  :functions
+  (bind-imenu
+   bind-imenu-lsp))
+
 ;;;###autoload
 (defun bind-imenu ()
   "Binds `imenu' to the right-mouse button locally.
