@@ -181,7 +181,6 @@ is non-nil."
 (global-set-key (kbd "C-c M-q") #'kill-and-quit)
 (global-set-key (kbd "C-n")     #'nonincremental-repeat-search-forward)
 (global-set-key (kbd "M-=")     #'count-words-region2)
-;; (global-set-key (kbd "C-x C-b") #'list-buffers-ex)
 (global-set-key (kbd "C-x C-b") #'ibuffer)
 (global-set-key (kbd "C-x M-f") #'find-file-at-point)
 (global-set-key (kbd "C-x Q")   #'macro-ext-query)
