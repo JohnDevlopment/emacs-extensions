@@ -26,7 +26,21 @@
 Group 1 matches the name of the definition (usually the
 first argument).")
 
+(defconst user-ext-elisp-variable-regexp
+  (rx ?\( (or "defconst" "defvar" "defcustom"))
+  "Regular expression for variable definitions.")
+
 ;; Functions
+
+;;;###autoload
+(defun elisp-ext-occur-variables ()
+  (interactive)
+  (occur user-ext-elisp-variable-regexp))
+
+;;;###autoload
+(defun elisp-ext-occur-functions ()
+  (interactive)
+  (occur user-ext-elisp-defun-regexp))
 
 ;;;###autoload
 (defun elisp-ext-minify (start end)
