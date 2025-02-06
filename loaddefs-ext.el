@@ -144,6 +144,10 @@ Extra hook for `dtext-mode'." nil nil)
 ;;;### (autoloads nil "elisp-ext" "elisp-ext.el" (0 0 0 0))
 ;;; Generated autoloads from elisp-ext.el
 
+(autoload 'elisp-ext-occur-variables "elisp-ext" nil t nil)
+
+(autoload 'elisp-ext-occur-functions "elisp-ext" nil t nil)
+
 (autoload 'elisp-ext-minify "elisp-ext" "\
 Minify the code between START and END in current buffer.
 If called interactively, START and END are the region,
@@ -185,14 +189,14 @@ Hook for the `emacs-lisp-mode' extension." nil nil)
 ;;;### (autoloads nil "extensions" "extensions.el" (0 0 0 0))
 ;;; Generated autoloads from extensions.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "extensions" '("--extension-completion" "eval-after-require" "find-extension" "load-extension" "user-ext-extension-directory")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "extensions" '("--extension-completion" "eval-after-require" "find-extension" "get-extension-documentation" "load-extension" "user-ext-extension-directory")))
 
 ;;;***
 
 ;;;### (autoloads nil "general" "general.el" (0 0 0 0))
 ;;; Generated autoloads from general.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "general" '("--add-mode-comment--" "add-mode-comment" "bind-fill-region" "copy-line" "count-words-region2" "date-format-version" "enable-wrap" "invalid-argument" "kill-and-quit" "narrow-to-region2" "pop-saved-position" "print-saved-positions" "save-" "signal-wrong-argument" "sort-words" "user-ext-local-position-ring" "wrong-argument")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "general" '("--add-mode-comment--" "add-mode-comment" "bind-fill-region" "copy-line" "count-words-region2" "date-format-version" "enable-wrap" "invalid-argument" "kill-and-quit" "narrow-to-region2" "pop-saved-position" "print-saved-positions" "save-" "signal-wrong-argument" "sort-words" "user-ext-local-position-ring" "wrap" "wrong-argument")))
 
 ;;;***
 
