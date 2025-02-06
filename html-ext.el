@@ -5,11 +5,9 @@
 ;;; Code:
 
 (require 'alist-ext)
-
-(eval-when-compile
-  (require 'mhtml-mode)
-  (require 'ido)
-  (require 'sgml-mode))
+(require 'mhtml-mode)
+(require 'ido)
+(require 'sgml-mode)
 
 (defconst user-ext-mhtml-entities
   (alist-ext-define "QUOTATION MARK (\")" "&quot;"
