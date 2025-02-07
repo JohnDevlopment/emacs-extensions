@@ -1,9 +1,7 @@
 ;;; custom-ext --- Customization variables.  -*- lexical-binding: t; -*-
 
 (require 'dash)
-
-(eval-when-compile
-  (require 'custom))
+(require 'custom)
 
 ;; Custom variables and faces
 
