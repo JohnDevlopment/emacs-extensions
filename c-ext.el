@@ -3,6 +3,14 @@
 (require 'skeleton)
 (require 'cc-mode)
 
+(document-extension "c-ext"
+  "Extension for C mode."
+  :functions
+  (c-skeleton-define c-skeleton-function
+    c-skeleton-guard
+    c-skeleton-includes
+    c-skeleton-struct))
+
 (defmacro c-skeleton-define (name doc &rest skel)
   "Define a `c-mode' skeleton using NAME DOC and SKEL.
 The skeleton will be bound to c-skeleton-NAME."
