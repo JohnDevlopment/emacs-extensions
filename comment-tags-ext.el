@@ -1,12 +1,8 @@
-;;; comment-tags-ext --- Comment-tags mode extension.  -*- lexical-binding: t;  -*-
-
-;;; Commentary:
-
-;;; Code:
+;; -*- lexical-binding: t;  -*-
 
 (require 'comment-tags)
 
-;;; Code:
+;; Variables
 
 (defcustom user-ext-global-comment-tags-exclude
   nil
@@ -16,6 +12,8 @@
 
 (defvar global-comment-tags-regexp (comment-tags--make-regexp)
   "Regular expression for matching TODO-ish comments.")
+
+;; Functions
 
 ;;;###autoload
 (defun comment-tags-mode-turn-on ()
