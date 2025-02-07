@@ -11,6 +11,25 @@
 	`(error "%S does not match type \"%S\""
 		,form (quote ,type)))))
 
+(defun document-ext--process-item (x &optional v1)
+  (declare (pure t))
+  (pcase x
+    (`(,sym ,(or 'local 'constant))
+     ;; Variable
+     (document-ext--check-type sym symbol x)
+     (format "- `%s' (%S)" sym (cadr x)))
+    (`(,sym custom)
+     ;; Customization variable
+     (document-ext--check-type sym symbol x)
+     (format "- `%s' (customization)" sym))
+    (`(,sym command)
+     (document-ext--check-type sym symbol x)
+     (format "- Command `%S'" sym))
+    (_
+     ;; Other symbol, likely a function
+     (document-ext--check-type x symbol)
+     (format "- `%s'" x))))
+
 (cl-defmacro document-extension (extension
 				 preamble
 				 &key functions variables types requires)
@@ -48,18 +67,7 @@ constant  Means SYMBOL is a constant variable.
   (cl-check-type functions list)
   (cl-check-type variables list)
   (let* ((var (intern (format "user-ext-%s-documentation" extension)))
-	 (process-item
-	  (lambda (x)
-	    (pcase x
-	      (`(,sym ,(or 'local 'constant))
-	       (document-ext--check-type sym symbol x)
-	       (format "- `%s' (%S)" sym (cadr x)))
-	      (`(,sym custom)
-	       (document-ext--check-type sym symbol x)
-	       (format "- `%s' (customization)" sym))
-	      (_
-	       (document-ext--check-type x symbol)
-	       (format "- `%s'" x)))))
+	 (process-item #'document-ext--process-item)
 	 (docstring preamble)
 	 ;; (value (alist-ext-define 'functions functions
 	 ;; 			  'variables variables))
