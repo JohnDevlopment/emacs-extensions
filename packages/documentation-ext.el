@@ -32,7 +32,7 @@
 
 (cl-defmacro document-extension (extension
 				 preamble
-				 &key functions variables types requires)
+				 &key functions variables types requires advised)
   "Create documentation for EXTENION starting with PREAMBLE.
 PREAMBLE is the documentation for EXTENSION.
 
@@ -72,6 +72,10 @@ constant  Means SYMBOL is a constant variable.
 	 ;; (value (alist-ext-define 'functions functions
 	 ;; 			  'variables variables))
 	 v1)
+    (when advised
+      (setq v1 "These functions are advised:"
+	    docstring (format "%s\n\n%s\n\n%s" docstring v1
+			      (mapconcat process-item advised "\n"))))
     (when functions
       (setq docstring
 	    (format "%s\n\nFunctions:\n\n%s" docstring
