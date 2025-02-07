@@ -21,11 +21,12 @@ tags are wrapped around the region indicated by BEG and END.
 
 \(fn CHAR &optional BEG END)" t nil)
 
-(autoload 'bbcode-ext-enable "bbcode-ext" "\
-Call this function to load `bbcode-ext'.
-Otherwise, this function does nothing." t nil)
+(autoload 'bbcode-extra-hook "bbcode-ext" "\
+Extra hook for `bbcode-mode'." nil nil)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "bbcode-ext" '("bbcode-")))
+(add-hook 'bbcode-mode-hook #'bbcode-extra-hook)
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "bbcode-ext" '("bbcode-add-tag")))
 
 ;;;***
 
