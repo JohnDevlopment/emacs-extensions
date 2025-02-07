@@ -1,13 +1,10 @@
 ;;; bbcode-ext --- BBCode mode extension  -*- lexical-binding: t; -*-
 
-;;; Commentary:
-
-;;; Code:
+(require 'bbcode-mode)
 
 (eval-when-compile
-  (require 'bbcode-mode))
-
-(define-prefix-command 'bbcode-mode-prefix)
+  (declare-function bbcode-mode-prefix "bbcode-mode")
+  (defvar bbcode-mode-prefix))
 
 (defun bbcode-add-tag (name &optional beg end)
   "Insert the tag NAME at point or around region BEG and END."
@@ -35,6 +32,7 @@ tags are wrapped around the region indicated by BEG and END."
   (message "%s %d-%d" char beg end)
   (bbcode-add-tag (char-to-string char) beg end))
 
+;;;###autoload
 (defun bbcode-extra-hook ()
   "Extra hook for `bbcode-mode'."
   (local-set-key (kbd "C-c i") #'bbcode-mode-prefix)
@@ -43,11 +41,6 @@ tags are wrapped around the region indicated by BEG and END."
   (setq tab-width 4))
 
 ;;;###autoload
-(defun bbcode-ext-enable ()
-  "Call this function to load `bbcode-ext'.
-Otherwise, this function does nothing."
-  (interactive))
-
 (add-hook 'bbcode-mode-hook #'bbcode-extra-hook)
 
 (provide 'bbcode-ext)
