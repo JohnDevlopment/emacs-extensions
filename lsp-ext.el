@@ -1,17 +1,15 @@
-;;; lsp-ext --- Lsp Extension  -*- lexical-binding: t; -*-
+;;-*- lexical-binding: t; -*-
 
 (require 'function-ext)
 (require 'lsp-mode)
+(require 'gv)
+(require 'cl-lib)
 
 (eval-and-compile
   (setq lsp-keymap-prefix "C-c c l")
   (define-key lsp-mode-map (kbd "C-c l T i") #'lsp-inlay-hints-mode)
   (define-key lsp-mode-map (kbd "<double-mouse-1>") #'imenu)
   (define-key lsp-mode-map (kbd "M-R") #'revert-buffer))
-
-(eval-when-compile
-  (require 'gv)
-  (require 'cl-lib))
 
 ;; Customizations
 
@@ -87,6 +85,7 @@ temporary folders from the workspace."
   (lsp--persist-session (lsp-session)))
 
 (defun lsp-workspace-blocklist-remove-all ()
+  "Remove all folders in the workspace blocklist."
   (interactive)
   (setf (lsp-session-folders-blocklist (lsp-session)) nil)
   (lsp--persist-session (lsp-session)))
