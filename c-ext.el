@@ -1,17 +1,13 @@
 ;;; c-ext --- C mode extension.  -*- lexical-binding: t; -*-
 
-;;; Commentary:
-
-;;; Code:
-
-(eval-when-compile
-  (require 'skeleton)
-  (require 'cc-mode))
+(require 'skeleton)
+(require 'cc-mode)
 
 (defmacro c-skeleton-define (name doc &rest skel)
-  "Define a `c-mode' skeleton using NAME DOC and SKEL. The skeleton will be
-bound to c-skeleton-NAME."
-  (declare (indent 2))
+  "Define a `c-mode' skeleton using NAME DOC and SKEL.
+The skeleton will be bound to c-skeleton-NAME."
+  (declare (indent 1) (doc-string 2)
+	   (debug (&define name stringp def-body)))
   (let* ((name (symbol-name name))
 	 (funcname (intern (concat "c-skeleton-" name))))
     `(progn
@@ -46,7 +42,7 @@ bound to c-skeleton-NAME."
 		   _ < "};")
 
 ;;;###autoload
-(defun c--custom-hook ()
+(defun c-ext--extra-hook ()
   (setq-local skeleton-further-elements
 	      '((< '(- (min c-basic-offset (current-column))))))
   (c-set-style "user"))
@@ -57,7 +53,7 @@ bound to c-skeleton-NAME."
 (define-key c-mode-base-map (kbd "C-c C-t s") #'c-skeleton-struct)
 
 ;;;###autoload
-(add-hook 'c-mode-common-hook 'c--custom-hook)
+(add-hook 'c-mode-common-hook 'c-ext--extra-hook)
 
 (provide 'c-ext)
 
