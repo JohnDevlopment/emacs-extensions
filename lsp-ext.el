@@ -5,6 +5,22 @@
 (require 'gv)
 (require 'cl-lib)
 
+(document-extension "lsp-ext"
+  "LSP mode extension.
+What this extension does is add additional functionality for
+LSP mode, such as commands for adding or removing folders
+from the workspace."
+  :advised ((lsp-execute-code-action command)
+	    lsp--before-save)
+  :variables ((user-ext-lsp-buffers-to-kill custom)
+	      (user-ext-lsp-safe-inlay-modes custom)
+	      user-ext-lsp-temporary-workspace-folders)
+  :functions ((kill-lsp-buffers command)
+	      (lsp-workspace-folders-remove-list command)
+	      (lsp-workspace-blocklist-add command)
+	      (lsp-workspace-blocklist-remove-all command)
+	      (lsp-workspace-folders-add-temp command)))
+
 (eval-and-compile
   (setq lsp-keymap-prefix "C-c c l")
   (define-key lsp-mode-map (kbd "C-c l T i") #'lsp-inlay-hints-mode)
