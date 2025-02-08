@@ -66,14 +66,28 @@ also defined here."
   "Face for time strings in log files."
   :group 'user-extensions)
 
+;; Functions
+
+(defun define-face-alias (current-face other-face)
+  "Make CURRENT-FACE an alias to OTHER-FACE."
+  (put current-face 'face-alias other-face))
+
 ;; Aliases
 
-(defalias 'log-view-date    'user-ext-log-view-date)
-(defalias 'log-view-debug   'user-ext-log-view-debug)
-(defalias 'log-view-error   'user-ext-log-view-error)
-(defalias 'log-view-info    'user-ext-log-view-info)
-(defalias 'log-view-time    'user-ext-log-view-time)
-(defalias 'log-view-warning 'user-ext-log-view-warning)
+;; (cl-prettyexpand '(define-obsolete-face-alias log-view-date user-ext-log-view-debug
+;; 		    "x"))
+;; (progn
+;;   (put log-view-date 'face-alias user-ext-log-view-debug)
+;;   (put log-view-date 'obsolete-face (or (purecopy "x") t)))
+
+(define-face-alias 'log-view-date 'user-ext-log-view-date)
+
+(define-face-alias 'log-view-date    'user-ext-log-view-date)
+(define-face-alias 'log-view-debug   'user-ext-log-view-debug)
+(define-face-alias 'log-view-error   'user-ext-log-view-error)
+(define-face-alias 'log-view-info    'user-ext-log-view-info)
+(define-face-alias 'log-view-time    'user-ext-log-view-time)
+(define-face-alias 'log-view-warning 'user-ext-log-view-warning)
 
 (defgroup user-ext-global-modes nil
   "A group for global modes."
