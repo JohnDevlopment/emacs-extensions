@@ -11,24 +11,26 @@
 	`(error "%S does not match type \"%S\""
 		,form (quote ,type)))))
 
-(defun document-ext--process-item (x &optional v1)
-  (declare (pure t))
-  (pcase x
-    (`(,sym ,(or 'local 'constant))
-     ;; Variable
-     (document-ext--check-type sym symbol x)
-     (format "- `%s' (%S)" sym (cadr x)))
-    (`(,sym custom)
-     ;; Customization variable
-     (document-ext--check-type sym symbol x)
-     (format "- `%s' (customization)" sym))
-    (`(,sym command)
-     (document-ext--check-type sym symbol x)
-     (format "- Command `%S'" sym))
-    (_
-     ;; Other symbol, likely a function
-     (document-ext--check-type x symbol)
-     (format "- `%s'" x))))
+(defun document-ext--process-item (item &optional v1)
+  (let (check-sym-type)
+    (setq check-sym-type (lambda (sym x)
+			   (document-ext--check-type sym symbol x)))
+    (pcase item
+      (`(,sym ,(or 'local 'constant))
+       ;; Variable
+       (funcall check-sym-type sym item)
+       (format "- `%s' (%S)" sym (cadr item)))
+      (`(,sym custom)
+       ;; Customization variable
+       (funcall check-sym-type sym item)
+       (format "- `%s' (customization)" sym))
+      (`(,sym command)
+       (funcall check-sym-type sym item)
+       (format "- Command `%S'" sym))
+      (_
+       ;; Other symbol, likely a function
+       (document-ext--check-type item symbol)
+       (format "- `%s'" item)))))
 
 (cl-defmacro document-extension (extension
 				 preamble
@@ -76,14 +78,14 @@ symbol `local', symbol `constant', or the symbol `custom'.
       (setq v1 "These functions are advised:"
 	    docstring (format "%s\n\n%s\n\n%s" docstring v1
 			      (mapconcat process-item advised "\n"))))
-    (when functions
-      (setq docstring
-	    (format "%s\n\nFunctions:\n\n%s" docstring
-		    (mapconcat process-item functions "\n"))))
     (when variables
       (setq docstring
 	    (format "%s\n\nVariables:\n\n%s" docstring
 		    (mapconcat process-item variables "\n"))))
+    (when functions
+      (setq docstring
+	    (format "%s\n\nFunctions:\n\n%s" docstring
+		    (mapconcat process-item functions "\n"))))
     (when types
       (setq docstring
 	    (format "%s\n\nTypes:\n\n%s" docstring
