@@ -113,6 +113,7 @@ evaluated."
 (load-extension "macro-ext")
 
 (load-extension-safe "lsp-ext")
+(load-extension "dired-ext")
 (load-extension "buffers-ext")
 (load-extension "imenu-ext")
 (load-extension "syntax-ext")

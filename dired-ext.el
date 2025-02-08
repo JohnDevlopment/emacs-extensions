@@ -1,4 +1,4 @@
-;;; dired-ext --- Dired mode extension  -*- lexical-binding: t; -*-
+;; -*- lexical-binding: t; -*-
 
 (require 'dired)
 
@@ -39,11 +39,9 @@ individually, so list-sorting options are pointless."
 (define-key dired-mode-map "^" #'dired-ext-find-alternate-updir)
 (define-key dired-mode-map "k" #'dired-ext-quit-kill-window)
 
-;;;###autoload
 (defun dired-mode--extra-hook ()
   "Extra hook for `dired-mode'.")
 
-;;;###autoload
 (add-hook 'dired-mode-hook #'dired-mode--extra-hook)
 
 (provide 'dired-ext)
