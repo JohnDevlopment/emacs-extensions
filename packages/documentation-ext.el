@@ -16,7 +16,7 @@
     (setq check-sym-type (lambda (sym x)
 			   (document-ext--check-type sym symbol x)))
     (pcase item
-      (`(,sym ,(or 'local 'constant))
+      (`(,sym ,(or 'local 'constant 'face))
        ;; Variable
        (funcall check-sym-type sym item)
        (format "- `%s' (%S)" sym (cadr item)))
