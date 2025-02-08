@@ -2,6 +2,13 @@
 
 (require 'comment-tags)
 
+;; Advice
+
+(fext-defadvice comment-tags-list-tags-buffer (after list-comment-tags-buffer)
+  (with-current-buffer comment-tags-temp-buffer-name
+    ;; (local-set-key (kbd "C-c c q") #'quit-window)
+    (view-mode 1)))
+
 ;; Variables
 
 (document-extension "comment-tags-ext"
