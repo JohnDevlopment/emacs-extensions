@@ -8,6 +8,20 @@
 ;; Bind C-x M-d to `dired-alternate'
 (global-set-key (kbd "C-x M-d") #'dired-alternate)
 
+;; Variables
+
+(document-extension "dired-ext"
+  "Dired mode extension.
+
+Key binds:
+^       `dired-ext-find-alternate-updir'
+k       `dired-ext-quit-kill-window'"
+  :functions ((dired-ext-find-alternate-updir command)
+	      (dired-ext-quit-kill-window command)
+	      (dired-alternate command)))
+
+;; Functions
+
 (defun dired-ext-find-alternate-updir ()
   "In Dired, find alternate file in parent directory."
   (interactive)
