@@ -27,4 +27,10 @@
 						  (mapconcat #'identity diff-switches " ")))))))
 			(let ((current (dired-get-filename t)))
 			  (diff current file switches)))
-		      (define-key dired-mode-map (kbd "M-=") #'dired-diff-with-source-file))))))
+		      (define-key dired-mode-map (kbd "M-=") #'dired-diff-with-source-file)
+
+		      (defun mc-todo-hyphen-check (&optional arg)
+			"Keyboard macro."
+			(interactive "p")
+			(kmacro-exec-ring-item '([insert home right right right kp-subtract end insert] 0 "%d")
+					       arg)))))))
