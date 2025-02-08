@@ -40,9 +40,9 @@ Extra hook for `bbcode-mode'." nil nil)
 ;;;### (autoloads nil "c-ext" "c-ext.el" (0 0 0 0))
 ;;; Generated autoloads from c-ext.el
 
-(autoload 'c--custom-hook "c-ext" nil nil nil)
+(autoload 'c-ext--extra-hook "c-ext" nil nil nil)
 
-(add-hook 'c-mode-common-hook 'c--custom-hook)
+(add-hook 'c-mode-common-hook 'c-ext--extra-hook)
 
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "c-ext" '("c-skeleton-define")))
 
@@ -99,11 +99,6 @@ See `comment-tags-mode' for more information on Comment-Tags mode.
 
 ;;;### (autoloads nil "dired-ext" "dired-ext.el" (0 0 0 0))
 ;;; Generated autoloads from dired-ext.el
-
-(autoload 'dired-mode--extra-hook "dired-ext" "\
-Extra hook for `dired-mode'." nil nil)
-
-(add-hook 'dired-mode-hook #'dired-mode--extra-hook)
 
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "dired-ext" '("dired-")))
 
