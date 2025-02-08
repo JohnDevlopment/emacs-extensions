@@ -60,6 +60,11 @@ source ~/src/.fzf-history
 alias emacs="execnohup emacs; unalias emacs; history -s execnohup emacs"
 alias git-gui="execnohup --sleep 2 -n 2 git gui; unalias git-gui; history -s execnohup --sleep 2 -n 2 git gui"
 
+## usage: commit-doc-ext FILE
+function commit-doc-ext {
+    commit -t update -m "Document ${1:?missing FILE}" -ct -
+}
+
 ## usage: list-commands
 function list-commands {
     cat <<EOF
