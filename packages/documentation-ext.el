@@ -32,6 +32,7 @@
        (document-ext--check-type item symbol)
        (format "- `%s'" item)))))
 
+;; TODO: Add 'aliases' option
 (cl-defmacro document-extension (extension
 				 preamble
 				 &key functions variables types requires advised)
