@@ -1,4 +1,4 @@
-;;; documentation-ext.el --- Extension documentation.  -*- lexical-binding: t; -*-
+;; -*- lexical-binding: t; -*-
 
 (require 'cl-lib)
 (require 'alist-ext)
@@ -39,24 +39,24 @@ PREAMBLE is the documentation for EXTENSION.
 The rest of the argument list consists of keyword
 arguments.  Said keyword arguments are as follows:
 
-:functions (SYMBOL...) A list of EXTENSION's public
-                       functions.
-:variables (SYMBOL...) A list of EXTENSION's public
-                       variables.
-:types (SYMBOL...)     A list of EXTENSION's public
-                       types.
-:requires (SYMBOL...)  A list of EXTENSION's required
-                       packages.
+:advised (FUN-SPEC...)   A list of EXTENSION's advised
+                         functions.
+:functions (FUN-SPEC...) A list of EXTENSION's public
+                         functions.
+:variables (VAR-SPEC...) A list of EXTENSION's public
+                         variables.
+:types (SYMBOL...)       A list of EXTENSION's public
+                         types.
+:requires (SYMBOL...)    A list of EXTENSION's required
+                         packages.
 
-For each list, SYMBOL can be replaced with a sublist of the
-form
-   (SYMBOL TAG)
+FUN-SPEC is either a symbol that is the name of a function
+or a list that takes the form
+   (SYMBOL [command])
 
-The following tags are supported:
-
-local     Means SYMBOL is a buffer-local variable.
-custom    Means SYMBOL is a customization variable.
-constant  Means SYMBOL is a constant variable.
+VAR-SPEC is either a symbol that is the name of a variable
+or a list wherein the car is a symbol and the cdr is the
+symbol `local', symbol `constant', or the symbol `custom'.
 
 \(fn EXTENSION PREAMBLE [KEYWORD VALUE]...)"
   (declare (indent 1) (doc-string 2)
