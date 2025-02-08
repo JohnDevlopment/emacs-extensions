@@ -27,7 +27,7 @@ Group 1 matches the name of the definition (usually the
 first argument).")
 
 (defconst user-ext-elisp-variable-regexp
-  (rx ?\( (or "defconst" "defvar" "defcustom"))
+  (rx ?\( (or "defconst" "defvar" "defcustom" "defface"))
   "Regular expression for variable definitions.")
 
 ;; Functions
