@@ -1,9 +1,5 @@
 ;;; sh-ext --- Shell script mode extension.  -*- lexical-binding: t; -*-
 
-;;; Commentary:
-
-;;; Code:
-
 (require 'ido)
 (require 'sh-script)
 
