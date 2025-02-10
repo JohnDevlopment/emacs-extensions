@@ -41,12 +41,12 @@ Any errors are caught and printed as simple messages.
 
 \(fn BODY...)"
   (declare (indent 0))
-  `(let ((cl--point (point-marker))
-	 cl--result)
-     (setq cl--result (with-demoted-errors "Error caught from cl-save-point: %S"
-			,@body))
-     (goto-char cl--point)
-     cl--result))
+  `(let ((user-ext-cl--point (point-marker))
+	 (user-ext-cl--result
+	  (with-demoted-errors "Error caught from `cl-save-point': %S"
+	    ,@body)))
+     (goto-char user-ext-cl--point)
+     user-ext-cl--result))
 (defalias 'cl-save-point #'cl-ext-save-point)
 (make-obsolete 'cl-save-point 'cl-ext-save-point "2025.02.02")
 
