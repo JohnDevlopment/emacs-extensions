@@ -34,15 +34,15 @@ first argument).")
 
 ;;;###autoload
 (defun elisp-ext-occur-variables ()
+  "Run `occur' with a regular expression matching variables."
   (interactive)
   (occur user-ext-elisp-variable-regexp))
 
-;;;###autoload
 (defun elisp-ext-occur-functions ()
+  "Run `occur' with a regular expression matching functions."
   (interactive)
   (occur user-ext-elisp-defun-regexp))
 
-;;;###autoload
 (defun elisp-ext-minify (start end)
   "Minify the code between START and END in current buffer.
 If called interactively, START and END are the region,
@@ -50,10 +50,10 @@ provided the region is active.  But if the region is not
 active, the entire buffer is minified."
   (interactive "r")
   (cl-block quit
-    (let* ((msg "The region is not active, so the entire buffer will be minified. Continue?")
-	   (reg (region-active-p))
-	   answer
-	   bstr)
+    (let ((msg "The region is not active, so the entire buffer will be minified. Continue?")
+	  (reg (region-active-p))
+	  answer
+	  bstr)
       (setq answer (or reg (y-or-n-p msg)))
       (cond
        ((and (not reg) (not answer))
@@ -137,6 +137,7 @@ If REVERSE is non-nil, search backwards."
       (point))))
 
 (defsubst elisp-ext-enable-hs-minor-mode ()
+  "Enable `hs-minor-mode' if it isn't already."
   (unless (and (boundp 'hs-minor-mode) hs-minor-mode)
     (hs-minor-mode 1)))
 
