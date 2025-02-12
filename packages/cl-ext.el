@@ -2,18 +2,19 @@
 
 ;; Functions
 
-(defmacro cl-append (x place)
+(defmacro cl-ext-append (x place)
   "Add X to the list stored in PLACE.
 PLACE is a symbol whose definition is a list or some other
 kind of sequence."
   (declare (pure t) (debug (form symbolp)))
   (cl-check-type place symbol)
   `(setq ,place (append ,place ,x)))
+(make-obsolete 'cl-append 'cl-ext-append "2025.02.10")
 
 (defalias 'cl-pushend 'cl-append)
 (make-obsolete 'cl-pushend 'cl-append "2024.12.21")
 
-(defmacro cl-append-list (x place)
+(defmacro cl-ext-append-list (x place)
   "Add X to the list stored in PLACE, but wrap X in a list.
 X is supposed to be a list, likely representing a Lisp
 expression; it's added to PLACE in such a way that it isn't
@@ -28,6 +29,7 @@ Lisp expressions and adding another list to it:
   (cl-check-type x listp)
   (cl-check-type place symbol)
   `(setq ,place (append ,place (list ,x))))
+(make-obsolete 'cl-append-list #'cl-ext-append-list "2025.02.10")
 
 (defmacro cl-ext-nconcat (place &rest sequences)
   "Append the arguments (SEQUENCES) as strings to PLACE.
