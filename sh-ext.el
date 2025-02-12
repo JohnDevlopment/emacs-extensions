@@ -2,11 +2,19 @@
 
 (require 'ido)
 (require 'sh-script)
+(require 'cl-ext)
+
+(eval-when-compile
+  (defvar user-ext-sh-fold-map))
 
 ;; Variables
 
 (defconst user-ext-sh-function-regex
-  "^\\s-*\\(function\\s-+\\([A-Z_a-z-]+\\)\\)\\s-*{"
+  ;; "^\\s-*\\(function\\s-+\\([A-Z_a-z-]+\\)\\)\\s-*{"
+  (rx bol (* (syntax whitespace))
+      (group "function" (+ (syntax whitespace))
+	     (group (+ (any "A-Z" "a-z" ?_ ?-))))
+      (* (syntax whitespace)) ?{)
   "Regular expression for finding functions.
 Group 1 matches the first line of the declaration starting
 with the keyword 'function'.
@@ -33,6 +41,65 @@ Group 2 matches the name of the function.")
   "Color/property names mapped to their equivalent Bash escape code.")
 
 ;; Functions
+
+(defun sh-ext--hidden (&optional position)
+  "Return non-nil if point is in an already hidden block.
+If POSITION is non-nil, move point to that position before
+the check."
+  (cl-check-type position (or integer-or-marker null))
+  (cl-assert (and (boundp 'hs-minor-mode) hs-minor-mode))
+  (cl-ext-save-point
+    (and position (goto-char position))
+    (or (hs-already-hidden-p)
+	(progn (left-char)
+	       (hs-already-hidden-p)))))
+
+(defun sh-ext--looking-at (what &optional position)
+  "Return t if text point matches a pattern for form WHAT.
+WHAT is a symbol indicating the form we want to match.
+
+WHAT is one of the following:
+'function   Matches by regular expression
+            `user-ext-sh-function-regex'"
+  (cl-check-type position (or integer-or-marker null))
+  (cl-ext-save-point
+    (and position (goto-char position))
+    (pcase what
+      ('function
+       (looking-at user-ext-sh-function-regex)))))
+
+(defun sh-ext-show-function ()
+  "Show the hidden function at point."
+  (interactive)
+  (elisp-ext-enable-hs-minor-mode)
+  (let ((buffer-read-only t)
+	(bol (line-beginning-position))
+	pos)
+    (when (and (sh-ext--looking-at 'function bol)
+	       (setq pos (match-end 0))
+	       (sh-ext--hidden pos))
+      (goto-char pos)
+      (hs-show-block))))
+
+(defun sh-ext-hide-function ()
+  "Hide the surrounding function."
+  (interactive)
+  (elisp-ext-enable-hs-minor-mode)
+  (let* ((ppss (syntax-ppss))
+	 (tl (syntax-ppss-toplevel-pos ppss))
+	 (buffer-read-only t)
+	 (pos (point)))
+    (when tl
+      (goto-char tl)
+      (right-char))
+    (call-interactively #'move-beginning-of-line)
+    (if (looking-at user-ext-sh-function-regex)
+	(prog1 (setq pos (match-end 0))
+	  (goto-char pos)
+	  (setq pos (match-beginning 0))
+	  (hs-hide-block)
+	  (goto-char pos))
+      (goto-char pos))))
 
 (defun sh-ext-mark-function ()
   "Mark the surrounding function."
@@ -143,6 +210,11 @@ it is non-nil, \"1;\" is prepended to the color code."
 (define-abbrev sh-mode-abbrev-table "cmds" "" #'sh-ext-skeleton-src-command-list)
 (define-key sh-mode-map (kbd "C-c \\") #'sh-ext-color-escape)
 (define-key sh-mode-map (kbd "C-c [") #'sh-ext-insert-non-printing-escape)
+
+(define-prefix-command 'user-ext-sh-fold-map nil "Sh Fold")
+(define-key sh-mode-map (kbd "C-c f") 'user-ext-sh-fold-map)
+(define-key user-ext-sh-fold-map (kbd "f") #'sh-ext-hide-function)
+(define-key user-ext-sh-fold-map (kbd "M-f") #'sh-ext-show-function)
 
 (provide 'sh-ext)
 
