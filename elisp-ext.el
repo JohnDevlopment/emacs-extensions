@@ -1,13 +1,12 @@
-;;; elisp-ext --- Emacs Lisp mode extension.  -*- lexical-binding: t;  -*-
+;; -*- lexical-binding: t;  -*-
 
 (require 'debug-ext)
+(require 'cl-lib)
+(require 'cl-ext)
+(require 'autoload)
+(require 'function-ext)
+(require 'hideshow)
 
-(eval-when-compile
-  (require 'cl-lib)
-  (require 'cl-ext)
-  (require 'autoload)
-  (require 'function-ext)
-  (require 'hideshow))
 
 ;; Advice
 
