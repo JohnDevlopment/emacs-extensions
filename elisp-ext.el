@@ -54,7 +54,7 @@ active, the entire buffer is minified."
 	   (reg (region-active-p))
 	   answer
 	   bstr)
-      (setq answer (and reg (y-or-n-p msg)))
+      (setq answer (or reg (y-or-n-p msg)))
       (cond
        ((and (not reg) (not answer))
 	;; Quit; user said no and the region is not active
