@@ -9,6 +9,8 @@
 
 ;; Variables
 
+(define-abbrev global-abbrev-table "NULL" "null" #'abbrev-ext-insert-hook :system t)
+
 (defconst user-ext-sh-function-regex
   ;; "^\\s-*\\(function\\s-+\\([A-Z_a-z-]+\\)\\)\\s-*{"
   (rx bol (* (syntax whitespace))
@@ -37,7 +39,7 @@ Group 2 matches the name of the function.")
     (bg-cyan . "46")
     (fg-light-gray . "37")
     (bg-light-gray . "47")
-    (reset . "0"))
+    (reset . "00"))
   "Color/property names mapped to their equivalent Bash escape code.")
 
 ;; Functions
