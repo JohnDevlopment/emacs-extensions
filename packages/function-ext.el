@@ -1,4 +1,4 @@
-;;; function-ext.el --- Function extension.          -*- lexical-binding: t; -*-
+;; -*- lexical-binding: t; -*-
 
 (defconst user-ext-fext-valid-advice-classes
   '(before around after activation deactivation))
