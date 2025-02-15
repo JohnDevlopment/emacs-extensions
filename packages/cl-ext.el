@@ -1,5 +1,8 @@
 ;;; cl-ext.el --- Common lisp extensions extension.  -*- lexical-binding: t; -*-
 
+(eval-when-compile
+  (ignore t))
+
 ;; Functions
 
 (defmacro cl-ext-append (x place)
