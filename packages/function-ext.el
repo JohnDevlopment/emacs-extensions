@@ -36,39 +36,51 @@ via `declare-function'.
   "Define a piece of advice for FUNCTION (a symbol).
 The syntax of `fext-defadvice' is as follows:
 
-  (fext-defadvice FUNCTION (CLASS NAME)
+  (fext-defadvice FUNCTION (CLASS NAME [ARGLIST])
     [DOCSTRING] [INTERACTIVE-FORM]
     BODY...)
 
 FUNCTION ::= Name of the function being advised.
 CLASS ::= `before' | `around' | `after' | `activation' |
     `deactivation'
+ARGLIST ::= Argument list for the advice.  Without it,
+    FUNCTION's argument list will consist of
+    \\`(&optional _args)'
 DOCSTRING ::= Optional documentation string for defined
     function.
 INTERACTIVE-FORM ::= Optional interactive form.
 BODY ::= Any s-expression.
 
-\(fn FUNCTION (CLASS NAME) BODY...)"
+\(fn FUNCTION (CLASS NAME [ARGLIST]) BODY...)"
   (declare (indent 2) (debug (&define name
 				      ([&or "before" "around"
 					    "after" "activation" "deactivation"]
-				       name)
+				       name
+				       [&optional listp])
 				      [&optional stringp]
 				      [&optional ("interactive" interactive)]
 				      def-body)))
-  (cl-destructuring-bind (class fname) args
+  (let ((arglist '(&rest _args))
+	aname fname
+	class)
+    (cl-destructuring-bind (c n &optional al) args
+      (cl-check-type c symbol)
+      (cl-check-type n symbol)
+      (setq class c fname n)
+      (when al
+	(cl-check-type al list)
+	(setq arglist al)))
     (unless (memq class user-ext-fext-valid-advice-classes)
       (signal-wrong-argument class user-ext-fext-valid-advice-classes))
-    (let* ((aname (intern (format "advice-%S-%S" class fname)))
-	   (fname (intern (format "advice-ext--%S-%S" class fname)))
-	   (arglist (help-function-arglist function))
-	   (class (intern-soft (format ":%S" class))))
-      (cl-assert (not (null class)))
-      `(progn
-	 (defun ,fname ,arglist ,@body)
-	 (unless (advice-member-p ',aname ',function)
-	   (advice-add ',function ,class ',fname
-		       (alist-ext-define 'name ',aname)))))))
+    (setq fname (intern (format "advice-ext--%S-%S" class fname))
+	  aname (intern (format "advice-%S-%S" class function))
+	  class (intern-soft (format ":%S" class)))
+    (cl-assert (not (null class)))
+    `(progn
+       (defun ,fname ,arglist ,@body)
+       (unless (advice-member-p (quote ,aname) (quote ,function))
+	 (advice-add (quote ,function) ,class (quote ,fname)
+		     (alist-ext-define 'name (quote ,aname)))))))
 
 (provide 'function-ext)
 
