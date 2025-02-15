@@ -1,4 +1,4 @@
-;;; buffers-ext.el --- Buffers extension.            -*- lexical-binding: t; -*-
+;;; -*- lexical-binding: t; -*-
 
 (require 'cl-lib)
 (require 'custom)
@@ -167,11 +167,18 @@ of the arguments is the BODY of function NAME."
 (define-scratch-buffer-function faces-buffer "faces" nil
   "Open a buffer listing all the faces."
   nil
-  (let (faces)
-    (setq faces (seq-map 'symbol-name (face-list)))
-    (dolist (face (seq-sort 'string< faces))
-      (insert face)
-      (newline))))
+  (let ((str "The quick brown fox jumped over the lazy dog.")
+	fmt faces col1)
+    (setq faces (seq-map 'symbol-name (face-list))
+	  col1 (apply #'max (mapcar (lambda (x) (length x)) faces))
+	  fmt (format "%%-%ds %%s" col1))
+    (insert (format fmt "Face" "Display\n"))
+    (dolist (face (seq-sort #'string< faces))
+      (insert (format fmt face (propertize str 'face (intern-soft face))))
+      (newline)))
+  (read-only-mode 1)
+  (local-set-key (kbd "q") #'quit-window)
+  (local-set-key (kbd "k") #'kill-and-quit))
 
 (define-scratch-buffer-function general-scratch "general scratch" (mode)
   "Open a general-purpose scratch buffer.
