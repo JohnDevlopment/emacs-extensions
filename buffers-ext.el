@@ -7,25 +7,23 @@
 
 (document-extension "buffers-ext"
   "Functions that create, modify or query buffers in some way."
-  :functions
-  (clone-indirect-buffer-this-window
-   define-scratch-buffer-function
-   get-buffer-file-name
-   kill-buffers
-   kill-certain-temp-buffers
-   kill-customization-buffers
-   narrow-to-region2
-   revert-all-buffers
-   tmpbuf
-   view-into-buffer
-   ;; defined with `define-scratch-buffer-function'
-   faces-buffer
-   general-scratch
-   git-commit-scratch)
+  :functions ((clone-indirect-buffer-this-window command)
+	      define-scratch-buffer-function
+	      (get-buffer-file-name command)
+	      (kill-buffers command)
+	      (kill-certain-temp-buffers command)
+	      (kill-customization-buffers command)
+	      (narrow-to-region2 command)
+	      (revert-all-buffers command)
+	      (tmpbuf command)
+	      (view-into-buffer command)
+	      ;; defined with `define-scratch-buffer-function'
+	      (faces-buffer command)
+	      (general-scratch command)
+	      (git-commit-scratch command))
 
-  :variables
-  ((user-ext-temp-buffers-to-kill custom)
-   (user-ext-temp-buffers-to-kill-regex custom)))
+  :variables ((user-ext-temp-buffers-to-kill custom)
+	      (user-ext-temp-buffers-to-kill-regex custom)))
 
 (defgroup buffers-ext nil
   "Group for custom buffer-related options."
