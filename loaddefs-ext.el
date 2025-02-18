@@ -13,20 +13,12 @@
 ;;;### (autoloads nil "bbcode-ext" "bbcode-ext.el" (0 0 0 0))
 ;;; Generated autoloads from bbcode-ext.el
 
-(autoload 'bbcode-emphasis "bbcode-ext" "\
-Insert BBCode tags at point or around region according to CHAR.
-
-If called interactively, or if BEG and END are non-nil, the
-tags are wrapped around the region indicated by BEG and END.
-
-\(fn CHAR &optional BEG END)" t nil)
-
 (autoload 'bbcode-extra-hook "bbcode-ext" "\
 Extra hook for `bbcode-mode'." nil nil)
 
 (add-hook 'bbcode-mode-hook #'bbcode-extra-hook)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "bbcode-ext" '("bbcode-add-tag")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "bbcode-ext" '("bbcode-")))
 
 ;;;***
 
@@ -93,7 +85,7 @@ See `comment-tags-mode' for more information on Comment-Tags mode.
 ;;;### (autoloads nil "custom-ext" "custom-ext.el" (0 0 0 0))
 ;;; Generated autoloads from custom-ext.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "custom-ext" '("log-view-")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "custom-ext" '("define-face-alias" "log-view-")))
 
 ;;;***
 
@@ -140,17 +132,8 @@ Extra hook for `dtext-mode'." nil nil)
 ;;;### (autoloads nil "elisp-ext" "elisp-ext.el" (0 0 0 0))
 ;;; Generated autoloads from elisp-ext.el
 
-(autoload 'elisp-ext-occur-variables "elisp-ext" nil t nil)
-
-(autoload 'elisp-ext-occur-functions "elisp-ext" nil t nil)
-
-(autoload 'elisp-ext-minify "elisp-ext" "\
-Minify the code between START and END in current buffer.
-If called interactively, START and END are the region,
-provided the region is active.  But if the region is not
-active, the entire buffer is minified.
-
-\(fn START END)" t nil)
+(autoload 'elisp-ext-occur-variables "elisp-ext" "\
+Run `occur' with a regular expression matching variables." t nil)
 
 (autoload 'elisp-ext-forward-or-backward-sexp "elisp-ext" "\
 Go to the matching parenthesis to the one is adjacent at point.
@@ -544,7 +527,7 @@ Hook for `rustic-mode' extension." nil nil)
 
 (add-hook 'sh-mode-hook #'sh--extra-hook)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "sh-ext" '("sh-" "user-ext-sh-")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "sh-ext" '("global-abbrev-table" "sh-" "user-ext-sh-")))
 
 ;;;***
 
