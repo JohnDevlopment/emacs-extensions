@@ -1,14 +1,4 @@
-;;; jinja2.el --- Jinja2 minor mode                  -*- lexical-binding: t; -*-
-
-;;; Commentary:
-
-;;
-
-;;; Code:
-
-(eval-when-compile
-  (require 'cl-lib)
-  (require 's))
+;;-*- lexical-binding: t; -*-
 
 (require 'cl-ext)
 (require 'debug-ext)
@@ -185,63 +175,6 @@
 
 ;; Functions
 
-(when nil
-  (cl-defmacro jinja2-define-insert-tag-function
-      (name &key (doc (format "Insert a %s tag." name))
-	    (arglist (&optional arg))
-	    end-tag
-	    (int-spec "P")
-	    (tag (symbol-name name))
-	    (tag-args nil))
-    "Define a function to insert a tag.
-NAME will be used for both the function name and the tag.
-The rest of the arguments are keywords of the form
-   [KEYWORD VALUE ...]
-
-The following keywords are recognized:
-:arglist    VALUE is the ARGLIST argument for `defun'
-:doc        VALUE is the documentation string of the
-            created function
-:end-tag    If VALUE is provided, it specifies the ending
-            tag (e.g., \"endblock\")
-:int-spec   VALUE is the argument to `interactive'
-:tag        VALUE is the name of the tag.  If it is not
-            provided, NAME is used
-:tag-args   ...
-
-\(fn NAME &key :arglist :doc :end-tag :int-spec :tag :tag-args)"
-    (declare (indent 1))
-    (cl-check-type name symbol)
-    (cl-check-type doc string)
-    (cl-check-type end-tag (or string null))
-    (when arglist
-      (cl-check-type arglist list))
-    (let* ((fname (intern (concat "jinja2-insert-tag-" (symbol-name name))))
-	   (body (list (if int-spec
-			   `(interactive ,int-spec)
-			 '(interactive)))))
-      (if tag-args
-	  (progn
-	    (setq tag (s-lex-format "{% ${tag} %}"))
-	    (setq body (append body `((insert ,tag)))))
-	nil)
-      `(progn
-	 (defun ,fname ,arglist
-	   ,doc
-	   ,@body))))
-
-  (cl-prettyexpand '(jinja2-define-insert-tag-function block
-		      :arglist (name &optional arg)
-		      :int-spec "sName: \nP"
-		      :tag-args "${name}"
-		      :end-tag "endblock ${name}")))
-
-(defun jinja2--get-leading-whitespace ()
-  (cl-save-point
-    (beginning-of-line)
-    (when (looking-at "\\([ \t]+\\)")
-      (match-string 1))))
-
 (defun jinja2--find-next-tag (limit &optional start)
   (let (match)
     (cl-save-point
@@ -367,10 +300,6 @@ compare with the \\=`category' property of each overlay."
 	  (when ov
 	    (delete-overlay ov)))
 	 (t (message "No conditions met."))))))
-
-(when nil
-  (cl-prettyprint (symbol-function 'jinja2--handle-change-deletion))
-  (cl-prettyprint (symbol-function 'jinja2--handle-change-insertion)))
 
 (defun jinja2--set-face-on-change (start end length)
   "Called when the buffer is changed."
