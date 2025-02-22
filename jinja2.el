@@ -1,13 +1,53 @@
 ;;-*- lexical-binding: t; -*-
 
+(require 'cl-lib)
+(require 'alist-ext)
+(require 's)
 (require 'cl-ext)
 (require 'debug-ext)
 
 (cl-defstruct tag-match
   "A match for a tag."
-  (start nil :type integer-or-marker-p)
-  (end nil :type integer-or-marker-p)
-  (string nil :type stringp))
+  (start nil :type integer-or-marker-p
+	 :documentation "The starting position where this tag was found.")
+  (end nil :type integer-or-marker-p
+       :documentation "The ending position where this tag found.")
+  (lstrip_blocks nil :type integerp)
+  (trim_blocks nil :type integerp)
+  (delimiter nil :type stringp)
+  (content nil :type stringp
+	   :documentation "The content of the tag."))
+
+(defun tag-match-string (cl-x)
+  "Get a string representation of CL-X.
+CL-X must be an instance of the `tag-match' type."
+  (cl-check-type cl-x tag-match)
+  (let* ((delim (tag-match-delimiter cl-x))
+	 (other-delim (pcase delim
+			("{" "}")
+			((or "%" "#")
+			 delim))))
+    (format "{%s%s %s %s%s}"
+	    delim
+	    (pcase (tag-match-lstrip_blocks cl-x)
+	      ((and x (or ?- ?+))
+	       (char-to-string x))
+	      (32 "")			; 32 = char " "
+	      (x (error "Invalid character \"%c\"" x)))
+	    (tag-match-content cl-x)
+	    (pcase (tag-match-trim_blocks cl-x)
+	      ((and x (or ?- ?+))
+	       (char-to-string x))
+	      (32 "")			; 32 = char " "
+	      (x (error "Invalid character \"%c\"" x)))
+	    other-delim)))
+
+(defsubst tag-match-from-match-data (&optional string)
+  (let ((delimiter (match-string-no-properties 1 string)))
+    (make-tag-match :start (match-beginning 0)
+		    :end (match-end 0)
+		    :delimiter delimiter
+		    :content (match-string-no-properties 3 string))))
 
 ;; Customize
 
@@ -35,10 +75,28 @@
 ;; Variables
 
 (defconst jinja2-tag-regex
-  (rx ?{ (any "{%") (? (any ?- ?+))
-      (+? nonl)
-      (? (any ?- ?+)) (any "%}") ?})
-  "Regular expression for tags.")
+  (rx ?{
+      (group (any "{%#"))		; tag type delimiter
+      (group (? (any ?- ?+)))		; lstrip_blocks flag
+      (* (syntax whitespace))
+      (group (+? anything))		; content of the tag
+      (* (syntax whitespace))
+      (group (? (any ?- ?+)))		; trim_blocks flag
+      (any "}%#")
+      ?})
+  "Regular expression for tags.
+Group 1 matches the first tag type delimiter.
+Group 2 matches the lstrip_blocks flag.
+Group 3 matches the content of the tag
+Group 4 matches the trim_blocks flag.")
+
+(defconst jinja2-tag-start-regex
+  (rx ?{ (any "{%#") (? (any ?- ?+)) (* anything))
+  "A regular expression for matching the beginning of a tag.
+Group 1 matches the second character, which indicates what
+type of tag we are dealing with.
+
+Intended to be used with `looking-back'.")
 
 ;; Skeletons
 
@@ -176,51 +234,54 @@
 ;; Functions
 
 (defun jinja2--find-next-tag (limit &optional start)
-  (let (match)
-    (cl-save-point
-      (when start
-	(cl-check-type start integer-or-marker)
-	(goto-char start))
-      (setq match (re-search-forward jinja2-tag-regex limit t))
-      (when match
-	(make-tag-match :start (match-beginning 0)
-			:end (match-end 0)
-			:string (match-string-no-properties 0))))))
+  (cl-ext-save-point
+    (when start
+      (cl-check-type start integer-or-marker)
+      (goto-char start))
+    (setq match (re-search-forward jinja2-tag-regex limit t))
+    (let (match)
+      (and match (tag-match-from-match-data)))))
 
 (defun jinja2--find-tags (start end)
+  "Get a list of every tag within the range START and END."
   (let (match matches)
     (save-excursion
       (goto-char start)
       (setq matches
 	    (cl-loop
-	     named find
 	     until (>= (point) end)
 	     collect (progn
-		       (setq match (jinja2--find-next-tag end (point)))
-		       (if match
+		       (if (setq match (jinja2--find-next-tag end (point)))
 			   (goto-char (tag-match-end match))
 			 (goto-char end))
 		       match))))
     matches))
 
 (defsubst jinja2--get-visible-bounds ()
-  (list (max (window-start) (point-min))
+  (cons (max (window-start) (point-min))
 	(min (window-end) (point-max))))
 
-(defun jinja2-inside-tag-p (&optional pos)
-  "If POS is inside a tag, returns tag beginning, else nil.
-If POS is not provided, it defaults to point."
-  (cl-check-type pos (or integer null))
-  (cl-save-point
-    (if pos
-	(goto-char pos)
-      (setq pos (point)))
-    (let* ((ppss (make-ppss-easy (syntax-ppss)))
-	   (tl (syntax-ppss-toplevel-pos ppss)))
-      (when tl
-	(goto-char tl)
-	(when (looking-at jinja2-tag-regex)
-	  (match-beginning 0))))))
+(defun jinja2-inside-tag (&optional pos)
+  "If point is inside a tag, return a `tag-match' type for said tag.
+If point is not inside a tag, return nil.  If POS is
+non-nil, set point to that position before the search."
+  (cl-check-type pos (or integer-or-marker null))
+  (cl-ext-save-point
+    (and pos (goto-char pos))
+    (let ((bounds (jinja2--get-visible-bounds)))
+      (when (and (looking-back jinja2-tag-start-regex (car bounds))
+		 (goto-char (match-beginning 0))
+		 (looking-at jinja2-tag-regex))
+	(tag-match-from-match-data)))))
+
+(defsubst jinja2-inside-tag-p (&optional pos)
+  "If point is inside a tag, return t, else return nil.
+If POS is non-nil, it specifies the starting position of the
+search instead of point.
+
+This function does not change the match data."
+  (save-match-data
+    (and (jinja2-inside-tag pos) t)))
 
 (defun jinja2-overlay-at (category &optional pos)
   "Return the overlay at POS with the given CATEGORY.
@@ -301,23 +362,9 @@ compare with the \\=`category' property of each overlay."
 	    (delete-overlay ov)))
 	 (t (message "No conditions met."))))))
 
-(defun jinja2--set-face-on-change (start end length)
-  "Called when the buffer is changed."
-  (save-excursion
-    (save-match-data
-      (cond
-       ((and (= start end) (> length 0))
-	;; Deletion; start and end are the same
-	;; length = number of characters deleted
-	(jinja2--handle-change-deletion start length))
-       ((= length 0)
-	;; Insertion
-	(jinja2--handle-change-insertion start end (- end start)))
-       (t
-	;; Text is rearranged; no insertions or deletions
-	;; Actually, this only when characters are replaced
-	;; (e.g., via `overwrite-mode')
-	"...")))))
+(defun jinja2--set-face-on-change (_start _end _length)
+  (cl-destructuring-bind (a b) (jinja2--get-visible-bounds)
+    (jinja2-mark-tags a b)))
 
 (defun jinja2--create-or-load-category (name)
   "Create or load category NAME.
@@ -338,7 +385,7 @@ Returns a symbol `category-jinja-NAME'.  NAME can be either
 	    symbol)
 	(error (s-lex-format "Category ${name} should not be used"))))))
 
-(defun jinja2-clear-tags (&optional beg end)
+(defun jinja2-clear-tags (beg end)
   "Delete all tag overlays between BEG and END.
 If they are not provided, BEG and END default to the
 beginning and end of buffer respectively."
@@ -349,75 +396,65 @@ beginning and end of buffer respectively."
       (when (eq (overlay-get ov 'category) cat)
 	(delete-overlay ov)))))
 
-(defun jinja2-mark-tags ()
+(defun jinja2-mark-tags (beg end)
   "Mark all tags within buffer."
-  (let* ((beg (point-min))
-	 (end (point-max))
+  (let* (;; (bounds (jinja2--get-visible-bounds))
+	 ;; (beg (or beg (car bounds)))
+	 ;; (end (or end (cadr bounds)))
 	 (cat (jinja2--create-or-load-category "tag"))
 	 (tags (jinja2--find-tags beg end))
 	 ov ovbeg ovend)
     (with-silent-modifications
       (jinja2-clear-tags beg end)
       (dolist (tag tags)
-	(when (tag-match-p tag)
-	  (setq ovbeg (tag-match-start tag)
-		ovend (tag-match-end tag)
-		ov (make-overlay ovbeg ovend))
+	(when (and (tag-match-p tag)
+		   (progn
+		     (setq ovbeg (tag-match-start tag)
+			   ovend (tag-match-end tag))
+		     (not (jinja2-overlay-at "tag" ovbeg))))
+	  (setq ov (make-overlay ovbeg ovend))
 	  (overlay-put ov 'category cat))))))
 
-;; (jinja2-mark-tags)
+(defun jinja2-set-tag-trim--both (pcstr choices &optional c)
+  (setq c (read-char-from-minibuffer
+	   (s-lex-format "lstrip_blocks and trim_blocks flags ${pcstr}: ")))
+  (unless (cl-member c choices)
+    (user-error "Invalid choice %c: must be one of +, -, or \" \"" c)))
 
 (defun jinja2-set-tag-trim (&optional arg)
+  "Set the lstrip_blocks and trim_blocks flags of the tag at point."
   (interactive "P")
-  (cond
-   ((= (char-after) ?{)
-    (right-char 3))
-   ((= (char-before) ?})
-    (left-char 3)))
-  (let* ((ppss (make-ppss-easy (syntax-ppss)))
-	 (pcstr "(choices: +, -, or \" \")") ; prompt choices string
-	 (choices (list ?+ ?- ?\ ))
-	 beg
-	 end
-	 c)
-    (cl-save-point
-      (setq beg (progn (goto-char (syntax-ppss-toplevel-pos ppss))
-		       (point-marker))
-	    end (progn (goto-char beg)
-		       (forward-sexp)
-		       ;; (left-char 3)
-		       (point-marker)))
-      (goto-char beg)
-      (when arg
-	(setq c (read-char-from-minibuffer (s-lex-format
-					    "lstrip_blocks and trim_blocks flags ${pcstr}: ")))
-	(unless (cl-member c choices)
-	  (user-error "Invalid choice %c: must be one of +, -, or \" \"" c)))
-      (when (looking-at "{%[+-]?\\s-*")
-	(unless arg
-	  ;; No prefix arg; accept flag for this
-	  (setq c (read-char-from-minibuffer
-		   (s-lex-format "lstrip_blocks flag ${pcstr}: ")))
-	  (unless (cl-member c choices)
-	    (user-error "Invalid choice %c: must be one of +, -, or \" \"" c)))
-	(cl-case c
-	  ((?+ ?-)
-	   (replace-match (format "{%%%c " c)))
-	  (t
-	   (replace-match "{% "))))
-      (goto-char end)
-      (when (looking-back "\\s-*[+-]?\\([}%]\\)}" beg t)
-	(unless arg
-	  ;; No prefix arg; accept flag for this
-	  (setq c (read-char-from-minibuffer
-		   (s-lex-format "trim_blocks flag ${pcstr}: ")))
-	  (unless (cl-member c choices)
-	    (user-error "Invalid choice %c: must be one of +, -, or \" \"" c)))
-	(cl-case c
-	  ((?+ ?-)
-	   (replace-match (format " %c%%}" c)))
-	  (t
-	   (replace-match " %}")))))))
+  (let ((prompt-char
+	 (lambda (prompt &optional c)
+	   (setq c (read-char-from-minibuffer
+		    (s-lex-format "${prompt}: (choices: +, -, or \" \")")))
+	   (unless (memq c (list ?+ ?- ?\ ))
+	     (user-error "Invalid character \"%s\", must be one of +, -, or \" \""))
+	   c))
+	tag)
+    (save-excursion
+      (cond ((= (char-after) ?{)
+	     (when (looking-at jinja2-tag-regex)
+	       (tag-match-from-match-data)))
+	    ((= (char-before) ?})
+	     (left-char 3)
+	     (setq tag (jinja2-inside-tag)))
+	    (t
+	     (setq tag (jinja2-inside-tag)))))
+    (when tag
+      (let ((pos (point)) c1 c2)
+	(if arg
+	    (progn
+	      (setq c1 (funcall prompt-char "lstrip_blocks and trim_blocks flags"))
+	      (setf (tag-match-lstrip_blocks tag) c1
+		    (tag-match-trim_blocks tag) c1))
+	  (setq c1 (funcall prompt-char "lstrip_blocks flag")
+		c2 (funcall prompt-char "trim_blocks flag"))
+	  (setf (tag-match-lstrip_blocks tag) c1
+		(tag-match-trim_blocks tag) c2))
+	(kill-region (tag-match-start tag) (tag-match-end tag))
+	(insert (tag-match-string tag))
+	(goto-char pos)))))
 
 ;; Keybinds
 
