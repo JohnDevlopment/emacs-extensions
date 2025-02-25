@@ -1,10 +1,21 @@
 ;; -*- lexical-binding: t; -*-
 
 (eval-when-compile
-  (require 'abbrev))
+  (require 'abbrev)
+  (require 'cl-ext))
+
+(defconst user-ext-abbrev-insert-char-regex
+  (rx (or "i.e." "e.g."))
+  "Regular expression that matches the expansion that allows")
 
 (defun abbrev-ext-insert-hook ()
-  t)
+  (let ((last-char last-command-event)
+	(limit (cl-ext-save-point
+		 (beginning-of-line)
+		 (point))))
+    (save-match-data
+      (looking-back user-ext-abbrev-insert-char-regex limit)
+      (not (= last-char ?,)))))
 
 (put #'abbrev-ext-insert-hook 'no-self-insert t)
 
