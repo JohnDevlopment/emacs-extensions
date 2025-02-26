@@ -1,8 +1,4 @@
-;;; faces-ext --- Faces  -*- lexical-binding: t; -*-
-
-;;; Commentary:
-
-;;; Code:
+;; lexical-binding: t; -*-
 
 ;; Custom variables and faces
 
