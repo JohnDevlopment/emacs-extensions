@@ -1,7 +1,4 @@
-;;; cl-ext.el --- Common lisp extensions extension.  -*- lexical-binding: t; -*-
-
-(eval-when-compile
-  (ignore t))
+;; -*- lexical-binding: t; -*-
 
 ;; Functions
 
@@ -23,6 +20,7 @@ this behaves exactly the same as `when'.
 	 ,@body)
     `(and ,cond ,first-form)))
 
+;;;###autoload
 (defmacro cl-ext-append (x place)
   "Add X to the list stored in PLACE.
 PLACE is a symbol whose definition is a list or some other
@@ -30,10 +28,8 @@ kind of sequence."
   (declare (pure t) (debug (form symbolp)))
   (cl-check-type place symbol)
   `(setq ,place (append ,place ,x)))
-(make-obsolete 'cl-append 'cl-ext-append "2025.02.10")
-
-(defalias 'cl-pushend 'cl-append)
-(make-obsolete 'cl-pushend 'cl-append "2024.12.21")
+(define-obsolete-function-alias 'cl-append #'cl-ext-append "2025.02.10")
+(define-obsolete-function-alias 'cl-pushend 'cl-append "2024.12.21")
 
 (defmacro cl-ext-append-list (x place)
   "Add X to the list stored in PLACE, but wrap X in a list.
@@ -50,7 +46,7 @@ Lisp expressions and adding another list to it:
   (cl-check-type x listp)
   (cl-check-type place symbol)
   `(setq ,place (append ,place (list ,x))))
-(make-obsolete 'cl-append-list #'cl-ext-append-list "2025.02.10")
+(define-obsolete-function-alias 'cl-append-list #'cl-ext-append-list "2025.02.10")
 
 (defmacro cl-ext-nconcat (place &rest sequences)
   "Append the arguments (SEQUENCES) as strings to PLACE.
@@ -63,15 +59,14 @@ the string found at PLACE and SEQUENCES are combined via
 Any errors are caught and printed as simple messages.
 
 \(fn BODY...)"
-  (declare (indent 0))
+  (declare (indent 0) (debug (&rest form)))
   `(let ((user-ext-cl--point (point-marker))
 	 (user-ext-cl--result
 	  (with-demoted-errors "Error caught from `cl-save-point': %S"
 	    ,@body)))
      (goto-char user-ext-cl--point)
      user-ext-cl--result))
-(defalias 'cl-save-point #'cl-ext-save-point)
-(make-obsolete 'cl-save-point 'cl-ext-save-point "2025.02.02")
+(define-obsolete-function-alias 'cl-save-point #'cl-ext-save-point "2025.02.02")
 
 (provide 'cl-ext)
 
