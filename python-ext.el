@@ -18,6 +18,49 @@
   (require 'dash)
   (require 'skeleton))
 
+(put #'python-rx 'function-documentation
+     "Python mode specialized rx macro.
+This variant of `rx' supports common Python named REGEXPS.
+
+This macro adds additional constructs, such as the
+following:
+
+Constructs that begin and end with symbol boundaries:
+
+block-start     Match a keyword that starts a block (def, class,
+                if/elif/else, try/except/finally, for, while, with,
+                async def/for/with).
+dedenter        Match the keywords that cause dedention (elif, else,
+                except, finally).
+defun           Match the symbol def, class, or the async equivelents.
+block-ender     Match the symbols break, continue, pass, raise,
+                return.
+
+decorator       Match decorators.
+if-name-main    Match \\`if __name__ == \"__main__\"'
+symbol-name     Match any symbol.
+open-paren      Match open parenthesis.
+close-paren     Match close parenthesis.
+
+simple-operator         Match a simple operator (+, -, /, &, ^, ~, |,
+                        ^, *, <, >, ?=, ?%).
+not-simple-operator     Match the inverse of simple-operator.
+operator                Match an operator (==, >=, is, not, **, //,
+                        <<, >>, <=, !=, +, -, /, &, ^, ~, |, *, <, >,
+                        =, %).
+assignment-operator	Match the assignment operators (+=, -=, *=,
+                        /=, //=, %=, **=, >>=, <<=, &=, ^=, |=, =).
+
+string-delimiter	Match both signal and triple string delimters,
+                        accounting for escape sequences.
+coding-cookie		Coding system declarations, which are
+                        recognized by Emacs, Vim and Python. Examples
+                        include: \"# coding=utf-8\", \"# coding: utf-8\",
+                        \"# -*- coding: utf-8 -*-\",
+                        \"# vim: set fileencoding=utf-8 :\".
+
+(fn &rest REGEXPS)")
+
 ;; Variables
 
 (defgroup python-ext nil
