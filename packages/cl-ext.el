@@ -5,6 +5,24 @@
 
 ;; Functions
 
+;;;###autoload
+(defmacro cl-ext-when (cond first-form &rest body)
+  "If COND yields non-nil, do FIRST-FORM and BODY, else return nil.
+When COND yields non-nil, eval FIRST-FORM and BODY forms
+sequentially and return value of last one.
+
+There is one main difference between `cl-ext-when' and
+`when': if BODY is empty, this expands to a `and' form, else
+this behaves exactly the same as `when'.
+
+\(fn COND FIRST-FORM BODY...)"
+  (declare (indent 1) (debug t))
+  (if body
+      `(when ,cond
+	 ,first-form
+	 ,@body)
+    `(and ,cond ,first-form)))
+
 (defmacro cl-ext-append (x place)
   "Add X to the list stored in PLACE.
 PLACE is a symbol whose definition is a list or some other
