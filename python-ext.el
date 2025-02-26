@@ -1,8 +1,4 @@
-;;; python-ext --- Python mode extension.  -*- lexical-binding: t; -*-
-
-;;; Commentary:
-
-;;; Code:
+;; -*- lexical-binding: t; -*-
 
 (require 'cl-lib)
 (require 'python-mode)
@@ -194,7 +190,7 @@ If END is non-nil, move point to the end of match."
       (buffer-string))))
 
 (defun python-ext--get-symbol-at-point ()
-  (let ((bol (cl-save-point
+  (let ((bol (cl-ext-save-point
 	       (beginning-of-line)
 	       (point)))
 	bs)
@@ -322,7 +318,7 @@ quotes), and CONTENT is the text between START and END."
     (jump-to-register user-ext-python--register)
     (setq user-ext-python--orig-position (point))
     (insert buffer-string)
-    (cl-check-type user-ext-python--orig-position marker)
+    (cl-check-type user-ext-python--orig-position integer-or-marker)
     (goto-char user-ext-python--orig-position) ; go back to original position
     (save-excursion
       ;; get leading spaces
@@ -347,6 +343,7 @@ quotes), and CONTENT is the text between START and END."
        (cl-pushnew ',mode ,place))))
 
 (defun python-ext--dedent-string (string)
+  "Dedent STRING."
   (let* ((lines (split-string string "\n"))
 	 (common-indent
 	  (cl-loop
