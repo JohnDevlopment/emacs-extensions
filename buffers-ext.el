@@ -270,7 +270,7 @@ Interactively, ARG is the raw prefix argument."
       (view-mode-enter nil #'kill-buffer-if-not-modified)
     (view-mode-enter)))
 
-(defun view-into-buffer (base-buffer &optional _clone)
+(defun clone-and-view-buffer (base-buffer &optional clone)
   "Create an indirect buffer and show it in another window.
 
 Creates an indirect buffer of BASE-BUFFER and shows it in
@@ -282,14 +282,11 @@ the indirect buffer's state is reset to default values.
 
 Interactively, CLONE is a prefix argument."
   (interactive "bMake indirect buffer of: \nP")
-  (let ((view-buffer (format "*view into %s*" base-buffer))
-	mode)
-    (make-indirect-buffer base-buffer view-buffer)
-    (split-window-sensibly)
-    (switch-to-buffer view-buffer)
-    (with-current-buffer base-buffer
-      (setq mode major-mode))
-    (funcall mode)))
+  (let ((vb (format "*view into %s*" base-buffer)))
+    (make-indirect-buffer base-buffer vb clone)
+    (display-buffer vb)
+    (with-current-buffer vb
+      (view-mode-enter nil #'kill-buffer-if-not-modified))))
 
 (provide 'buffers-ext)
 
