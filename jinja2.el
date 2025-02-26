@@ -144,7 +144,6 @@ Intended to be used with `looking-back'.")
   "{% for " str " in " (setq v1 (read-string "Iterable: ")) " %}"
   \n _ \n "{% endfor %}")
 
-
 (jinja2-define-skeleton macro
   "Insert a macro definition."
   "Name: "
@@ -238,8 +237,8 @@ Intended to be used with `looking-back'.")
     (when start
       (cl-check-type start integer-or-marker)
       (goto-char start))
-    (setq match (re-search-forward jinja2-tag-regex limit t))
     (let (match)
+      (setq match (re-search-forward jinja2-tag-regex limit t))
       (and match (tag-match-from-match-data)))))
 
 (defun jinja2--find-tags (start end)
@@ -362,10 +361,6 @@ compare with the \\=`category' property of each overlay."
 	    (delete-overlay ov)))
 	 (t (message "No conditions met."))))))
 
-(defun jinja2--set-face-on-change (_start _end _length)
-  (cl-destructuring-bind (a b) (jinja2--get-visible-bounds)
-    (jinja2-mark-tags a b)))
-
 (defun jinja2--create-or-load-category (name)
   "Create or load category NAME.
 Returns a symbol `category-jinja-NAME'.  NAME can be either
@@ -389,21 +384,17 @@ Returns a symbol `category-jinja-NAME'.  NAME can be either
   "Delete all tag overlays between BEG and END.
 If they are not provided, BEG and END default to the
 beginning and end of buffer respectively."
-  (let* ((beg (or beg (point-min)))
-	 (end (or end (point-max)))
-	 (cat (jinja2--create-or-load-category "tag")))
+  (let ((cat (jinja2--create-or-load-category "tag")))
     (dolist (ov (overlays-in beg end))
       (when (eq (overlay-get ov 'category) cat)
 	(delete-overlay ov)))))
 
 (defun jinja2-mark-tags (beg end)
   "Mark all tags within buffer."
-  (let* (;; (bounds (jinja2--get-visible-bounds))
-	 ;; (beg (or beg (car bounds)))
-	 ;; (end (or end (cadr bounds)))
-	 (cat (jinja2--create-or-load-category "tag"))
+  (let* ((cat (jinja2--create-or-load-category "tag"))
 	 (tags (jinja2--find-tags beg end))
 	 ov ovbeg ovend)
+    (print-expr sexp (list beg end))
     (with-silent-modifications
       (jinja2-clear-tags beg end)
       (dolist (tag tags)
@@ -484,13 +475,16 @@ beginning and end of buffer respectively."
 
 (defun jinja2-activate ()
   "Activate Jinja2 mode."
-  (jinja2-mark-tags)
-  (add-hook 'after-change-functions #'jinja2--set-face-on-change nil t))
+  (let ((bounds (jinja2--get-visible-bounds)))
+    (jinja2-mark-tags (car bounds) (cdr bounds)))
+  ;; (add-hook 'after-change-functions #'jinja2--set-face-on-change nil t)
+  (jit-lock-register #'jinja2-mark-tags))
 
 (defun jinja2-deactivate ()
   "Deactivate Jinja2 mode."
-  (jinja2-clear-tags)
-  (remove-hook 'after-change-functions #'jinja2--set-face-on-change t))
+  (jinja2-clear-tags (point-min) (point-max))
+  ;; (remove-hook 'after-change-functions #'jinja2--set-face-on-change t)
+  (jit-lock-unregister #'jinja2-mark-tags))
 
 ;;;###autoload
 (define-minor-mode jinja2-mode
