@@ -6,7 +6,7 @@
 ;;;### (autoloads nil "abbrev-ext" "abbrev-ext.el" (0 0 0 0))
 ;;; Generated autoloads from abbrev-ext.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "abbrev-ext" '("abbrev-ext-insert-hook" "global-abbrev-table")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "abbrev-ext" '("abbrev-ext-insert-hook" "global-abbrev-table" "user-ext-abbrev-insert-char-regex")))
 
 ;;;***
 
@@ -18,14 +18,14 @@ Extra hook for `bbcode-mode'." nil nil)
 
 (add-hook 'bbcode-mode-hook #'bbcode-extra-hook)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "bbcode-ext" '("bbcode-")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "bbcode-ext" '("bbcode-ext-")))
 
 ;;;***
 
 ;;;### (autoloads nil "buffers-ext" "buffers-ext.el" (0 0 0 0))
 ;;; Generated autoloads from buffers-ext.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "buffers-ext" '("clone-indirect-buffer-this-window" "define-scratch-buffer-function" "faces-buffer" "git-commit-scratch" "kill-" "narrow-to-region2" "revert-all-buffers" "text-scratch--complete-mode" "tmpbuf" "user-ext-temp-buffers-to-kill" "view-into-buffer")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "buffers-ext" '("activate-view-mode" "clone-" "define-scratch-buffer-function" "faces-buffer" "git-commit-scratch" "kill-" "narrow-to-region2" "revert-all-buffers" "text-scratch--complete-mode" "tmpbuf" "user-ext-temp-buffers-to-kill")))
 
 ;;;***
 
@@ -89,6 +89,13 @@ See `comment-tags-mode' for more information on Comment-Tags mode.
 
 ;;;***
 
+;;;### (autoloads nil "desktop-ext" "desktop-ext.el" (0 0 0 0))
+;;; Generated autoloads from desktop-ext.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "desktop-ext" '("user-ext-desktop-prefix")))
+
+;;;***
+
 ;;;### (autoloads nil "dired-ext" "dired-ext.el" (0 0 0 0))
 ;;; Generated autoloads from dired-ext.el
 
@@ -131,9 +138,6 @@ Extra hook for `dtext-mode'." nil nil)
 
 ;;;### (autoloads nil "elisp-ext" "elisp-ext.el" (0 0 0 0))
 ;;; Generated autoloads from elisp-ext.el
-
-(autoload 'elisp-ext-occur-variables "elisp-ext" "\
-Run `occur' with a regular expression matching variables." t nil)
 
 (autoload 'elisp-ext-forward-or-backward-sexp "elisp-ext" "\
 Go to the matching parenthesis to the one is adjacent at point.
@@ -245,7 +249,7 @@ ARG is `toggle'; disable the mode otherwise.
 
 \(fn &optional ARG)" t nil)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "jinja2" '("jinja2-")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "jinja2" '("jinja2-" "tag-match-")))
 
 ;;;***
 
