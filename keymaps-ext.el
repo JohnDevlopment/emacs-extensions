@@ -154,7 +154,7 @@ is non-nil."
 (define-key quick-mode-map (kbd "l") #'lsp-mode)
 (define-key quick-mode-map (kbd "o") #'contextual-key-o)
 (define-key quick-mode-map (kbd "s") #'contextual-key-s)
-(define-key quick-mode-map (kbd "v") #'view-mode)
+(define-key quick-mode-map (kbd "v") #'activate-view-mode)
 (define-key quick-mode-map (kbd "w") #'enable-wrap)
 (define-key quick-mode-map (kbd "y") #'contextual-key-y)
 

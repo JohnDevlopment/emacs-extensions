@@ -258,6 +258,18 @@ Otherwise, this just returns the newly created buffer."
   (narrow-to-region start end)
   (setq deactivate-mark t))
 
+(defun activate-view-mode (&optional arg)
+  "Activate view mode in current buffer and maybe setup exit actions.
+If ARG is non-nil, setup buffer to be killed when View mode
+is exited, similar to the behavior of `view-buffer' or
+`view-file'.
+
+Interactively, ARG is the raw prefix argument."
+  (interactive "P")
+  (if arg
+      (view-mode-enter nil #'kill-buffer-if-not-modified)
+    (view-mode-enter)))
+
 (defun view-into-buffer (base-buffer &optional _clone)
   "Create an indirect buffer and show it in another window.
 
