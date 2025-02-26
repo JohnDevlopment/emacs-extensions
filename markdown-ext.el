@@ -7,6 +7,7 @@
 (require 'cl-lib)
 (require 'markdown-mode)
 (require 'org-table)
+(require 'csv-mode)
 
 (defvar markdown-footnote-counter)
 (defvar markdown-mode-style-map)
