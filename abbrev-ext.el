@@ -5,7 +5,7 @@
   (require 'cl-ext))
 
 (defconst user-ext-abbrev-insert-char-regex
-  (rx (or "i.e." "e.g."))
+  (rx (or "i.e." "e.g." "interactively"))
   "Regular expression that matches the expansion that allows")
 
 (defun abbrev-ext-insert-hook ()
