@@ -199,7 +199,14 @@ Automatically activates `hs-minor-mode' when called."
       (elisp-ext-enable-hs-minor-mode)
       (hs-hide-block))))
 
-;; Elisp doc minor mode
+(defun elisp-ext-hide-block ()
+  "Hide the innermost block containing point.
+Automatically activates `hs-minor-mode' when called."
+  (interactive)
+  (elisp-ext-enable-hs-minor-mode)
+  (hs-hide-block))
+
+;; --- Elisp doc minor mode
 
 (defun elisp-ext-doc-scratch-buffer--shift-return ()
   "Insert a newline and change fill column."
@@ -257,6 +264,7 @@ Automatically activates `hs-minor-mode' when called."
 (define-key user-ext-elisp-fold-map (kbd "s") #'elisp-ext-show)
 (define-key user-ext-elisp-fold-map (kbd "C-o") #'elisp-ext-show-only)
 (define-key user-ext-elisp-fold-map (kbd "C-a") #'elisp-ext-hide-all)
+(define-key user-ext-elisp-fold-map (kbd "b") #'elisp-ext-hide-block)
 
 (define-key emacs-lisp-mode-map (kbd "C-c C-j") #'imenu)
 (define-key emacs-lisp-mode-map (kbd "C-c c b") #'emacs-lisp-byte-compile)
