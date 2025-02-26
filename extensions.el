@@ -11,10 +11,9 @@
 (require 'debug-ext)
 (require 'documentation-ext)
 
-(setq read-process-output-max 10485760)
-
-(setq frame-title-format
-      (concat multiple-frames " %b " invocation-name "@" (system-name)))
+(setq read-process-output-max 10485760
+      frame-title-format (concat (and multiple-frames ()) " %b " invocation-name "@" (system-name))
+      source-directory "~/github/emacs/src/")
 
 (document-extension "extensions"
   "The main loader for custom extensions."
