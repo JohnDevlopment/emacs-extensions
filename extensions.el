@@ -61,13 +61,19 @@ the file '~/.emacs.d/extensions/general.el' is loaded."
      (load-extension ,extension)))
 
 (defun find-extension (extension)
-  "Find the Emacs Lisp source of EXTENSION."
+  "Find the Emacs Lisp source of EXTENSION.
+
+Interactively, prompt for EXTENSION."
   (interactive (--extension-completion "Find Extension: "))
   (prog1
       (switch-to-buffer (find-file-noselect
 			 (concat "~/.emacs.d/extensions/" extension ".el")))))
 
 (defun find-extension-at-point (extension)
+  "Find the Emacs Lisp source of EXTENSION at point.
+
+Interactively, prompt for EXTENSION using the one at or near
+point."
   (interactive
    (let* ((thing (thing-at-point 'sexp))
 	  (end (if (stringp thing) (length thing))))
@@ -79,7 +85,7 @@ the file '~/.emacs.d/extensions/general.el' is loaded."
 			 (concat "~/.emacs.d/extensions/" extension ".el")))))
 
 (defun get-extension-documentation (extension)
-  "Display the full documentation for EXTENION (a string)."
+  "Display the full documentation EXTENSION."
   (interactive (--extension-completion "Get Help For Extension: "))
   (let ((var (intern-soft (format "user-ext-%s-documentation" extension))))
     (print-expr sexp (list var extension))
@@ -120,3 +126,7 @@ evaluated."
 (load-extension "keymaps-ext")
 (load-extension-safe "yasnippets-ext")
 (load-extension-safe "liquidsoap-bootstrap")
+
+(provide 'extensions)
+
+;;; extensions.el ends here
