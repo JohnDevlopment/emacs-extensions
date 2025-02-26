@@ -24,11 +24,15 @@
 	      (elisp-ext-doc-scratch-buffer command))
   :advised ((eval-region command)))
 
+;; Abbrevs
+
+(define-abbrev emacs-lisp-mode-abbrev-table "intry" "interactively"
+  #'abbrev-ext-insert-hook :system t)
+
 ;; Advice
 
 (fext-defadvice eval-region (after eval-region)
   (deactivate-mark))
-
 
 ;; Variables
 
@@ -48,7 +52,6 @@ first argument).")
 
 ;; Functions
 
-;;;###autoload
 (defun elisp-ext-occur-variables ()
   "Run `occur' with a regular expression matching variables."
   (interactive)
@@ -151,6 +154,8 @@ If REVERSE is non-nil, search backwards."
       (goto-char (point-min))
       (search-forward "\"")
       (point))))
+
+;; --- Hs minor mode
 
 (defsubst elisp-ext-enable-hs-minor-mode ()
   "Enable `hs-minor-mode' if it isn't already."
