@@ -114,7 +114,32 @@ This is passed to `window-configuration-to-register'.")
 (defvar user-ext-python--reverted nil
   "t if `python-ext-revert-all-python-buffers' is called.")
 
+(defconst user-ext-python-defun-regexp
+  (python-rx bol (* space) defun (+ space) (group symbol-name)
+	     open-paren (*? anything) close-paren (* space) ; arguments
+	     (seq "->" (* space) (+? nonl) (* space))
+	     ?:)
+  "A regular expression that matches function definitions.
+Group 1 matches the name of the function.")
+
 ;; Functions
+
+(defun python-ext-forward-regexp (regexp &optional subexp end)
+  "Search current buffer for REGEXP and move point to the first match.
+SUBEXP, if non-nil, specifies the subexpression to match.
+If END is non-nil, move point to the end of match."
+  (cl-check-type subexp (or integer null))
+  (when (cl-ext-save-point (re-search-forward regexp nil t))
+    (let (pos)
+      (setq pos (cond
+		 ((and subexp end)
+		  (match-end subexp))
+		 (subexp (match-beginning subexp))
+		 (end (match-end 0))
+		 (t (match-beginning 0))))
+      (prog1 pos
+	(cl-ext-when pos
+	  (goto-char pos))))))
 
 ;; ---Python hs integration
 
@@ -133,7 +158,10 @@ This is passed to `window-configuration-to-register'.")
           (progn
 	    (setq beg (progn
 			(goto-char beg)
-			(py-forward-statement)))
+			(pcase form
+			  ("def"
+			   (python-ext-forward-regexp user-ext-python-defun-regexp nil t))
+			  (_ (py-forward-statement)))))
             (hs-make-overlay beg end 'code)
             (set-buffer-modified-p modified))
         (error (concat "No " (format "%s" form) " at point"))))))
