@@ -275,6 +275,9 @@ Automatically activates `hs-minor-mode' when called."
 (define-key emacs-lisp-mode-map (kbd "C-c c b") #'emacs-lisp-byte-compile)
 (define-key emacs-lisp-mode-map (kbd "C-c c M-b") #'emacs-lisp-byte-compile-and-load)
 
+(define-key lisp-interaction-mode-map [remap kill-and-quit] #'quit-window)
+(define-key lisp-interaction-mode-map (kbd "C-c M-f") #'elisp-ext-minify)
+
 ;; Hook
 
 ;;;###autoload
