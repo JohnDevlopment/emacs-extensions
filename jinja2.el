@@ -190,6 +190,28 @@ Intended to be used with `looking-back'.")
   v1 " block " str ?\  v2 \n
   _ \n v1 " endblock " v2)
 
+(defun jinja2--prompt-v1 (prompt &optional missing)
+  (let ((missing (if missing
+		     (s-lex-format "<undefine ${missing}>")
+		   "<undefined>"))
+	v1)
+    (setq v1 (read-string prompt))
+    (if (string-empty-p v1)
+	missing
+      v1)))
+
+(defun jinja2--prompt-v2 (what prompt &optional prefix quoted)
+  (cl-check-type what string-or-null)
+  (cl-check-type prefix string-or-null)
+  (let ((prefix (or prefix ""))
+	v2)
+    (when (y-or-n-p (s-lex-format "Add `${what}'? "))
+      (setq v2 (read-string prompt))
+      (unless (string-empty-p v2)
+	(if quoted
+	    (format "%s%s=\"%s\"" prefix what v2)
+	  (format "%s%s=%s" prefix what v2))))))
+
 (jinja2-define-skeleton prompt-function
   "Insert a call to the global prompt function."
   nil
@@ -217,11 +239,25 @@ Intended to be used with `looking-back'.")
       (format ", default=%s" v1)))
   ") -}}")
 
-;; TODO: This function is incomplete
 (jinja2-define-skeleton prompt-list-function
   "Insert a call to the global prompt-list function."
   "Key: "
-  "{{- prompt_list(\""
+  "{{- prompt_list(\"" (progn
+			 (setq v1 (read-string "Key: "))
+			 (if (string-empty-p v1)
+			     "<undefined key>"
+			   v1))
+  "\", "
+  "\"" (progn
+	 (setq v1 (read-string "Prompt: "))
+	 (if (string-empty-p v1)
+	     "<undefined prompt>"
+	   v1))
+  "\""
+  ("Prompt, %s: "
+   ", (\"" str "\", \"" (jinja2--prompt-v1 "Type: ") ?\"
+   (jinja2--prompt-v2 "default" "Default: " ", " t) ?\))
+  resume:
   ") -}}")
 
 (defun jinja2-insert-expression ()
