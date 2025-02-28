@@ -93,7 +93,10 @@ of modes using a completion function.
   "shell-script-mode"
   "sphinx-doc-mode")
 
-(define-contextual-key-func "y" "yas-minor-mode")
+(define-contextual-key-func "y"
+  :ido t
+  "yaml-mode"
+  "yas-minor-mode")
 
 (defun lookup-function (fn &optional keymap firstonly)
   "Lookup the key binding for FN.
