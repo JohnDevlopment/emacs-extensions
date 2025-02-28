@@ -216,10 +216,10 @@ Intended to be used with `looking-back'.")
   "Insert a call to the global prompt function."
   nil
   "{{- prompt(\"" (progn
-		   (setq v1 (read-string "Key: "))
-		   (if (string-empty-p v1)
-		       "<undefined key>"
-		     v1))
+		    (setq v1 (read-string "Key: "))
+		    (if (string-empty-p v1)
+			"<undefined key>"
+		      v1))
   "\", "
   "\"" (progn
 	 (setq v1 (read-string "Prompt: "))
@@ -430,7 +430,7 @@ beginning and end of buffer respectively."
   (let* ((cat (jinja2--create-or-load-category "tag"))
 	 (tags (jinja2--find-tags beg end))
 	 ov ovbeg ovend)
-    (print-expr sexp (list beg end))
+    ;; (print-expr sexp (list beg end))
     (with-silent-modifications
       (jinja2-clear-tags beg end)
       (dolist (tag tags)
