@@ -36,6 +36,7 @@ treated as a single value and formatted appropriately."
 (cl-deftype list-or-null () '(or list null))
 (cl-deftype marker-or-null () '(or marker null))
 (cl-deftype integer-or-null () '(or integer null))
+(cl-deftype string-or-null () '(or string null))
 
 ;; Variables
 
