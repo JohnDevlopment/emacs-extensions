@@ -1,9 +1,15 @@
-;;; help-ext.el --- Help key bindings.               -*- lexical-binding: t; -*-
+;; -*- lexical-binding: t; -*-
+
+(require 'menu-bar)
 
 (eval-when-compile
   (declare-function help-ext-command "help-ext")
-  (defvar help-ext-command)
-  (require 'menu-bar))
+  (defvar help-ext-command))
+
+(document-extension "help-ext"
+  "Add keybindings to the help commands.
+
+\\<help-ext-command>")
 
 (define-prefix-command 'help-ext-command)
 (global-set-key (kbd "C-h M") #'help-ext-command)
