@@ -165,7 +165,7 @@ Hook for the `emacs-lisp-mode' extension." nil nil)
 
 (add-hook 'emacs-lisp-mode-hook #'elisp-ext--extra-hook)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "elisp-ext" '("elisp-ext-" "user-ext-elisp-")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "elisp-ext" '("elisp-ext-" "emacs-lisp-mode-abbrev-table" "user-ext-elisp-")))
 
 ;;;***
 
@@ -440,7 +440,11 @@ Extra hook for `org-mode'." nil nil)
 
 ;;;### (autoloads nil "python-ext" "python-ext.el" (0 0 0 0))
 ;;; Generated autoloads from python-ext.el
- (autoload 'py-hide-base "python-ext" nil t)
+ (autoload 'python-ext-forward-def "python-ext" nil t)
+ (autoload 'python-ext-forward-class "python-ext" nil t)
+ (autoload 'python-ext-backward-def "python-ext" nil t)
+ (autoload 'python-ext-backward-class "python-ext" nil t)
+ (autoload 'py-hide-base "python-ext")
 
 (autoload 'python-ext-show "python-ext" "\
 Toggle visibility of existing forms at point." t nil)
