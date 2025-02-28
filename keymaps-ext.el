@@ -93,6 +93,9 @@ of modes using a completion function.
   "shell-script-mode"
   "sphinx-doc-mode")
 
+(define-contextual-key-func "j"
+  "jinja2-mode")
+
 (define-contextual-key-func "y"
   :ido t
   "yaml-mode"
@@ -154,6 +157,7 @@ is non-nil."
 (define-key quick-mode-map (kbd "f") #'contextual-key-f)
 (define-key quick-mode-map (kbd "g") #'contextual-key-g)
 (define-key quick-mode-map (kbd "h") #'contextual-key-h)
+(define-key quick-mode-map (kbd "j") #'contextual-key-j)
 (define-key quick-mode-map (kbd "l") #'lsp-mode)
 (define-key quick-mode-map (kbd "o") #'contextual-key-o)
 (define-key quick-mode-map (kbd "s") #'contextual-key-s)
