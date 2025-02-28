@@ -97,6 +97,19 @@ Examples of what get matched:
      ^^^^^^^
    $ str.make_trans({})")
 
+(defconst user-ext-python-def-regexp
+  (python-rx (? bol (* space)) (group defun) (+ space) (group symbol-name)
+	     open-paren (*? anything) close-paren (* space) ; arguments
+	     (? "->" (* space) (+? nonl) (* space))	    ; return type
+	     ?:)
+  "A regular expression that matches function definitions.
+Group 1 matches the keyword that starts the block.
+Group 2 matches the name of the function.")
+
+(defconst user-ext-python-def-start-regexp
+  (python-rx defun (* space))
+  "Matches the beginning of a function definition.")
+
 (defvar user-ext-python--orig-position nil
   "Position in the original buffer when editing Python docstring.")
 
@@ -110,36 +123,132 @@ This is passed to `window-configuration-to-register'.")
 (defvar user-ext-python--reverted nil
   "t if `python-ext-revert-all-python-buffers' is called.")
 
-(defconst user-ext-python-defun-regexp
-  (python-rx bol (* space) defun (+ space) (group symbol-name)
-	     open-paren (*? anything) close-paren (* space) ; arguments
-	     (seq "->" (* space) (+? nonl) (* space))
-	     ?:)
-  "A regular expression that matches function definitions.
-Group 1 matches the name of the function.")
-
 ;; Functions
 
+(defsubst python-ext--regexp-match (subexp end)
+  (cond
+   ((and subexp end)
+    (match-end subexp))
+   (subexp (match-beginning subexp))
+   (end (match-end 0))
+   (t (match-beginning 0))))
+
 (defun python-ext-forward-regexp (regexp &optional subexp end)
-  "Search current buffer for REGEXP and move point to the first match.
-SUBEXP, if non-nil, specifies the subexpression to match.
-If END is non-nil, move point to the end of match."
+  "Search forward from point for regular expression REGEXP.
+Move point to the beginning of the match next.  If SUBEXP is
+non-nil, match that subexpression (e.g., 1 for group 1).  If
+END is non-nil, move point to the end of the match."
+  (cl-check-type regexp string)
   (cl-check-type subexp (or integer null))
   (when (cl-ext-save-point (re-search-forward regexp nil t))
-    (let (pos)
-      (setq pos (cond
-		 ((and subexp end)
-		  (match-end subexp))
-		 (subexp (match-beginning subexp))
-		 (end (match-end 0))
-		 (t (match-beginning 0))))
+    (let ((pos (python-ext--regexp-match subexp end)))
       (prog1 pos
 	(cl-ext-when pos
 	  (goto-char pos))))))
 
+(defun python-ext-backward-regexp (regexp &optional subexp limit end)
+  "Search backward from point for regular expression REGEXP.
+Move point to the beginning of the next match.  SUBEXP and
+END are the same as for `python-ext-forward-regexp', which
+see.  If LIMIT is non-nil, bound the search so that the
+match has to be after it; it is a buffer position."
+  (cl-check-type regexp string)
+  (cl-check-type subexp integer-or-null)
+  (cl-check-type limit (or integer-or-marker null))
+  (when (and (not (bobp))
+	     (cl-ext-save-point (re-search-backward regexp limit t)))
+    (let ((pos (python-ext--regexp-match subexp end)))
+      (prog1 pos
+	(cl-ext-when pos
+	  (goto-char pos))))))
+
+;; ---Motion and syntax functions
+
+(defun python-ext--beginning-of-def-p (&optional ppss)
+  "If point is at the beginning of a function, return point, else nil."
+  (let ((ppss (or ppss (make-ppss-easy (syntax-ppss)))))
+    (when (and (not (or (ppss-comment-or-string-start ppss) ; not inside comment or string
+			(ppss-innermost-start ppss)))	    ; not inside parenthesis
+	       (looking-at-p user-ext-python-defun-start-regexp)
+	       (looking-back "[^ \t]*" (line-beginning-position))
+	       (eq (current-column) (current-indentation)))
+      (point))))
+
+;; (defun python-ext--inside-def-p ()
+;;   (cl-ext-save-point
+;;     (py-backward-def)
+;;     ))
+
+(cl-defmacro python-ext-define-forward-form (form &key subexp alias)
+  (cl-check-type form symbol)
+  (cl-check-type subexp integer-or-null)
+  (declare (debug (&define name
+			   [&optional ":subexp" integerp]
+			   [&optional ":alias" "t"])))
+  (let* ((fname (intern (format "python-ext-forward-%S" form)))
+	 (bof-f (intern-soft (format "python-ext--beginning-of-%S-p" form)))
+	 (rx-form (intern-soft (format "user-ext-python-%S-regexp" form))))
+    (if alias
+	(let ((ofname (intern-soft (format "py-forward-%S" form))))
+	  `(progn
+	     (defalias (quote ,fname) (function ,ofname))))
+      (cl-assert bof-f)
+      `(progn
+	 (defun ,fname ()
+	   ,(format "Go to the beginning of the next `%S'.
+Return point if successful, nil otherwise.
+
+Match regular expression `%S'.
+Match %s" form rx-form (if (or (not subexp) (= subexp 0))
+			   "the whole expression."
+			 (s-lex-format "group ${subexp}.")))
+	   (if (,bof-f)
+	       (point)
+	     (python-ext-forward-regexp ,rx-form ,subexp)))))))
+
+;;;###autoload (autoload 'python-ext-forward-def "python-ext" nil t)
+(python-ext-define-forward-form def :alias t)
+
+;;;###autoload (autoload 'python-ext-forward-class "python-ext" nil t)
+(python-ext-define-forward-form class :alias t)
+
+(cl-defmacro python-ext-define-backward-form (form &key subexp alias)
+  (cl-check-type form symbol)
+  (cl-check-type subexp integer-or-null)
+  (declare (debug (&define name
+			   [&optional ":subexp" integerp]
+			   [&optional ":alias" "t"])))
+  (let* ((fname (intern (format "python-ext-backward-%S" form)))
+	 (bof-f (intern-soft (format "python-ext--beginning-of-%S-p" form)))
+	 (rx-form (intern-soft (format "user-ext-python-%S-regexp" form))))
+    (if alias
+	(let ((ofname (intern-soft (format "py-backward-%S" form))))
+	  `(progn
+	     (defalias (quote ,fname) (function ,ofname))))
+      (cl-assert bof-f)
+      `(progn
+	 (defun ,fname ()
+	   ,(format "Go to the beginning of a `%S'.
+Return point if successful, nil otherwise.
+
+Match regular expression `%S'.
+Match %s" form rx-form (if (or (not subexp) (= subexp 0))
+			   "the whole expression."
+			 (s-lex-format "group ${subexp}.")))
+	   (interactive)
+	   (if (,bof-f)
+	       (point)
+	     (python-ext-backward-regexp ,rx-form ,subexp)))))))
+
+;;;###autoload (autoload 'python-ext-backward-def "python-ext" nil t)
+(python-ext-define-backward-form def :subexp 1)
+
+;;;###autoload (autoload 'python-ext-backward-class "python-ext" nil t)
+(python-ext-define-backward-form class :alias t)
+
 ;; ---Python hs integration
 
-;;;###autoload (autoload 'py-hide-base "python-ext" nil t)
+;;;###autoload (autoload 'py-hide-base "python-ext")
 (fext-replace-function py-hide-base "python-ext" (form &optional beg end)
   "Hide form at point."
   (hs-minor-mode 1)
@@ -156,7 +265,9 @@ If END is non-nil, move point to the end of match."
 			(goto-char beg)
 			(pcase form
 			  ("def"
-			   (python-ext-forward-regexp user-ext-python-defun-regexp nil t))
+			   (cl-ext-when (looking-at user-ext-python-def-regexp)
+			     (goto-char (match-end 0))
+			     (point)))
 			  (_ (py-forward-statement)))))
             (hs-make-overlay beg end 'code)
             (set-buffer-modified-p modified))
@@ -176,6 +287,19 @@ If END is non-nil, move point to the end of match."
       (when (and ov beg end)
 	(hs-discard-overlays beg end))
       (set-buffer-modified-p modified))))
+
+(defun python-ext-hide-all-functions ()
+  (interactive)
+  (hs-minor-mode 1)
+  (let ((inhibit-read-only t)
+	beg end pos)
+    (save-excursion
+      (goto-char (point-min))
+      (while (python-ext-forward-regexp user-ext-python-def-regexp 0 t)
+	(setq beg (point) end (py-forward-def)
+	      pos beg)
+	(goto-char beg)
+	(hs-make-overlay beg end 'code)))))
 
 ;; ---
 
@@ -472,6 +596,7 @@ quotes), and CONTENT is the text between START and END."
 (define-key python-ext-hide-show-command (kbd "b") #'py-hide-block)
 (define-key python-ext-hide-show-command (kbd "c") #'py-hide-class)
 (define-key python-ext-hide-show-command (kbd "d") #'py-hide-def)
+(define-key python-ext-hide-show-command (kbd "C-d") #'python-ext-hide-all-functions)
 (define-key python-ext-hide-show-command (kbd "e") #'py-hide-else-block)
 (define-key python-ext-hide-show-command (kbd "f") #'py-hide-for-block)
 (define-key python-ext-hide-show-command (kbd "i") #'py-hide-if-block)
