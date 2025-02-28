@@ -1,4 +1,4 @@
-;;; general --- General extension functions.  -*- lexical-binding: t; -*-
+;; -*- lexical-binding: t; -*-
 
 ;; Errors
 
@@ -50,10 +50,12 @@ treated as a single value and formatted appropriately."
    enable-wrap
    kill-and-quit
    narrow-to-region2
+
    pop-saved-position
    print-saved-positions
-   save-and-kill
    save-current-position
+
+   save-and-kill
    signal-wrong-argument
    sort-words
    wrap)
@@ -64,7 +66,8 @@ treated as a single value and formatted appropriately."
   :types
   (list-or-null
    marker-or-null
-   integer-or-null))
+   integer-or-null
+   string-or-null))
 
 (defvar-local user-ext-local-position-ring nil
   "Current file's mark ring.")
