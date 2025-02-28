@@ -79,6 +79,10 @@ coding-cookie		Coding system declarations, which are
   :group 'python-ext
   :safe 'symbolp)
 
+(defconst user-ext-python--register ?p
+  "The register for `python-ext-docstring'.
+This is passed to `window-configuration-to-register'.")
+
 (defconst user-ext-python-identifier-regex
   (rx word-start
       (group
@@ -112,10 +116,6 @@ Group 2 matches the name of the function.")
 
 (defvar user-ext-python--orig-position nil
   "Position in the original buffer when editing Python docstring.")
-
-(defconst user-ext-python--register ?p
-  "The register for `python-ext-docstring'.
-This is passed to `window-configuration-to-register'.")
 
 (defvar user-ext-python--docstring-buffer nil
   "Buffer for Python docstring.")
