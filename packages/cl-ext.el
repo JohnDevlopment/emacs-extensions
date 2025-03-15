@@ -1,16 +1,24 @@
 ;; -*- lexical-binding: t; -*-
 
-;; Functions
-
-;;;###autoload
 (defmacro cl-ext-when (cond first-form &rest body)
   "If COND yields non-nil, do FIRST-FORM and BODY, else return nil.
 When COND yields non-nil, eval FIRST-FORM and BODY forms
 sequentially and return value of last one.
 
-There is one main difference between `cl-ext-when' and
-`when': if BODY is empty, this expands to a `and' form, else
-this behaves exactly the same as `when'.
+The main difference between `cl-ext-when' and `when' is that
+when BODY is empty, this expands to a `and' form; otherwise,
+it behaves exactly the same.
+
+When BODY is nil, if COND is itself a `and' form, ala \`(and
+SUB-CONDS...)', SUB-CONDS is collapsed into COND.  As a
+result, the following form
+
+   (cl-ext-when (and n (> n 0))
+     n)
+
+expands to this:
+
+   (and n (> n 0) n)
 
 \(fn COND FIRST-FORM BODY...)"
   (declare (indent 1) (debug t))
@@ -18,7 +26,11 @@ this behaves exactly the same as `when'.
       `(when ,cond
 	 ,first-form
 	 ,@body)
-    `(and ,cond ,first-form)))
+    (pcase cond
+      (`(and . ,x)
+       `(and ,@x ,first-form))
+      (_
+       `(and ,cond ,first-form)))))
 
 ;;;###autoload
 (defmacro cl-ext-append (x place)
