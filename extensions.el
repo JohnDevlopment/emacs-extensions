@@ -8,6 +8,7 @@
 (require 'cl-lib)
 (require 'cl-ext)
 (require 'alist-ext)
+(require 'f)
 
 (setq read-process-output-max 10485760
       frame-title-format (concat (and multiple-frames ()) " %b " invocation-name "@" (system-name))
@@ -36,31 +37,55 @@
 
 (defun --extension-completion (prompt &optional initial-input)
   (let* ((path "~/.emacs.d/extensions")
+	 (args (list (completing-read
+		      prompt
+		      (apply-partially #'locate-file-completion-table
+				       (list path)
+				       (get-load-suffixes))
+		      nil nil initial-input)))
 	 completion-ignored-extensions)
-    (list (completing-read prompt
-			   (apply-partially #'locate-file-completion-table
-					    (list path)
-					    (get-load-suffixes))
-			   nil nil initial-input))))
+    (when current-prefix-arg
+      (push (y-or-n-p "Load safely? ") args)
+      (push (read-number "Defer seconds: " 0) args))
+    (nreverse args)))
 
-(defun load-extension (extension &rest _args)
-  "Load an extension.
+(defun load-extension (extension &optional safe defer)
+  "Load EXTENSION.
+EXTENSION is a Lisp file under '~/.emacs.d/extensions' without its
+file extension.  For example, with an extension named 'general',
+the file '~/.emacs.d/extensions/general.el' will be loaded.
 
-EXTENSION is a file '~/.emacs.d/extensions' without its file
-extension.  For example, with an extension named 'general',
-the file '~/.emacs.d/extensions/general.el' is loaded."
+If SAFE is non-nil, demote errors to simple messages.  If DEFER is
+non-nil, it is an integer specifying how many seconds of idle time
+to wait before loading EXTENSION.
+
+Interactively, prompt the user for EXTENSION with completion.  With
+the prefix argument, also prompt the user for SAFE and DEFER."
   (interactive (--extension-completion "Load Extenion: "))
-  (load (concat "~/.emacs.d/extensions/" extension)))
-(set-advertised-calling-convention 'load-extension '(extension) "2025.02.02")
+  (cl-check-type extension string)
+  (cl-check-type defer integer-or-null)
+  (let ((file (f-join "~/.emacs.d/extensions/" extension))
+	(msg (concat "Error loading " extension ": %S"))
+	(dmsg (cl-ext-when (and defer (> defer 0))
+		(format "Loading %s in %d seconds..." extension defer)))
+	(safe-load (lambda (f msg)
+		     (with-demoted-errors msg
+		       (load f)))))
+    (cond ((and safe defer (> defer 0))
+	   (message dmsg)
+	   (run-with-idle-timer defer nil safe-load file msg))
+	  (safe
+	   (funcall safe-load file msg))
+	  (defer
+	    (message dmsg)
+	    (run-with-idle-timer defer nil #'load file))
+	  (t (load file)))))
 
-(defmacro load-extension-safe (extension)
+(defmacro load-extension-safe (extension &optional defer)
   "Load EXTENSION, capturing any error and displaying it as a message."
   (cl-check-type extension string)
-  ;; `(condition-case err (load-extension ,extension)
-  ;;    (file-missing
-  ;;     (message "%s" (error-message-string err))))
-  `(with-demoted-errors ,(concat "Error loading " extension ": %S")
-     (load-extension ,extension)))
+  (cl-check-type defer integer-or-null)
+  `(load-extension ,extension t ,defer))
 
 (defun find-extension (extension)
   "Find the Emacs Lisp source of EXTENSION.
@@ -90,8 +115,7 @@ point."
   "Display the full documentation EXTENSION."
   (interactive (--extension-completion "Get Help For Extension: "))
   (let ((var (intern-soft (format "user-ext-%s-documentation" extension))))
-    (print-expr sexp (list var extension))
-    (unless var
+    (cl-ext-unless var
       (user-error "No documentation exists for %s" extension))
     (describe-variable var)))
 
@@ -120,16 +144,17 @@ evaluated."
 (load-extension "general")
 (load-extension "macro-ext")
 
-(load-extension-safe "lsp-ext")
+(load-extension-safe "lsp-ext" 2)
 (load-extension "dired-ext")
 (load-extension "buffers-ext")
-(load-extension "imenu-ext")
+(load-extension "imenu-ext" nil 2)
 (load-extension "syntax-ext")
 
 (load-extension "keymaps-ext")
 (load-extension-safe "yasnippets-ext")
-(load-extension-safe "liquidsoap-bootstrap")
+(load-extension-safe "liquidsoap-bootstrap" 2)
+
+(use-package code-outline :defer t)
 
 (provide 'extensions)
-
 ;;; extensions.el ends here
