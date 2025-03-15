@@ -1,6 +1,5 @@
 ;; -*- lexical-binding: t;  -*-
 
-(require 'debug-ext)
 (require 'cl-lib)
 (require 'cl-ext)
 (require 'autoload)
@@ -51,6 +50,10 @@ first argument).")
   "Regular expression for variable definitions.")
 
 ;; Functions
+
+(defmacro elisp-ext--enable-minor-mode (mode1 &optional mode2)
+  `(cl-ext-unless (and (boundp ',mode1) ,mode1)
+     (,(or mode2 mode1) t)))
 
 (defun elisp-ext-occur-variables ()
   "Run `occur' with a regular expression matching variables."
@@ -235,10 +238,9 @@ Automatically activates `hs-minor-mode' when called."
   (elisp-ext-doc-minor-mode 1)
   (auto-fill-mode t)
   (set-fill-column 67)
-  (unless (and (boundp 'electric-pair-mode) electric-pair-mode)
-    (electric-pair-local-mode t))
-  (unless (and (boundp 'company-mode) company-mode)
-    (company-mode t))
+  (elisp-ext--enable-minor-mode electric-pair-mode electric-pair-local-mode)
+  (elisp-ext--enable-minor-mode company-mode)
+  (elisp-ext--enable-minor-mode display-fill-column-indicator-mode)
   (insert ";; Fill column is set to 67. Type S-<return> to set it to 60.\n"
 	  ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;\n"
 	  "\"\n\n\"")
