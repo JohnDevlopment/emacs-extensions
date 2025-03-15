@@ -75,6 +75,14 @@ treated as a single value and formatted appropriately."
 
 ;; Functions
 
+(defun describe-region (&optional beg end)
+  "Describe the region."
+  (interactive "r")
+  (cond ((use-region-p)
+	 (message "Region: %d %d" beg end))
+	(t (message "There is no region")))
+  (deactivate-mark))
+
 (defun company-enable-ispell-locally ()
   "Add `company-ispell' to the local binding of `company-backends'."
   (interactive)
@@ -183,6 +191,8 @@ When called interactively, it prompts the user for MODE."
     (add-file-local-variable-prop-line 'mode mode t)))
 
 ;; ---
+
+(defalias 'minify #'elisp-ext-minify)
 
 (defun bind-fill-region ()
   "Bind `fill-region' to M-F."
