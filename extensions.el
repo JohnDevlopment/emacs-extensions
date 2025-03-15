@@ -8,24 +8,26 @@
 (require 'cl-lib)
 (require 'cl-ext)
 (require 'alist-ext)
-(require 'debug-ext)
-(require 'documentation-ext)
 
 (setq read-process-output-max 10485760
       frame-title-format (concat (and multiple-frames ()) " %b " invocation-name "@" (system-name))
       source-directory "~/github/emacs/src/")
 
-(document-extension "extensions"
-  "The main loader for custom extensions."
-  :functions
-  (document-extension eval-after-require
-    find-extension
-    find-extension-at-point
-    get-extension-documentation
-    load-extension
-    load-extension-safe)
-  :variables
-  ((user-ext-extension-directory constant)))
+(eval-when-compile
+  (require 'documentation-ext)
+
+  (document-extension "extensions"
+    "The main loader for custom extensions."
+    :functions
+    (document-extension
+	eval-after-require
+      (find-extension command)
+      (find-extension-at-point command)
+      (get-extension-documentation command)
+      (load-extension command)
+      load-extension-safe)
+    :variables
+    ((user-ext-extension-directory constant))))
 
 ;; Enable `narrow-to-region'
 (put 'narrow-to-region 'disabled nil)
