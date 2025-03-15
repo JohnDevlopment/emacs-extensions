@@ -6,6 +6,20 @@
 (defalias 'assert #'cl-assert)
 (make-obsolete 'assert #'cl-assert "2024-12-24")
 
+(defun --symbol-plist (symbol &rest props)
+  (cl-ext-unless (= (mod (length props) 2) 0)
+    (error "PROPS requires an even number of elements"))
+  (if props
+      (cl-ext-when (eq (car-safe props) :set)
+	(pop props)
+	(setplist symbol props)))
+  (cl-prettyprint (symbol-plist symbol)))
+(cl-define-compiler-macro --symbol-plist (&whole form symbol &rest props)
+  (pcase props
+    (`(:set nil)
+     (list 'setplist symbol nil))
+    (_ form)))
+
 (defmacro --print-expr (type form)
   "Print the result of FORM.
 TYPE is used to indicate how FORM should be handled.
