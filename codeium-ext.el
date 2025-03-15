@@ -3,7 +3,6 @@
 (add-to-list 'load-path "~/.emacs.d/codeium.el")
 
 (require 'codeium)
-(require 'easymenu)
 
 ;; Variables
 
@@ -18,6 +17,9 @@ Do NOT set this directly.")
   "Non-nil if Codeium is initialized.")
 
 ;; Menu
+
+(eval-when-compile
+  (require 'easymenu))
 
 (easy-menu-define user-ext-codeium-menu-map nil
   "Codeium commands"
