@@ -1,8 +1,4 @@
-;;; lua-ext --- Lua mode extension.  -*- lexical-binding: t; -*-
-
-;;; Commentary:
-
-;;; Code:
+;; -*- lexical-binding: t; -*-
 
 (require 'lua-mode)
 
