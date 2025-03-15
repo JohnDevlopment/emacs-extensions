@@ -96,6 +96,21 @@ Any errors are caught and printed as simple messages.
      user-ext-cl--result))
 (define-obsolete-function-alias 'cl-save-point #'cl-ext-save-point "2025.02.02")
 
+(defmacro cl-ext-progn (&rest body)
+  "Eval BODY forms sequentially and return value of last one.
+
+This expansion changes to different things depending on how
+many elements BODY has: if 0, this expands to a single call
+to \`(ignore)'; if 1, to just that element; if 2 or greater,
+this behaves exactly like `progn'.
+
+\(fn BODY...)"
+  (declare (indent 0) (debug progn))
+  (pcase (length body)
+    (0 '(ignore))
+    (1 (car body))
+    (_ `(progn ,@body))))
+
 (provide 'cl-ext)
 
 ;;; cl-ext.el ends here
