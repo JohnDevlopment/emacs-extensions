@@ -53,7 +53,7 @@ otherwise, it behaves exactly the same.
   "Add X to the list stored in PLACE.
 PLACE is a symbol whose definition is a list or some other
 kind of sequence."
-  (declare (pure t) (debug (form symbolp)))
+  (declare (debug (form symbolp)))
   (cl-check-type place symbol)
   `(setq ,place (append ,place ,x)))
 (define-obsolete-function-alias 'cl-append #'cl-ext-append "2025.02.10")
