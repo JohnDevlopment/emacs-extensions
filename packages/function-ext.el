@@ -38,7 +38,7 @@ compiler.
   (cl-check-type symbol symbol)
   (cl-check-type arglist (or list null))
   (let* ((backup-symbol (intern (concat (prin1-to-string symbol) "--old")))
-	 (code (symbol-function backup-symbol)))
+	 (code (symbol-function symbol)))
     (declare-function ,backup-symbol ,file ,arglist)
     `(progn
        (unless (fboundp ',backup-symbol)
