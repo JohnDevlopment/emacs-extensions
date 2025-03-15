@@ -32,7 +32,23 @@ expands to this:
       (_
        `(and ,cond ,first-form)))))
 
-;;;###autoload
+(defmacro cl-ext-unless (cond first-form &rest body)
+  "If COND yields nil, do FIRST-FORM and BODY, else return nil.
+When COND yields nil, eval FIRST-FORM and BODY forms
+sequentially and return value of last one.
+
+The main difference between `cl-ext-unless' and `unless' is
+that when BODY is empty, this expands to a `or' form;
+otherwise, it behaves exactly the same.
+
+\(fn COND FIRST-FORM BODY...)"
+  (declare (indent 1) (debug t))
+  (if body
+      `(unless ,cond
+	 ,first-form
+	 ,@body)
+    `(or ,cond ,first-form)))
+
 (defmacro cl-ext-append (x place)
   "Add X to the list stored in PLACE.
 PLACE is a symbol whose definition is a list or some other
