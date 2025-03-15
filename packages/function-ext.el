@@ -12,7 +12,8 @@
     deactivation
     override
     filter-args
-    filter-return))
+    filter-return)
+  "List of valid CLASS symbols for `fext-defadvice'.")
 
 (eval-when-compile
   (require 'cl-lib)
