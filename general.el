@@ -75,6 +75,11 @@ treated as a single value and formatted appropriately."
 
 ;; Functions
 
+(defun company-enable-ispell-locally ()
+  "Add `company-ispell' to the local binding of `company-backends'."
+  (interactive)
+  (setq-local company-backends (cons #'company-ispell company-backends)))
+
 (defun wrap (n min max)
   "Clamp N to the range [MIN,MAX], wrapping it around as needed.
 That is to say, if N is less than MIN, it is wrapped around
