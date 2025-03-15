@@ -10,15 +10,12 @@
 (defvar user-ext-codeium-menu-map nil
   "Keymap for Codeium menu.")
 
-(defvar user-ext-codeium-enabled nil
-  "Non-nil if Codeium is enabled in buffer.")
-
-(make-local-variable 'user-ext-codeium-enabled)
+(defvar-local user-ext-codeium-enabled nil
+  "Non-nil if Codeium is enabled in buffer.
+Do NOT set this directly.")
 
 (defvar user-ext-codeium--is-init nil
-  "Non-nil if Codeium is initialized in buffer.")
-
-(make-local-variable 'user-ext-codeium--is-init)
+  "Non-nil if Codeium is initialized.")
 
 ;; Menu
 
@@ -65,17 +62,15 @@
 (defun user-ext-disable-codeium-completion ()
   "Disable codeium completion in buffer."
   (interactive)
-  (setq-local completion-at-point-functions
-	      (cl-remove #'codeium-completion-at-point
-			 completion-at-point-functions))
-  (setq-local user-ext-codeium-enabled nil)
+  (remove-hook 'completion-at-point-functions #'codeium-completion-at-point t)
+  (setq user-ext-codeium-enabled nil)
   (message "Codeium completion disabled in buffer."))
 
 (defun user-ext-enable-codeium-completion ()
   "Enable codeium completion in buffer."
   (interactive)
-  (cl-pushnew #'codeium-completion-at-point completion-at-point-functions)
-  (setq-local user-ext-codeium-enabled t)
+  (add-hook 'completion-at-point-functions #'codeium-completion-at-point nil t)
+  (setq user-ext-codeium-enabled t)
   (message "Codeium completion enabled in buffer."))
 
 (provide 'codeium-ext)
