@@ -5,6 +5,16 @@
 (eval-after-require move-text
   (move-text-default-bindings))
 
+;; ---Prefix Commands
+
+(define-prefix-command 'command-map)
+
+;; Prefix command for quickly turning on different modes
+(define-prefix-command 'quick-mode-map)
+(global-set-key (kbd "C-c m") #'quick-mode-map)
+
+;; ---
+
 (defmacro define-contextual-key-func (key &rest args)
   "Define a function that enables one of the modes listed in ARGS.
 KEY is a string name for the key to press with the prefix
@@ -17,66 +27,64 @@ of modes using a completion function.
 
 \(fn KEY ARGS...)"
   (declare (indent 1))
-  (let (modes use-ido)
+  (let ((fname (intern (concat "contextual-key-" key)))
+	doc modes)
     (unless args
       (error "No args provided"))
     ;; Collect modes from ARGS; handle keyword args
-    (while args
-      (let* ((keyword (pop args))
-	     (value (pop args)))
-	(cond
-	 ((eq keyword :ido)
-	  (unless value
-	    (error "Keyword %s is missing an argument" keyword))
-	  (setq use-ido value))
-	 (t
-	  (push keyword modes)
-	  (unless (null value)
-	    (push value modes))))))
+    (dolist (arg args)
+      (push arg modes))
     (setq modes (sort modes #'string<))	; alphabetically sort mode strings
     (if (= (length modes) 1)		; only one mode, so call directly as a function
-	`(progn
-	   (defun ,(intern (concat "contextual-key-" key)) ()
-	     ,(format "Call `%s'.\nLikely called from C-c C-m %s."
-		      (car modes) key)
-	     (interactive)
-	     ;; ARGS is one mode, so call it directly
-	     (call-interactively #',(intern (car modes)))))
-      `(progn
-	 (defun ,(intern (concat "contextual-key-" key))
-	     (choice)
-	   ,(format "Choose from a list of modes to enable.\nLikely called from C-c C-m %s."
-		    key)
-	   (interactive
-	    (list
-	     ,(if use-ido
-		  `(ido-completing-read "Choose: " ',modes)
-		`(completing-read "Choose: " ',modes))))
-	   (call-interactively (intern choice)))))))
+	(cl-ext-progn
+	  `(progn
+	     (defun ,fname ()
+	       ,(format "Call `%s'.
+Likely called from C-c C-m %s." (car modes) key)
+	       (interactive)
+	       ;; ARGS is one mode, so call it directly
+	       ,(cl-assert (intern-soft (car modes)))
+	       (call-interactively (function ,(intern-soft (car modes)))))
+	     (define-key quick-mode-map (kbd ,key) (function ,fname))))
+      (cl-ext-progn
+	(setq doc (format "Choose from a list of modes to enable.
+Likely called from C-c C-m %s.
 
-(define-prefix-command 'command-map)
-(define-prefix-command 'quick-mode-map)
+Included modes are:
+%s" key (string-join (mapcar (lambda (string)
+			       (format "- `%s'" string)) modes) "\n")))
+	`(progn
+	   (defun ,fname (choice)
+	     ,doc
+	     (interactive (list (ido-completing-read "Choose: " ',modes)))
+	     (cl-assert (intern-soft choice))
+	     (call-interactively (intern-soft choice)))
+	   (define-key quick-mode-map (kbd ,key) (function ,fname)))))))
 
 (define-contextual-key-func "a"
-  :ido t
-  "abbrev-mode"
-  "auto-fill-mode"
-  "auto-revert-mode")
+   "abbrev-mode"
+   "auto-fill-mode"
+   "auto-revert-mode")
 
 (define-contextual-key-func "b"
+  "basic-generic-mode"
+  "basic-libreoffice-mode"
+  "bind-fill-region"
   "bind-imenu"
   "bind-imenu-lsp")
 
 (define-contextual-key-func "c"
+  "code-outline-mode"
   "comment-tags-mode"
   "company-mode"
   "conf-mode")
+
+(define-contextual-key-func "d" "display-fill-column-indicator-mode")
 
 (define-contextual-key-func "f"
   "flycheck-mode")
 
 (define-contextual-key-func "g"
-  :ido t
   "electric-pair-mode"
   "global-comment-tags-mode"
   "global-company-mode"
@@ -84,20 +92,31 @@ of modes using a completion function.
   "global-visual-line-mode"
   "yas-global-mode")
 
-(define-contextual-key-func "h"
-  "hs-minor-mode")
+(define-contextual-key-func "h" "hs-minor-mode")
 
-(define-contextual-key-func "o" "org-ext-tbl-minor-mode")
+(define-contextual-key-func "l" "lsp-mode")
+
+(define-contextual-key-func "o"
+  "org-ext-tbl-minor-mode"
+  "outline-mode")
 
 (define-contextual-key-func "s"
   "shell-script-mode"
   "sphinx-doc-mode")
 
 (define-contextual-key-func "j"
-  "jinja2-mode")
+  "jinja2-mode"
+  "jit-lock-debug-mode")
+
+(define-contextual-key-func "m" "map-revert-buffer")
+
+(define-contextual-key-func "r" "remap-narrow-to-region")
+
+(define-contextual-key-func "v" "activate-view-mode")
+
+(define-contextual-key-func "w" "enable-wrap")
 
 (define-contextual-key-func "y"
-  :ido t
   "yaml-mode"
   "yas-minor-mode")
 
@@ -147,23 +166,6 @@ is non-nil."
 ;; Tab bindings
 (global-set-key (kbd "C-<tab>")           #'tab-next)
 (global-set-key (kbd "C-S-<iso-lefttab>") #'tab-previous)
-
-;; Prefix command for quickly turning on different modes
-(global-set-key (kbd "C-c m") #'quick-mode-map)
-
-(define-key quick-mode-map (kbd "a") #'contextual-key-a)
-(define-key quick-mode-map (kbd "b") #'contextual-key-b)
-(define-key quick-mode-map (kbd "c") #'contextual-key-c)
-(define-key quick-mode-map (kbd "f") #'contextual-key-f)
-(define-key quick-mode-map (kbd "g") #'contextual-key-g)
-(define-key quick-mode-map (kbd "h") #'contextual-key-h)
-(define-key quick-mode-map (kbd "j") #'contextual-key-j)
-(define-key quick-mode-map (kbd "l") #'lsp-mode)
-(define-key quick-mode-map (kbd "o") #'contextual-key-o)
-(define-key quick-mode-map (kbd "s") #'contextual-key-s)
-(define-key quick-mode-map (kbd "v") #'activate-view-mode)
-(define-key quick-mode-map (kbd "w") #'enable-wrap)
-(define-key quick-mode-map (kbd "y") #'contextual-key-y)
 
 ;; Prefix command for misc commands
 (global-set-key (kbd "C-c c") #'command-map)
