@@ -57,6 +57,11 @@ coding-cookie		Coding system declarations, which are
 
 (fn &rest REGEXPS)")
 
+(rx-define python-ext-kw-def
+  (seq symbol-start
+       (seq (? "async" (+ space)) "def")
+       symbol-end))
+
 ;; Variables
 
 (defgroup python-ext nil
@@ -102,7 +107,8 @@ Examples of what get matched:
    $ str.make_trans({})")
 
 (defconst user-ext-python-def-regexp
-  (python-rx (? bol (* space)) (group defun) (+ space) (group symbol-name)
+  (python-rx (? bol (* space)) (group python-ext-kw-def)
+	     (+ space) (group symbol-name)
 	     open-paren (*? anything) close-paren (* space) ; arguments
 	     (? "->" (* space) (+? nonl) (* space))	    ; return type
 	     ?:)
@@ -169,7 +175,7 @@ match has to be after it; it is a buffer position."
   (let ((ppss (or ppss (make-ppss-easy (syntax-ppss)))))
     (when (and (not (or (ppss-comment-or-string-start ppss) ; not inside comment or string
 			(ppss-innermost-start ppss)))	    ; not inside parenthesis
-	       (looking-at-p user-ext-python-defun-start-regexp)
+	       (looking-at-p user-ext-python-def-start-regexp)
 	       (looking-back "[^ \t]*" (line-beginning-position))
 	       (eq (current-column) (current-indentation)))
       (point))))
@@ -289,17 +295,23 @@ Match %s" form rx-form (if (or (not subexp) (= subexp 0))
       (set-buffer-modified-p modified))))
 
 (defun python-ext-hide-all-functions ()
+  "Hide all `def' forms in buffer, starting from the beginning."
   (interactive)
   (hs-minor-mode 1)
   (let ((inhibit-read-only t)
-	beg end pos)
+	(pos (point))
+	beg end)
     (save-excursion
       (goto-char (point-min))
       (while (python-ext-forward-regexp user-ext-python-def-regexp 0 t)
-	(setq beg (point) end (py-forward-def)
-	      pos beg)
+	(setq beg (point) end (py-forward-def))
 	(goto-char beg)
-	(hs-make-overlay beg end 'code)))))
+	(cl-ext-when (and (>= pos beg)
+			  (<= pos end))
+	  (setq pos beg))
+	(hs-make-overlay beg end 'code)))
+    (cl-ext-when pos
+      (goto-char pos))))
 
 ;; ---
 
