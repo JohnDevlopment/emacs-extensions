@@ -15,7 +15,7 @@
 (defconst user-ext-sh-function-regex
   (rx bol (* (syntax whitespace))
       (group "function" (+ (syntax whitespace))
-	     (group (+ (any "A-Z" "a-z" ?_ ?-))))
+	     (group (+ (any "A-Za-z0-9" ?_ ?-))))
       (* (syntax whitespace)) ?{)
   "Regular expression for finding functions.
 Group 1 matches the first line of the declaration starting
