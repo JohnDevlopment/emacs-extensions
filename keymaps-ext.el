@@ -1,4 +1,4 @@
-;;; keymaps-ext --- Keymaps and keybinds.  -*- lexical-binding: t; -*-
+;; -*- lexical-binding: t; -*-
 
 (require 'ido)
 
