@@ -5,18 +5,21 @@
 (add-to-list 'load-path "~/.emacs.d/extensions")
 (add-to-list 'load-path "~/.emacs.d/extensions/packages")
 
+(eval-when-compile
+  (require 'alist-ext)
+  (require 'bind-key)
+  (require 'cl-ext))
+
 (require 'cl-lib)
-(require 'cl-ext)
-(require 'alist-ext)
 (require 'f)
 
 (setq read-process-output-max 10485760
       frame-title-format (concat (and multiple-frames ()) " %b " invocation-name "@" (system-name))
       source-directory "~/github/emacs/src/")
 
+;; Document extension
 (eval-when-compile
   (require 'documentation-ext)
-
   (document-extension "extensions"
     "The main loader for custom extensions."
     :functions
@@ -27,8 +30,22 @@
       (get-extension-documentation command)
       (load-extension command)
       load-extension-safe)
+
     :variables
-    ((user-ext-extension-directory constant))))
+    ((user-ext-extension-directory constant))
+
+    :types
+    (list-or-null
+     marker-or-null
+     integer-or-null
+     string-or-null)))
+
+;; Types
+
+(cl-deftype list-or-null () '(or list null))
+(cl-deftype marker-or-null () '(or marker null))
+(cl-deftype integer-or-null () '(or integer null))
+(cl-deftype string-or-null () '(or string null))
 
 ;; Enable `narrow-to-region'
 (put 'narrow-to-region 'disabled nil)

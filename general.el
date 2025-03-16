@@ -31,44 +31,33 @@ treated as a single value and formatted appropriately."
 (define-error 'invalid-argument "Invalid argument")
 (define-error 'wrong-argument "Wrong argument" 'invalid-argument)
 
-;; Types
-
-(cl-deftype list-or-null () '(or list null))
-(cl-deftype marker-or-null () '(or marker null))
-(cl-deftype integer-or-null () '(or integer null))
-(cl-deftype string-or-null () '(or string null))
-
 ;; Variables
 
-(document-extension "general"
-  "General extension functions."
-  :functions
-  (add-mode-comment
-   bind-fill-region
-   copy-line
-   count-words-region2
-   date-format-version
-   enable-wrap
-   kill-and-quit
-   narrow-to-region2
+(eval-when-compile
+  (require 'documentation-ext)
+  (document-extension "general"
+    "General extension functions."
+    :functions
+    (add-mode-comment
+     bind-fill-region
+     copy-line
+     count-words-region2
+     date-format-version
+     enable-wrap
+     kill-and-quit
+     narrow-to-region2
 
-   pop-saved-position
-   print-saved-positions
-   save-current-position
+     pop-saved-position
+     print-saved-positions
+     save-current-position
 
-   save-and-kill
-   signal-wrong-argument
-   sort-words
-   wrap)
+     save-and-kill
+     signal-wrong-argument
+     sort-words
+     wrap)
 
-  :variables
-  ((user-ext-local-position-ring local))
-
-  :types
-  (list-or-null
-   marker-or-null
-   integer-or-null
-   string-or-null))
+    :variables
+    ((user-ext-local-position-ring local))))
 
 (defvar-local user-ext-local-position-ring nil
   "Current file's mark ring.")
