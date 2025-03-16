@@ -171,9 +171,10 @@ evaluated."
 
 (load-extension "keymaps-ext")
 (load-extension-safe "yasnippets-ext")
-(load-extension-safe "liquidsoap-bootstrap" 2)
 
-(use-package code-outline :defer t)
+;; Bootstraps for external packages
+(load-extension "code-outline-bootstrap" nil 2)
+(load-extension "liquidsoap-bootstrap" nil 2)
 
 (provide 'extensions)
 ;;; extensions.el ends here
