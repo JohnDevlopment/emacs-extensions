@@ -44,6 +44,12 @@ Group 2 matches the name of the function.")
 
 ;; Functions
 
+(defun sh-ext--fold-map-prompt ()
+  (format "Sh Fold: %s - hide function, %s - hide all functions, %s - show function"
+	  (propertize "f" 'face 'font-lock-constant-face)
+	  (propertize "C-f" 'face 'font-lock-constant-face)
+	  (propertize "M-f" 'face 'font-lock-constant-face)))
+
 (defun sh-ext--hidden (&optional position)
   "Return non-nil if point is in an already hidden block.
 If POSITION is non-nil, move point to that position before
@@ -227,7 +233,7 @@ it is non-nil, \"1;\" is prepended to the color code."
 (define-key sh-mode-map (kbd "C-c \\") #'sh-ext-color-escape)
 (define-key sh-mode-map (kbd "C-c [") #'sh-ext-insert-non-printing-escape)
 
-(define-prefix-command 'user-ext-sh-fold-map nil "Sh Fold")
+(define-prefix-command 'user-ext-sh-fold-map nil (sh-ext--fold-map-prompt))
 (define-key sh-mode-map (kbd "C-c f") 'user-ext-sh-fold-map)
 (define-key user-ext-sh-fold-map (kbd "f") #'sh-ext-hide-function)
 (define-key user-ext-sh-fold-map (kbd "C-f") #'sh-ext-hide-all-functions)
