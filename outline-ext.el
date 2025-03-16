@@ -15,6 +15,12 @@
 (defun outline--extra-hook () t)
 
 ;;;###autoload
+(defun outline-minor-mode--extra-hook () t)
+
+;;;###autoload
+(add-hook 'outline-minor-mode-hook #'outline-minor-mode--extra-hook)
+
+;;;###autoload
 (add-hook 'outline-mode-hook #'outline--extra-hook)
 
 (provide 'outline-ext)
