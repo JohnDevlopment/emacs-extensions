@@ -1,30 +1,32 @@
-;;; ibuffer-ext.el --- Extension for IBuffer.        -*- lexical-binding: t; -*-
+;; -*- lexical-binding: t; -*-
+
+(require 'ibuffer)
 
 (eval-when-compile
-  (require 'ibuffer))
-
-(require 'alist-ext)
+  (require 'alist-ext)
+  (require 'function-ext))
 
 ;; Advice
 
-(advice-add 'ibuffer-do-revert :after #'ibuffer--after-operation
-	    (alist-ext-define 'name "after-revert"))
+(advice-add #'ibuffer-do-revert :after #'ibuffer-ext--after-operation)
 
-(advice-add 'ibuffer-do-view :after
-	    (lambda (&rest args)
-	      (interactive)
-	      (view-mode))
-	    (alist-ext-define 'name "after-view"))
+(fext-defadvice ibuffer-do-view (after ibuffer-do-view)
+  (view-mode 1))
 
-(define-key ibuffer-mode-map (kbd "/ T") #'ibuffer-toggle-current-filter-group)
+(fext-defadvice ibuffer-visit-buffer (after ibuffer-visit-buffer)
+  "Bury the IBuffer buffer after visiting the selected buffer."
+  (bury-buffer (get-buffer "*Ibuffer*")))
 
-;; FUnctions
+(define-key ibuffer-mode-map (kbd "/ T") #'ibuffer-ext-toggle-current-filter-group)
 
-(defun ibuffer--after-operation ()
+;; Functions
+
+(defun ibuffer-ext--after-operation (&rest _r)
+  "Used as :after advice for operations."
   (ibuffer-unmark-all-marks))
 
 ;;;###autoload
-(defun ibuffer-toggle-current-filter-group ()
+(defun ibuffer-ext-toggle-current-filter-group ()
   "Expand/collapse the filter group of point.
 If point is on a buffer, toggle the group it is in."
   (interactive)
@@ -33,8 +35,7 @@ If point is on a buffer, toggle the group it is in."
   (ibuffer-toggle-filter-group))
 
 ;;;###autoload
-(defun ibuffer--extra-hook ()
-  (1+ 1))
+(defun ibuffer--extra-hook () t)
 
 ;;;###autoload
 (add-hook 'ibuffer-mode-hook #'ibuffer--extra-hook)
