@@ -152,35 +152,6 @@ This pops the last-saved position from
     (goto-char pos)
     (message "Restored to position %s." pos)))
 
-;; ---Add mode comment
-
-(defun --add-mode-comment--mode-without-suffix (obj)
-  (let (str)
-    (when (or (stringp obj) (symbolp obj))
-      (setq str (if (stringp obj) obj
-		  (symbol-name obj)))
-      (when (string-match "\\(.+\\)-mode$" str)
-	(intern (match-string 1 str))))))
-
-(defun --add-mode-comment--complete-mode ()
-  (let* ((filt (lambda (e)
-		 (string-match-p "-mode\\'"
-				 (if (symbolp e) (symbol-name e) e))))
-	 (str (completing-read
-	       "Mode: " obarray filt t)))
-    (--add-mode-comment--mode-without-suffix str)))
-
-(defun add-mode-comment ()
-  "Insert a comment line to change the major mode to MODE.
-When called interactively, it prompts the user for MODE."
-  (interactive)
-  ;; TODO: Give the option between `add-file-local-variable-prop-line' and `add-file-local-variable'
-  (let ((mode (--add-mode-comment--complete-mode)))
-    (message "%s" mode)
-    (add-file-local-variable-prop-line 'mode mode t)))
-
-;; ---
-
 (defalias 'minify #'elisp-ext-minify)
 
 (defun bind-fill-region ()
