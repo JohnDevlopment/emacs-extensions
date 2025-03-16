@@ -1,14 +1,13 @@
-;;; yasnippets-ext --- Yasnippets mode extension.
+;;  -*- lexical-binding: t; -*-
 
 (eval-when-compile
+  (require 'cl-ext)
   (require 'yasnippet))
 
 (when (and (boundp 'yas-minor-mode) yas-minor-mode)
   (add-hook 'completion-at-point-functions #'yasnippet-capf))
 
-(defun yas-ext-org-very-safe-expand ()
-  (let ((yas-fallback-behavior 'return-nil))
-    (yas-expand)))
+(defun yas-ext-org-very-safe-expand () (yas-expand))
 
 (defun yas-ext-enable-company-completion ()
   (interactive)
@@ -25,7 +24,7 @@ The prefix arg IS-INTERACTIVE is never actually used in the
 function; rather, it's checked to see whether this function
 was called interactively."
   (interactive "p")
-  (unless is-interactive
+  (cl-ext-unless is-interactive
     (user-error "This method can only be called interactively"))
   (let (dir)
     (setq dir (completing-read "Top-level directory: "
