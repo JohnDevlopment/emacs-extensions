@@ -1,7 +1,9 @@
 ;; -*- lexical-binding: t; -*-
 
 (require 'dash)
-(require 'custom)
+
+(eval-when-compile
+  (require 'custom))
 
 (document-extension "custom-ext"
   "Global customization group and variables.
