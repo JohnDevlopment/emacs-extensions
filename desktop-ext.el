@@ -21,7 +21,7 @@
 (global-set-key (kbd (concat user-ext-desktop-prefix " M-c")) #'desktop-clear)
 
 (use-package jdesktop
-  :if (locate-library 'jdesktop)
+  :if (locate-library "jdesktop.el")
   :defer 1
   :config
   (jdesktop-default-bindings))
