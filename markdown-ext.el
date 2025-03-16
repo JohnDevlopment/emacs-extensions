@@ -6,12 +6,14 @@
 
 (require 'cl-lib)
 (require 'markdown-mode)
+(require 'markdown-toc)
 (require 'org-table)
 (require 'csv-mode)
 
-(defvar markdown-footnote-counter)
-(defvar markdown-mode-style-map)
-(defvar quick-mode-map)
+(eval-when-compile
+  (defvar markdown-footnote-counter)
+  (defvar markdown-mode-style-map)
+  (defvar quick-mode-map))
 
 (declare-function 'markdown-ext-scratch "markdown-ext.el" nil)
 (declare-function 'markdown-footnote-counter-inc "markdown-mode.el" nil)
@@ -127,6 +129,13 @@ The skeleton will be bound to markdown-skeleton-NAME."
 (define-key markdown-mode-style-map (kbd "i") #'markdown-skeleton-id)
 (define-key markdown-mode-style-map (kbd "f") #'markdown-ext-insert-footnote)
 (define-key quick-mode-map (kbd "t") #'markdown-toc-mode)
+
+(bind-keys :map markdown-toc-mode-map
+	   ("C-c C-t t" . markdown-toc-generate-or-refresh-toc)
+	   ("C-c C-t M-t" . markdown-toc-generate-toc)
+	   ("C-c C-t d" . markdown-toc-delete-toc)
+	   ("C-c C-t x" . markdown-toc-follow-link-at-point)
+	   ("C-c C-t r" . markdown-toc-refresh-toc))
 
 ;; Hook
 
