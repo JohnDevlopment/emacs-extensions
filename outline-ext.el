@@ -1,10 +1,4 @@
-;;; outline-ext.el --- Outline mode extension.       -*- lexical-binding: t; -*-
-
-;;; Commentary:
-
-;; 
-
-;;; Code:
+;; -*- lexical-binding: t; -*-
 
 (eval-when-compile
   (require 'outline))
