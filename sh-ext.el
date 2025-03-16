@@ -1,10 +1,11 @@
-;;; sh-ext --- Shell script mode extension.  -*- lexical-binding: t; -*-
+;; -*- lexical-binding: t; -*-
 
 (require 'ido)
 (require 'sh-script)
 (require 'cl-ext)
 
 (eval-when-compile
+  (require 'cl-lib)
   (defvar user-ext-sh-fold-map))
 
 ;; Variables
@@ -12,7 +13,6 @@
 (define-abbrev global-abbrev-table "NULL" "null" #'abbrev-ext-insert-hook :system t)
 
 (defconst user-ext-sh-function-regex
-  ;; "^\\s-*\\(function\\s-+\\([A-Z_a-z-]+\\)\\)\\s-*{"
   (rx bol (* (syntax whitespace))
       (group "function" (+ (syntax whitespace))
 	     (group (+ (any "A-Z" "a-z" ?_ ?-))))
@@ -22,7 +22,7 @@ Group 1 matches the first line of the declaration starting
 with the keyword 'function'.
 Group 2 matches the name of the function.")
 
-(defconst user-ext-sh-ext-color-escapes
+(defconst user-ext-sh-color-escapes
   '((fg-black . "30")
     (bg-black . "40")
     (fg-red . "31")
@@ -94,10 +94,10 @@ WHAT is one of the following:
     (when tl
       (goto-char tl)
       (right-char))
-    (call-interactively #'move-beginning-of-line)
+    (goto-char (line-beginning-position))
     (if (looking-at user-ext-sh-function-regex)
-	(prog1 (setq pos (match-end 0))
-	  (goto-char pos)
+	(prog1 (match-end 0)
+	  (goto-char (match-end 0))
 	  (setq pos (match-beginning 0))
 	  (hs-hide-block)
 	  (goto-char pos))
@@ -157,7 +157,7 @@ these args."
    (intern (ido-completing-read "Color escape: "
 				(mapcar (lambda (l)
 					  (symbol-name (car l)))
-					user-ext-sh-ext-color-escapes)
+					user-ext-sh-color-escapes)
 				nil t))
    current-prefix-arg))
 
@@ -166,7 +166,7 @@ these args."
 
 COLOR is a symbol denoting the name of the color to
 use.  Valid names can be found in
-`user-ext-sh-ext-color-escapes'.
+`user-ext-sh-color-escapes'.
 
 When called interactively, ARG is the prefix argument.  If
 it is non-nil, \"1;\" is prepended to the color code."
@@ -174,8 +174,8 @@ it is non-nil, \"1;\" is prepended to the color code."
   (let (result)
     (setq result
 	  (if arg
-	      (format "\\e[1;%sm" (cdr (assq color user-ext-sh-ext-color-escapes)))
-	    (format "\\e[%sm" (cdr (assq color user-ext-sh-ext-color-escapes)))))
+	      (format "\\e[1;%sm" (cdr (assq color user-ext-sh-color-escapes)))
+	    (format "\\e[%sm" (cdr (assq color user-ext-sh-color-escapes)))))
     (insert result)))
 
 (defun sh-ext-insert-non-printing-escape ()
