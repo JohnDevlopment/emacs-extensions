@@ -47,8 +47,9 @@
 (cl-deftype integer-or-null () '(or integer null))
 (cl-deftype string-or-null () '(or string null))
 
-;; Enable `narrow-to-region'
 (put 'narrow-to-region 'disabled nil)
+
+;; Functions
 
 ;; ---Loading/finding extensions
 
