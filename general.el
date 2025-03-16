@@ -59,6 +59,9 @@ treated as a single value and formatted appropriately."
     :variables
     ((user-ext-local-position-ring local))))
 
+(eval-when-compile
+  (declare-function elisp-ext-minify "elisp-ext" (start end)))
+
 (defvar-local user-ext-local-position-ring nil
   "Current file's mark ring.")
 
