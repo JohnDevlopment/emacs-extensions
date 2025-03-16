@@ -65,6 +65,36 @@ This is supposed to be called after `lsp--before-save'."
 
 ;; Functions
 
+;; (when nil
+;;   (defun lsp-fix-lsp-flycheck-face-errors ()
+;;     (interactive)
+;;     (defface lsp-flycheck-info-unnecessary
+;;       '((t (:inherit 'lsp-flycheck-info-unnecessary-face)))
+;;       "Face for the sideline for symbols not used.
+;; Possibly redundant of face `lsp-flycheck-info-unnecessary-face'."
+;;       :group 'lsp-ui-sideline)
+;;     (defface lsp-flycheck-warning-unnecessary
+;;       '((t (:inherit 'lsp-flycheck-warning-unnecessary-face)))
+;;       "Face for the sideline for symbols not used.
+;; Possibly redundant of face `lsp-flycheck-warning-unnecessary-face'."
+;;       :group 'lsp-ui-sideline))
+
+;;   (defun lsp-flycheck-define-error-level (name face)
+;;     "Define a Flycheck error level with NAME and FACE."
+;;     (let ((category (intern (format "%s-category" name))))
+;;       (setf (get category 'face) face
+;; 	    (get category 'priority) 100)
+;;       (flycheck-define-error-level name
+;; 	:overlay-face face
+;; 	:evaporate t
+;; 	:color 'blue)))
+
+;;   (lsp-flycheck-define-error-level )
+
+;;   (symbol-plist 'lsp-flycheck-info-unnecessary))
+
+;; (my-lsp-flycheck-define-error-level "lsp-flycheck-info-unnecessary" 'lsp-flycheck-info-unnecessary)
+
 (defun kill-lsp-buffers ()
   "Kill all buffers that have to do with function `lsp-mode'."
   (interactive)
