@@ -155,54 +155,45 @@ is non-nil."
   (message "Remapped %s to `narrow-to-region2'"
 	   (lookup-function 'narrow-to-region nil t)))
 
-;;; Binds
-
-;; Bind `view-file' to C-x M-v
-(global-set-key (kbd "C-x M-v") #'view-file)
-
-;; Delete bookmark
-(global-set-key (kbd "C-c d") #'bookmark-delete)
-
-;; Tab bindings
-(global-set-key (kbd "C-<tab>")           #'tab-next)
-(global-set-key (kbd "C-S-<iso-lefttab>") #'tab-previous)
+;; Gloal commands
+(bind-keys ("C-c d" . bookmark-delete)
+	   ("C-<tab>" . tab-next)		; tab commands
+	   ("C-S-<iso-lefttab>" . tab-previous) ;
+	   ("C-M-k" . copy-line)
+	   ("C-M-n" . nonincremental-repeat-search-backward)
+	   ("M-=" . count-words-region2)
+	   ("C-x C-b" . ibuffer)
+	   ("C-x M-v" . view-file)	    ; find file
+	   ("C-x M-f" . find-file-at-point) ;
+	   ("C-x M-=" . describe-char)
+	   ("C-x Q" . macro-ext-query)
+	   ("C-x Z" . save-and-kill)	; killing buffers
+	   ("C-c M-q" . kill-and-quit))	;
 
 ;; Prefix command for misc commands
-(global-set-key (kbd "C-c c") #'command-map)
-
-(define-key command-map (kbd "%")   #'nonincremental-re-search-forward)
-(define-key command-map (kbd "M-%") #'nonincremental-re-search-backward)
-(define-key command-map (kbd "M-s") #'nonincremental-search-backward)
-(define-key command-map (kbd "c")   #'comment-region)
-(define-key command-map (kbd "d")   #'copy-text-down)
-(define-key command-map (kbd "p")   #'elisp-ext-forward-or-backward-sexp)
-(define-key command-map (kbd "s")   #'nonincremental-search-forward)
-(define-key command-map (kbd "'")   #'save-current-position)
-(define-key command-map (kbd "&")   #'pop-saved-position)
-(define-key command-map (kbd "^")   #'print-saved-positions)
-(define-key command-map (kbd "M")   #'add-mode-comment)
-(define-key command-map (kbd "P")   #'add-file-local-variable-prop-line)
-(define-key command-map (kbd "M-P")   #'add-file-local-variable)
-
-;; Misc commands which do not use my custom prefix
-(global-set-key (kbd "C-M-k")   #'copy-line)
-(global-set-key (kbd "C-M-n")   #'nonincremental-repeat-search-backward)
-(global-set-key (kbd "C-c M-q") #'kill-and-quit)
-(global-set-key (kbd "C-n")     #'nonincremental-repeat-search-forward)
-(global-set-key (kbd "M-=")     #'count-words-region2)
-(global-set-key (kbd "C-x C-b") #'ibuffer)
-(global-set-key (kbd "C-x M-f") #'find-file-at-point)
-(global-set-key (kbd "C-x Q")   #'macro-ext-query)
-(global-set-key (kbd "C-x Z")   #'save-and-kill)
+(bind-keys :prefix-map command-map
+	   :prefix "C-c c"
+	   ("%" . nonincremental-re-search-forward)
+	   ("M-%" . nonincremental-re-search-backward)
+	   ("M-s" . nonincremental-search-backward)
+	   ("c" . comment-region)
+	   ("d" . copy-text-down)
+	   ("p" . elisp-ext-forward-or-backward-sexp)
+	   ("s" . nonincremental-search-forward)
+	   ("'" . save-current-position)
+	   ("&" . pop-saved-position)
+	   ("^" . print-saved-positions)
+	   ("M" . add-mode-comment)
+	   ("P" . add-file-local-variable-prop-line)
+	   ("M-P" . add-file-local-variable))
 
 ;; Extension-related commands
-(define-prefix-command 'extension-map)
-(global-set-key (kbd "C-c e") #'extension-map)
-
-(define-key extension-map "l" #'load-extension)
-(define-key extension-map "F" #'find-extension-at-point)
-(define-key extension-map "h" #'get-extension-documentation)
-(define-key extension-map "f" #'find-extension)
+(bind-keys :prefix-map extension-map
+	   :prefix "C-c e"
+	   ("l" . load-extension)
+	   ("F" . find-extension-at-point)
+	   ("h" . get-extension-documentation)
+	   ("f" . find-extension))
 
 (provide 'keymaps-ext)
 
