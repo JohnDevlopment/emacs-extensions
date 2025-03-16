@@ -9,9 +9,15 @@
 
 (defun yas-ext-org-very-safe-expand () (yas-expand))
 
-(defun yas-ext-enable-company-completion ()
-  (interactive)
-  (add-hook 'completion-at-point-functions #'yasnippet-capf))
+(defun yas-ext-enable-company-completion (&optional local)
+  "Enable completion for Yasnippets, including for `company-mode'."
+  (interactive "P")
+  (if local
+      (cl-ext-progn
+	(add-hook 'completion-at-point-functions #'yasnippet-capf nil t)
+	(setq-local company-backends (cons #'company-yasnippet company-backends)))
+    (add-hook 'completion-at-point-functions #'yasnippet-capf)
+    (add-to-list 'company-backends #'company-yasnippet)))
 
 (defun yas-ext-compile-snippet-dir (&optional is-interactive)
   "Call this function to compile a snippet directory.
