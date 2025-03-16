@@ -83,6 +83,20 @@ WHAT is one of the following:
       (goto-char pos)
       (hs-show-block))))
 
+(defun sh-ext-hide-all-functions ()
+  "Hide all functions in buffer."
+  (interactive)
+  (elisp-ext-enable-hs-minor-mode)
+  (let ((tl (syntax-ppss-toplevel-pos (syntax-ppss)))
+	(buffer-read-only t))
+    (cl-ext-when tl
+      (goto-char tl))
+    (save-excursion
+      (goto-char (point-min))
+      (cl-loop while (search-forward-regexp user-ext-sh-function-regex nil t)
+	       do
+	       (hs-hide-block 4)))))
+
 (defun sh-ext-hide-function ()
   "Hide the surrounding function."
   (interactive)
@@ -216,6 +230,7 @@ it is non-nil, \"1;\" is prepended to the color code."
 (define-prefix-command 'user-ext-sh-fold-map nil "Sh Fold")
 (define-key sh-mode-map (kbd "C-c f") 'user-ext-sh-fold-map)
 (define-key user-ext-sh-fold-map (kbd "f") #'sh-ext-hide-function)
+(define-key user-ext-sh-fold-map (kbd "C-f") #'sh-ext-hide-all-functions)
 (define-key user-ext-sh-fold-map (kbd "M-f") #'sh-ext-show-function)
 
 (provide 'sh-ext)
