@@ -11,6 +11,12 @@
 
 (define-key outline-mode-map (kbd "<S-return>") #'outline-insert-heading)
 
+(fext-defadvice outline-demote (after outline-demote)
+  (goto-char (line-end-position)))
+
+(fext-defadvice outline-premote (after outline-premote)
+  (goto-char (line-end-position)))
+
 ;;;###autoload
 (defun outline--extra-hook () t)
 
