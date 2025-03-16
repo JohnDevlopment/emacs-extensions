@@ -90,13 +90,14 @@ the prefix argument, also prompt the user for SAFE and DEFER."
 		       (load f)))))
     (cond ((and safe defer (> defer 0))
 	   (message dmsg)
-	   (run-with-idle-timer defer nil safe-load file msg))
+	   (run-with-timer defer nil safe-load file msg))
 	  (safe
 	   (funcall safe-load file msg))
 	  (defer
 	    (message dmsg)
-	    (run-with-idle-timer defer nil #'load file))
-	  (t (load file)))))
+	    (run-with-timer defer nil #'load file))
+	  (t (load file))))
+  t)
 
 (defmacro load-extension-safe (extension &optional defer)
   "Load EXTENSION, capturing any error and displaying it as a message."
