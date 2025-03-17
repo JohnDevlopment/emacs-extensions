@@ -62,8 +62,10 @@ treated as a single value and formatted appropriately."
 (eval-when-compile
   (declare-function elisp-ext-minify "elisp-ext" (start end)))
 
+;; Variables
+
 (defvar-local user-ext-local-position-ring nil
-  "Current file's mark ring.")
+  "Current buffer's mark ring.")
 
 ;; Functions
 
@@ -177,6 +179,7 @@ Unlike `kill-line', this does not delete the characters."
 START and END are expected to come directly from the region.
 Call `count-words-region' and"
   (interactive "r")
+  ;; TODO: Change to `cl-ext-unless'
   (if (not (use-region-p))
       (error "Region required")
     (count-words--message "Region" start end)
@@ -216,6 +219,7 @@ Interactively, ARG is the prefix argument."
 	(delete-window))
     (quit-window t)))
 
+;; TODO: Replace with :after advice
 (defun narrow-to-region2 (start end)
   "Narrow to region and cancel region.
 START and END specify the region to narrow to."
