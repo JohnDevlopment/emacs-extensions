@@ -256,6 +256,14 @@ Imenu Hook for Python mode." nil nil)
 
 ;;;***
 
+;;;### (autoloads nil "jdesktop-bootstrap" "jdesktop-bootstrap.el"
+;;;;;;  (0 0 0 0))
+;;; Generated autoloads from jdesktop-bootstrap.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "jdesktop-bootstrap" '("load-jdesktop-package")))
+
+;;;***
+
 ;;;### (autoloads nil "jinja2" "jinja2.el" (0 0 0 0))
 ;;; Generated autoloads from jinja2.el
 
@@ -321,7 +329,7 @@ Extra hook for `liquidsoap-mode'." nil nil)
 
 (autoload 'local-lambda-ext-add-local-lambda "local-lambda" "\
 Add a local function FUNCTION under key KEY.
-FUNCTION is saved to `user-ext-local-lambda-lambdas' under 
+FUNCTION is saved to `user-ext-local-lambda-lambdas' under
 KEY, which is a symbol.  FUNCTION is a `lambda' expression.
 
 \(fn KEY FUNCTION &optional OVERWRITE)" nil nil)
@@ -351,7 +359,12 @@ As a result of this macro, NAME can be run as a function with
 
 (function-put 'local-lambda-ext-define-local-defun 'doc-string-elt '3)
 
-(function-put 'local-lambda-ext-define-local-defun 'lisp-indent-function 'defun)
+(function-put 'local-lambda-ext-define-local-defun 'lisp-indent-function '2)
+
+(autoload 'local-lambda-ext-define-skeleton "local-lambda" "\
+
+
+\(fn NAME &rest SKELETON)" nil t)
 
 (autoload 'local-lambda-mode "local-lambda" "\
 A minor mode for running buffer-local functions.
@@ -365,7 +378,7 @@ toggle it if ARG is `toggle'; disable the mode otherwise.
 
 \(fn &optional ARG)" t nil)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "local-lambda" '("local-lambda-ext--completion" "user-ext-local-lambda-lambdas")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "local-lambda" '("local-lambda-" "user-ext-local-lambda-lambdas")))
 
 ;;;***
 
@@ -729,8 +742,7 @@ Extra hook for `toml-mode'." nil nil)
 ;;;***
 
 ;;;### (autoloads nil nil ("code-outline-bootstrap.el" "faces-ext.el"
-;;;;;;  "help-ext.el" "jdesktop-bootstrap.el" "liquidsoap-bootstrap.el")
-;;;;;;  (0 0 0 0))
+;;;;;;  "help-ext.el" "liquidsoap-bootstrap.el") (0 0 0 0))
 
 ;;;***
 
