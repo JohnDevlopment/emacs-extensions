@@ -5,28 +5,6 @@
 (eval-when-compile
   (require 'custom))
 
-(document-extension "custom-ext"
-  "Global customization group and variables.
-This extension defines globally-used customization groups
-and faces.
-
-Here, the customization group `user-extensions' is defined;
-its child customization group `user-ext-global-modes', is
-also defined here."
-  :variables ((font-lock-operator-face face)
-	      (user-ext-log-view-info face)
-	      (user-ext-log-view-debug face)
-	      (user-ext-log-view-error face)
-	      (user-ext-log-view-warning face)
-	      (user-ext-log-view-date face)
-	      (user-ext-log-view-time face)
-	      (log-view-date face)
-	      (log-view-debug face)
-	      (log-view-error face)
-	      (log-view-info face)
-	      (log-view-time face)
-	      (log-view-warning face)))
-
 ;; Custom variables and faces
 
 (defgroup user-extensions nil

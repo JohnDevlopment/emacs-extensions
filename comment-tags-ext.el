@@ -11,14 +11,6 @@
 
 ;; Variables
 
-(document-extension "comment-tags-ext"
-  "Comment tags global mode definition."
-  :functions ((comment-tags-mode-turn-on command)
-	      (global-comment-tags-mode command))
-  :variables ((user-ext-global-comment-tags-exclude custom)
-	      (global-comment-tags-regexp constant))
-  :advised ((comment-tags-list-tags-buffer command)))
-
 (defcustom user-ext-global-comment-tags-exclude
   nil
   "List of buffers to exclude from `comment-tags-mode'."

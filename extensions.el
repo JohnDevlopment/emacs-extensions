@@ -17,28 +17,6 @@
       frame-title-format (concat (and multiple-frames ()) " %b " invocation-name "@" (system-name))
       source-directory "~/github/emacs/src/")
 
-;; Document extension
-(eval-when-compile
-  (require 'documentation-ext)
-  (document-extension "extensions"
-    "The main loader for custom extensions."
-    :functions
-    (document-extension
-	eval-after-require
-      (find-extension command)
-      (find-extension-at-point command)
-      (get-extension-documentation command)
-      (load-extension command)
-      load-extension-safe)
-
-    :variables
-    ((user-ext-extension-directory constant))
-
-    :types
-    (list-or-null
-     marker-or-null
-     integer-or-null
-     string-or-null)))
 
 ;; Types
 

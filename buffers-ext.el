@@ -5,26 +5,6 @@
 
 ;; Customization
 
-(document-extension "buffers-ext"
-  "Functions that create, modify or query buffers in some way."
-  :functions ((clone-indirect-buffer-this-window command)
-	      define-scratch-buffer-function
-	      (get-buffer-file-name command)
-	      (kill-buffers command)
-	      (kill-certain-temp-buffers command)
-	      (kill-customization-buffers command)
-	      (narrow-to-region2 command)
-	      (revert-all-buffers command)
-	      (tmpbuf command)
-	      (view-into-buffer command)
-	      ;; defined with `define-scratch-buffer-function'
-	      (faces-buffer command)
-	      (general-scratch command)
-	      (git-commit-scratch command))
-
-  :variables ((user-ext-temp-buffers-to-kill custom)
-	      (user-ext-temp-buffers-to-kill-regex custom)))
-
 (defgroup buffers-ext nil
   "Group for custom buffer-related options."
   :group 'user-extensions)

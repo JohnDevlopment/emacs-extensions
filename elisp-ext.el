@@ -6,23 +6,6 @@
 (require 'function-ext)
 (require 'hideshow)
 
-(document-extension "elisp-ext"
-  "Emacs Lisp mode extension."
-  :variables ((user-ext-elisp--register constant)
-	      (user-ext-elisp-defun-regexp constant)
-	      (user-ext-elisp-variable-regexp constant))
-  :functions ((elisp-ext-occur-variables command)
-	      (elisp-ext-occur-functions command)
-	      (elisp-ext-minify command)
-	      (elisp-ext-forward-or-backward-sexp command)
-	      (elisp-ext-update-loadefs command)
-	      (elisp-ext-hide-all command)
-	      (elisp-ext-show command)
-	      (elisp-ext-show-only command)
-	      (elisp-ext-hide-toplevel-form command)
-	      (elisp-ext-doc-scratch-buffer command))
-  :advised ((eval-region command)))
-
 ;; Abbrevs
 
 (define-abbrev emacs-lisp-mode-abbrev-table "intry" "interactively"
