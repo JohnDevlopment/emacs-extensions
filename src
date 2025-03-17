@@ -14,7 +14,7 @@ while [ "$1" != '--' ]; do
 	    echo --
 	    ;;
 	*)
-	    
+
     esac
 done
 
@@ -59,10 +59,29 @@ source ~/src/.fzf-history
 
 alias emacs="execnohup emacs; unalias emacs; history -s execnohup emacs"
 alias git-gui="execnohup --sleep 2 -n 2 git gui; unalias git-gui; history -s execnohup --sleep 2 -n 2 git gui"
+alias rmcache='find -type d -iname __pycache__ -execdir rm -rfv \{} \; 2> /dev/null'
+alias commit-guide="xdg-open commit-guide.html; unalias commit-guide; history -s xdg-open commit-guide.html"
 
 ## usage: commit-doc-ext FILE
 function commit-doc-ext {
     commit -t update -m "Document ${1:?missing FILE}" -ct -
+}
+
+## usage: commit-bootstrap [-c]
+function commit-bootstrap {
+    local tag C
+    C=${1}
+    read -p "Tag: " tag
+
+    if [ "$C" = "-c" ]; then
+	format-commit -c <<EOF
+$tag
+Bootstraps
+main
+EOF
+    else
+	commit -t $tag -m Bootstraps -ct main
+    fi
 }
 
 ## usage: list-commands
@@ -71,6 +90,8 @@ function list-commands {
 Commands:
   * emacs (once, modifies history)
   * git-gui (once, modifies history)
+  * commit-bootstrap
+  * commit-doc-ext
 EOF
 }
 
