@@ -56,6 +56,19 @@
 (bbcode-ext-define-insert-tag-command "i")
 (bbcode-ext-define-insert-tag-command "b")
 
+(defun bbcode-ext-insert-tag--completion ()
+  (let ((tag (read-string "Name: ")))
+    (if (use-region-p)
+	(pcase (region-bounds)
+	  (`((,beg . ,end)) (list tag beg end))
+	  (x (error "Invalid form: %S" x)))
+      (list tag))))
+
+;;;###autoload
+(defun bbcode-ext-insert-tag (string &optional beg end)
+  (interactive (bbcode-ext-insert-tag--completion))
+  (bbcode-ext--insert-tag string beg end))
+
 (define-prefix-command 'bbcode-mode-prefix)
 (define-key bbcode-mode-map (kbd "C-c i") #'bbcode-mode-prefix)
 (define-key bbcode-mode-prefix "e" #'bbcode-ext-insert-tag-i)
