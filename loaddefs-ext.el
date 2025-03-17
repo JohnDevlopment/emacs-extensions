@@ -10,8 +10,30 @@
 
 ;;;***
 
+;;;### (autoloads nil "basic-ext" "basic-ext.el" (0 0 0 0))
+;;; Generated autoloads from basic-ext.el
+
+(autoload 'basic-generic-mode--extra-hook "basic-ext" nil nil nil)
+
+(add-hook 'basic-generic-mode-mode-hook #'basic-generic-mode--extra-hook)
+
+(autoload 'basic-libreoffice-mode "basic-ext" "\
+Programming mode for Libreoffice Basic.
+Derived from `basic-mode'.
+
+\(fn)" t nil)
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "basic-ext" '("basic-ext-add-to-list-local")))
+
+;;;***
+
 ;;;### (autoloads nil "bbcode-ext" "bbcode-ext.el" (0 0 0 0))
 ;;; Generated autoloads from bbcode-ext.el
+
+(autoload 'bbcode-ext-insert-tag "bbcode-ext" "\
+
+
+\(fn STRING &optional BEG END)" t nil)
 
 (autoload 'bbcode-extra-hook "bbcode-ext" "\
 Extra hook for `bbcode-mode'." nil nil)
@@ -179,7 +201,7 @@ Hook for the `emacs-lisp-mode' extension." nil nil)
 ;;;### (autoloads nil "general" "general.el" (0 0 0 0))
 ;;; Generated autoloads from general.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "general" '("--add-mode-comment--" "add-mode-comment" "bind-fill-region" "copy-line" "count-words-region2" "date-format-version" "enable-wrap" "invalid-argument" "kill-and-quit" "narrow-to-region2" "pop-saved-position" "print-saved-positions" "save-" "signal-wrong-argument" "sort-words" "user-ext-local-position-ring" "wrap" "wrong-argument")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "general" '("bind-fill-region" "company-enable-ispell-locally" "copy-line" "count-words-region2" "date-format-version" "describe-region" "enable-wrap" "invalid-argument" "kill-and-quit" "minify" "narrow-to-region2" "pop-saved-position" "print-saved-positions" "save-" "signal-wrong-argument" "sort-words" "user-ext-local-position-ring" "wrong-argument")))
 
 ;;;***
 
@@ -202,7 +224,7 @@ Insert an entity symbol called NAME.
 ;;;### (autoloads nil "ibuffer-ext" "ibuffer-ext.el" (0 0 0 0))
 ;;; Generated autoloads from ibuffer-ext.el
 
-(autoload 'ibuffer-toggle-current-filter-group "ibuffer-ext" "\
+(autoload 'ibuffer-ext-toggle-current-filter-group "ibuffer-ext" "\
 Expand/collapse the filter group of point.
 If point is on a buffer, toggle the group it is in." t nil)
 
@@ -210,7 +232,7 @@ If point is on a buffer, toggle the group it is in." t nil)
 
 (add-hook 'ibuffer-mode-hook #'ibuffer--extra-hook)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "ibuffer-ext" '("ibuffer--after-operation")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "ibuffer-ext" '("ibuffer-ext--after-operation")))
 
 ;;;***
 
@@ -291,6 +313,59 @@ Extra hook for `liquidsoap-mode'." nil nil)
 (add-hook 'liquidsoap-mode-hook #'liquidsoap-ext--hook)
 
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "liquidsoap-ext" '("liquid" "user-ext-liquidsoap-ext-")))
+
+;;;***
+
+;;;### (autoloads nil "local-lambda" "local-lambda.el" (0 0 0 0))
+;;; Generated autoloads from local-lambda.el
+
+(autoload 'local-lambda-ext-add-local-lambda "local-lambda" "\
+Add a local function FUNCTION under key KEY.
+FUNCTION is saved to `user-ext-local-lambda-lambdas' under 
+KEY, which is a symbol.  FUNCTION is a `lambda' expression.
+
+\(fn KEY FUNCTION &optional OVERWRITE)" nil nil)
+
+(autoload 'local-lambda-ext-run-local-lambda "local-lambda" "\
+Run the local function under key KEY.
+KEY must be have previously been added via
+`local-lambda-ext-add-local-lambda' or
+`local-lambda-ext-define-local-defun'.
+
+Interactively, KEY is prompted from the user with completion.
+
+\(fn KEY)" t nil)
+
+(autoload 'local-lambda-ext-define-local-defun "local-lambda" "\
+Define NAME as a buffer-local function.
+Add NAME to the hash table at `user-ext-local-lambda-lambdas'
+under the key NAME.  ARGLIST is a list of arguments for a
+`defun'.
+
+This expands to a call to `local-lambda-ext-add-local-lambda'.
+
+As a result of this macro, NAME can be run as a function with
+`local-lambda-ext-run-local-lambda'.
+
+\(fn NAME ARGS [DOCSTRING] [INTERACTIVE] BODY)" nil t)
+
+(function-put 'local-lambda-ext-define-local-defun 'doc-string-elt '3)
+
+(function-put 'local-lambda-ext-define-local-defun 'lisp-indent-function 'defun)
+
+(autoload 'local-lambda-mode "local-lambda" "\
+A minor mode for running buffer-local functions.
+
+If called interactively, enable Local-Lambda mode if ARG is
+positive, and disable it if ARG is zero or negative.  If called
+from Lisp, also enable the mode if ARG is omitted or nil, and
+toggle it if ARG is `toggle'; disable the mode otherwise.
+
+\\{local-lambda-mode-map}
+
+\(fn &optional ARG)" t nil)
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "local-lambda" '("local-lambda-ext--completion" "user-ext-local-lambda-lambdas")))
 
 ;;;***
 
@@ -422,7 +497,67 @@ Extra hook for `org-mode'." nil nil)
 
 (autoload 'outline--extra-hook "outline-ext" nil nil nil)
 
+(autoload 'outline-minor-mode--extra-hook "outline-ext" nil nil nil)
+
+(add-hook 'outline-minor-mode-hook #'outline-minor-mode--extra-hook)
+
 (add-hook 'outline-mode-hook #'outline--extra-hook)
+
+;;;***
+
+;;;### (autoloads nil "packages/alist-ext" "packages/alist-ext.el"
+;;;;;;  (0 0 0 0))
+;;; Generated autoloads from packages/alist-ext.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "packages/alist-ext" '("alist-ext-")))
+
+;;;***
+
+;;;### (autoloads nil "packages/cl-ext" "packages/cl-ext.el" (0 0
+;;;;;;  0 0))
+;;; Generated autoloads from packages/cl-ext.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "packages/cl-ext" '("cl-ext-")))
+
+;;;***
+
+;;;### (autoloads nil "packages/debug-ext" "packages/debug-ext.el"
+;;;;;;  (0 0 0 0))
+;;; Generated autoloads from packages/debug-ext.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "packages/debug-ext" '("--" "assert" "debug-ext-get-function-body")))
+
+;;;***
+
+;;;### (autoloads nil "packages/documentation-ext" "packages/documentation-ext.el"
+;;;;;;  (0 0 0 0))
+;;; Generated autoloads from packages/documentation-ext.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "packages/documentation-ext" '("document-ext--")))
+
+;;;***
+
+;;;### (autoloads nil "packages/function-ext" "packages/function-ext.el"
+;;;;;;  (0 0 0 0))
+;;; Generated autoloads from packages/function-ext.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "packages/function-ext" '("fext-" "user-ext-fext-valid-advice-classes")))
+
+;;;***
+
+;;;### (autoloads nil "packages/menu-ext" "packages/menu-ext.el"
+;;;;;;  (0 0 0 0))
+;;; Generated autoloads from packages/menu-ext.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "packages/menu-ext" '("define-menu")))
+
+;;;***
+
+;;;### (autoloads nil "packages/server-view-ext" "packages/server-view-ext.el"
+;;;;;;  (0 0 0 0))
+;;; Generated autoloads from packages/server-view-ext.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "packages/server-view-ext" '("server-ext-")))
 
 ;;;***
 
@@ -593,7 +728,8 @@ Extra hook for `toml-mode'." nil nil)
 
 ;;;***
 
-;;;### (autoloads nil nil ("faces-ext.el" "help-ext.el" "liquidsoap-bootstrap.el")
+;;;### (autoloads nil nil ("code-outline-bootstrap.el" "faces-ext.el"
+;;;;;;  "help-ext.el" "jdesktop-bootstrap.el" "liquidsoap-bootstrap.el")
 ;;;;;;  (0 0 0 0))
 
 ;;;***
