@@ -135,6 +135,7 @@ evaluated."
 (load-extension-safe "codeium-ext")
 (load-extension-safe "desktop-ext")
 (load-extension "custom-ext")
+(load-extension "help-ext")
 
 (load-extension "general")
 (load-extension "macro-ext")
