@@ -122,9 +122,16 @@ Updates the autoload definitions in the Lisp files in
     (error "This must be called interactively"))
   (let ((generated-autoload-file "~/.emacs.d/extensions/loaddefs-ext.el"))
     (cl-check-type generated-autoload-file string)
-    (update-directory-autoloads "~/.emacs.d/extensions/"))
-  (when (y-or-n-p "Open buffer \"loaddefs-ext.el\"? ")
-    (switch-to-buffer "loaddefs-ext.el")))
+    (update-directory-autoloads "~/.emacs.d/extensions/"
+				"~/.emacs.d/extensions/packages/"))
+  (let ((buffer (get-buffer "loaddefs-ext.el")))
+    (cl-assert buffer)
+    (if (y-or-n-p "Open buffer \"loaddefs-ext.el\"? ")
+	(cl-ext-progn
+	  (switch-to-buffer "loaddefs-ext.el")
+	  (auto-revert-mode 1))
+      (with-current-buffer buffer
+	(auto-revert-mode 1)))))
 (put 'elisp-ext-update-loadefs 'interactive-only t)
 
 (defun elisp-ext--scratch-buffer-ctrl-c-ctrl-c ()
