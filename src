@@ -57,10 +57,10 @@ trap __cleanup EXIT
 source ~/src/.gitprojectrc
 source ~/src/.fzf-history
 
+alias commit-guide="xdg-open commit-guide.html; unalias commit-guide; history -s xdg-open commit-guide.html"
 alias emacs="execnohup emacs; unalias emacs; history -s execnohup emacs"
 alias git-gui="execnohup --sleep 2 -n 2 git gui; unalias git-gui; history -s execnohup --sleep 2 -n 2 git gui"
 alias rmcache='find -type d -iname __pycache__ -execdir rm -rfv \{} \; 2> /dev/null'
-alias commit-guide="xdg-open commit-guide.html; unalias commit-guide; history -s xdg-open commit-guide.html"
 
 ## usage: commit-doc-ext FILE
 function commit-doc-ext {
@@ -92,6 +92,7 @@ Commands:
   * git-gui (once, modifies history)
   * commit-bootstrap
   * commit-doc-ext
+  * commit-guide
 EOF
 }
 
