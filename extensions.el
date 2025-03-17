@@ -14,9 +14,7 @@
 (require 'f)
 
 (setq read-process-output-max 10485760
-      frame-title-format (concat (and multiple-frames ()) " %b " invocation-name "@" (system-name))
-      source-directory "~/github/emacs/src/")
-
+      frame-title-format (concat (and multiple-frames ()) " %b " invocation-name "@" (system-name)))
 
 ;; Types
 
