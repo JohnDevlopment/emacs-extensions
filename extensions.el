@@ -139,11 +139,11 @@ evaluated."
 
 (load-extension "general")
 (load-extension "macro-ext")
+(load-extension "buffers-ext")
 
 (load-extension-safe "lsp-ext" 2)
 (load-extension-safe "desktop-ext" 2)
 (load-extension "dired-ext")
-(load-extension "buffers-ext")
 (load-extension "imenu-ext" nil 2)
 (load-extension "syntax-ext")
 
