@@ -164,6 +164,7 @@ evaluated."
 (load-extension "macro-ext")
 
 (load-extension-safe "lsp-ext" 2)
+(load-extension-safe "desktop" 2)
 (load-extension "dired-ext")
 (load-extension "buffers-ext")
 (load-extension "imenu-ext" nil 2)
