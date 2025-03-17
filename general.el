@@ -82,24 +82,6 @@ treated as a single value and formatted appropriately."
   (interactive)
   (setq-local company-backends (cons #'company-ispell company-backends)))
 
-(defun wrap (n min max)
-  "Clamp N to the range [MIN,MAX], wrapping it around as needed.
-That is to say, if N is less than MIN, it is wrapped around
-to MAX.  If N is greater than MAX, it is wrapped around to
-MIN."
-  (declare (pure t))
-  (let (diff)
-    (cond
-     ((< n min)
-      (setq diff (- min n 1))
-      (cl-assert (>= diff 0))
-      (- max diff))
-     ((> n max)
-      (setq diff (- n max 1))
-      (cl-assert (>= diff 0))
-      (+ min diff))
-     (t n))))
-
 (defun sort-words (separators start end)
   "Sort words in buffer between START and END via SEPARATORS.
 SEPARATORS is a regular expression used to match the
