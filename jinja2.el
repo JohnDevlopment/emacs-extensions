@@ -340,15 +340,21 @@ compare with the \\=`category' property of each overlay."
 (defun jinja2--all-overlays (category)
   "Get all overlays in the buffer."
   (setq category (jinja2--create-or-load-category category))
-  (cl-destructuring-bind (beg end) (jinja2--get-visible-bounds)
+  (let ((bounds (jinja2--get-visible-bounds))
+	beg end)
+    (cl-assert (consp bounds))
+    (setq beg (car bounds) end (cdr bounds))
     (cl-loop
      named find
      with cat = nil
      for ov in (overlays-in beg end)
-     collect (progn
-	       (setq cat (overlay-get ov 'category))
-	       (when (and cat (eq cat category))
-		 ov)))))
+     when (and (setq cat (overlay-get ov 'category))
+	       (eq cat category))
+     collect ov)))
+
+(defun jinja2--make-overlay (beg end category)
+  (let ((overlay (make-overlay beg end)))
+    (overlay-put overlay 'category category)))
 
 (defun jinja2--handle-change-deletion (pos _length)
   "Handle deletion changes."
@@ -397,24 +403,29 @@ compare with the \\=`category' property of each overlay."
 	    (delete-overlay ov)))
 	 (t (message "No conditions met."))))))
 
-(defun jinja2--create-or-load-category (name)
+(defun jinja2--create-or-load-category (name &optional force)
   "Create or load category NAME.
 Returns a symbol `category-jinja-NAME'.  NAME can be either
 \"tag\" or \"expression\"."
   (let* ((valid-names '("tag" "expression"))
-	 (sn (s-lex-format "category-jinja-${name}"))
+	 (sn (format "category-jinja-%s" name))
 	 (symbol (intern-soft sn)))
     (unless (cl-member name valid-names :test #'string=)
-      (error "Invalid name '%s': can be one of %s" name (string-join valid-names ", ")))
-    (if symbol
-	symbol
-      (setq symbol (intern sn))
-      (if (string= name "tag")
-	  (progn
-	    (cl-assert (null (symbol-plist symbol)))
-	    (setplist symbol '(evaporate t face jinja2-tag))
-	    symbol)
-	(error (s-lex-format "Category ${name} should not be used"))))))
+      (error "Invalid name '%s': can be one of %s" name))
+    (cl-ext-unless symbol
+      (setq symbol (intern sn)))
+    (unless (and (get symbol 'evaporate)
+			(get symbol 'face))
+      (pcase name
+	("tag"
+	 (cl-assert (null (symbol-plist symbol)))
+	 (setplist symbol '(evaporate t face jinja2-tag))
+	 symbol)
+	(_ (error "Invalid category %s, can be one of %s" name
+		  (string-join valid-names ", ")))))
+    symbol))
+
+;; (cl-prettyprint (symbol-function 'jinja2--create-or-load-category))
 
 (defun jinja2-clear-tags (beg end)
   "Delete all tag overlays between BEG and END.
@@ -429,18 +440,23 @@ beginning and end of buffer respectively."
   "Mark all tags within buffer."
   (let* ((cat (jinja2--create-or-load-category "tag"))
 	 (tags (jinja2--find-tags beg end))
+	 curtag
 	 ov ovbeg ovend)
-    ;; (print-expr sexp (list beg end))
+    (setq curtag (jinja2-inside-tag beg))
     (with-silent-modifications
-      (jinja2-clear-tags beg end)
-      (dolist (tag tags)
-	(when (and (tag-match-p tag)
-		   (progn
-		     (setq ovbeg (tag-match-start tag)
-			   ovend (tag-match-end tag))
-		     (not (jinja2-overlay-at "tag" ovbeg))))
-	  (setq ov (make-overlay ovbeg ovend))
-	  (overlay-put ov 'category cat))))))
+      (cond
+       ((and (not tags) curtag)
+	(unless (jinja2-overlay-at "tag" (tag-match-start curtag))
+	  (jinja2--make-overlay (tag-match-start curtag) (tag-match-end curtag))))
+       (tags
+	(jinja2-clear-tags beg end)
+	(dolist (tag tags)
+	  (when (and (tag-match-p tag)
+		     (progn
+		       (setq ovbeg (tag-match-start tag)
+			     ovend (tag-match-end tag))
+		       (not (jinja2-overlay-at "tag" ovbeg))))
+	    (jinja2--make-overlay ovbeg ovend "tag"))))))))
 
 (defun jinja2-set-tag-trim--both (pcstr choices &optional c)
   (setq c (read-char-from-minibuffer
@@ -513,13 +529,11 @@ beginning and end of buffer respectively."
   "Activate Jinja2 mode."
   (let ((bounds (jinja2--get-visible-bounds)))
     (jinja2-mark-tags (car bounds) (cdr bounds)))
-  ;; (add-hook 'after-change-functions #'jinja2--set-face-on-change nil t)
   (jit-lock-register #'jinja2-mark-tags))
 
 (defun jinja2-deactivate ()
   "Deactivate Jinja2 mode."
   (jinja2-clear-tags (point-min) (point-max))
-  ;; (remove-hook 'after-change-functions #'jinja2--set-face-on-change t)
   (jit-lock-unregister #'jinja2-mark-tags))
 
 ;;;###autoload
