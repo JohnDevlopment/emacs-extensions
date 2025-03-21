@@ -39,6 +39,11 @@ FORM should not be quoted."
   "Get the function definition of SYMBOL."
   (indirect-function symbol))
 
+(defmacro --ignore (&rest _args)
+  "Ignore all arguments."
+  (declare (debug t))
+  (list 'ignore t))
+
 (provide 'debug-ext)
 
 ;;; debug-ext.el ends here
