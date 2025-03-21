@@ -1,9 +1,11 @@
 ;; -*- lexical-binding: t; -*-
 
+(eval-when-compile
+  (require 'cl-ext))
+
 (use-package liquidsoap-mode
   :load-path "~/.opam/soap/share/emacs/site-lisp"
-  :if (locate-library "liquidsoap-mode")
-  :mode "\\.liq\\'"
+  :mode ("\\.liq\\'" . liquidsoap-mode)
   :defer t
   :commands
   liquidsoap-mode)
