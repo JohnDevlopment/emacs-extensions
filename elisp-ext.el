@@ -5,6 +5,7 @@
 (require 'autoload)
 (require 'function-ext)
 (require 'hideshow)
+(require 'button)
 
 ;; Abbrevs
 
@@ -18,19 +19,48 @@
 
 ;; Variables
 
+(defmacro elisp-ext--rx (&rest body)
+  `(rx-let ((identifier-char (or (syntax word) (syntax symbol)))
+	    ;; (identifier (+ (or (syntax word) (syntax symbol))))
+	    (identifier (+ identifier-char)))
+     (rx ,@body)))
+
 (defconst user-ext-elisp--register ?e
   "Used with `window-configuration-to-register'.")
 
 (defconst user-ext-elisp-defun-regexp
-  (rx ?\( (or "defun" "defmacro") (+ (syntax whitespace))
-      (group (+ (or (syntax word) (syntax symbol)))))
+  (elisp-ext--rx
+   ?\( (or "defun" "defmacro") (+ (syntax whitespace))
+   (group identifier))
   "Regular expression for function-like definitions (e.g. defun).
-Group 1 matches the name of the definition (usually the
-first argument).")
+Group 1 matches the name of the definition.")
 
 (defconst user-ext-elisp-variable-regexp
-  (rx ?\( (or "defconst" "defvar" "defcustom" "defface"))
-  "Regular expression for variable definitions.")
+  (elisp-ext--rx
+   ?\( "def" (group (or "const" "custom" "var" "var-local"))
+   (+ (syntax whitespace)) (group identifier))
+  "Regular expression for variable definitions.
+Group 1 matches the characters after the initial \"def\" (see below).
+Group 2 matches the name of the variable.
+
+Group 1 can be one of the following:
+- \"const\"
+- \"custom\"
+- \"var\"
+- \"var-local\"")
+
+(defconst user-ext-elisp-mode-local-variable-regexp
+  (elisp-ext--rx ?\( "def"
+		 (group (or "const" "var")) "-mode-local" ; var type
+		 (+ (syntax whitespace))
+		 (group identifier)	; mode
+		 (+ (syntax whitespace))
+		 (group identifier)	; name
+		 )
+  "Regular expression for mode-local variable definitions.
+Group 1 matches one of \"const\" \"var\".
+Group 2 matches the mode this variable is local to.
+Group 3 matches the name.")
 
 ;; Functions
 
@@ -38,15 +68,120 @@ first argument).")
   `(cl-ext-unless (and (boundp ',mode1) ,mode1)
      (,(or mode2 mode1) t)))
 
+;; ---Occur functions
+
+(define-button-type 'occur-cross-reference
+  'action #'elisp-ext--occur-cross-reference)
+
+(defun elisp-ext--occur-cross-reference (button)
+  (let* ((label (button-label button))
+	 (symbol (intern-soft label))
+	 (fun (button-get button 'xref-function)))
+    (cl-assert symbol t)
+    (cl-assert fun t)
+    (funcall fun symbol)))
+
+(defun elisp-ext-in-comment-p ()
+  "Return non-nil if inside a comment."
+  (ppss-comment-depth (make-ppss-easy (syntax-ppss))))
+
+(defun elisp-ext--search-regexp (regexp fun)
+  (cl-ext-save-point
+    (goto-char (point-min))
+    (cl-loop
+     while (re-search-forward regexp nil t)
+     unless (elisp-ext-in-comment-p)
+     collect
+     (cl-ext-progn
+       (funcall fun)))))
+
+(defun elisp-ext--list-symbols (type)
+  (cl-ecase type
+    (functions (elisp-ext--search-regexp
+		user-ext-elisp-defun-regexp
+		(lambda (&optional sym)
+		  (setq sym (intern-soft (match-string-no-properties 1)))
+		  (list sym (vector (symbol-name sym)
+				    (if (commandp sym)
+					"Command"
+				      "Function"))))))
+    (variables
+     (let (v1 v2)
+       (setq v1 (elisp-ext--search-regexp
+		 user-ext-elisp-variable-regexp
+		 (lambda (&optional type name)
+		   (setq name (match-string-no-properties 2)
+			 type (pcase (match-string-no-properties 1)
+				("const" "Constant")
+				("custom" "User Option")
+				("var" "Variable")
+				("var-local" "Buffer-Local Variable")))
+		   (list (make-symbol name) (vector name type))))
+	     v2 (elisp-ext--search-regexp
+		 user-ext-elisp-mode-local-variable-regexp
+		 (lambda (&optional name type mode)
+		   (setq name (match-string-no-properties 3)
+			 mode (match-string-no-properties 2)
+			 type (pcase (match-string-no-properties 1)
+				("const" (format "Constant (local to %s)" mode))
+				("var" (format "Variable (local to %s)" mode))))
+		   (list (make-symbol name) (vector name type)))))
+       (append (if v1 v1 nil)
+	       (if v2 v2 nil))))
+    ;; TODO: Maybe faces (i.e., defface)?
+    ;; TODO: Maybe structures (i.e., cl-defstruct)?
+    ))
+
+(defun elisp-ext--occur-buttonize-entries (type)
+  (cl-check-type type symbol)
+  (goto-char (point-min))
+  (save-excursion
+    (let ((inhibit-read-only t)
+	  (type (cl-ecase type
+		  ('functions #'describe-function)
+		  ('variables #'describe-variable))))
+      (with-silent-modifications
+	(cl-loop with rx = (rx bol (+ (or (syntax word) (syntax symbol))))
+		 with beg
+		 with end
+		 while (re-search-forward rx nil t)
+		 do
+		 (setq beg (match-beginning 0)
+		       end (match-end 0))
+		 (make-button beg end 'type 'occur-cross-reference
+			      'xref-function type))))))
+
+(defun elisp-ext--occur (buffer-name type-symbol)
+  (require 's)
+  (let ((buf (get-buffer-create (s-lex-format "*Occur: ${buffer-name}*")))
+	(curbuf (current-buffer)))
+    (with-current-buffer buf
+      (elisp-occur-mode)
+      (setq tabulated-list-entries
+	    (lambda ()
+	      (with-current-buffer curbuf
+		(elisp-ext--list-symbols type-symbol))))
+      (tabulated-list-print))
+    (display-buffer buf)
+    (elisp-ext--occur-buttonize-entries type-symbol)))
+
 (defun elisp-ext-occur-variables ()
-  "Run `occur' with a regular expression matching variables."
   (interactive)
-  (occur user-ext-elisp-variable-regexp))
+  (elisp-ext--occur "Elisp Variables" 'variables))
 
 (defun elisp-ext-occur-functions ()
-  "Run `occur' with a regular expression matching functions."
   (interactive)
-  (occur user-ext-elisp-defun-regexp))
+  (elisp-ext--occur "Elisp Functions" 'functions))
+
+(define-derived-mode elisp-occur-mode tabulated-list-mode "Elisp Occur"
+  "Major mode for elisp-ext-occur* functions."
+  (setq tabulated-list-format [("Name" 50 t) ("Type" 0 t)])
+  (setq tabulated-list-sort-key '("Name" . nil))
+  (tabulated-list-init-header))
+
+(define-key elisp-occur-mode-map (kbd "k") #'kill-and-quit)
+
+;; ---
 
 (defun elisp-ext-minify (start end)
   "Minify the code between START and END in current buffer.
