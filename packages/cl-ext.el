@@ -1,5 +1,6 @@
 ;; -*- lexical-binding: t; -*-
 
+;;;###autoload
 (defmacro cl-ext-when (cond first-form &rest body)
   "If COND yields non-nil, do FIRST-FORM and BODY, else return nil.
 When COND yields non-nil, eval FIRST-FORM and BODY forms
@@ -32,6 +33,7 @@ expands to this:
       (_
        `(and ,cond ,first-form)))))
 
+;;;###autoload
 (defmacro cl-ext-unless (cond first-form &rest body)
   "If COND yields nil, do FIRST-FORM and BODY, else return nil.
 When COND yields nil, eval FIRST-FORM and BODY forms
@@ -49,16 +51,15 @@ otherwise, it behaves exactly the same.
 	 ,@body)
     `(or ,cond ,first-form)))
 
+;;;###autoload
 (defmacro cl-ext-append (x place)
-  "Add X to the list stored in PLACE.
-PLACE is a symbol whose definition is a list or some other
-kind of sequence."
+  "Add X to the list stored in PLACE."
   (declare (debug (form symbolp)))
-  (cl-check-type place symbol)
-  `(setq ,place (append ,place ,x)))
+  `(setf ,place (append ,place ,x)))
 (define-obsolete-function-alias 'cl-append #'cl-ext-append "2025.02.10")
 (define-obsolete-function-alias 'cl-pushend 'cl-append "2024.12.21")
 
+;;;###autoload
 (defmacro cl-ext-append-list (x place)
   "Add X to the list stored in PLACE, but wrap X in a list.
 X is supposed to be a list, likely representing a Lisp
@@ -76,12 +77,14 @@ Lisp expressions and adding another list to it:
   `(setq ,place (append ,place (list ,x))))
 (define-obsolete-function-alias 'cl-append-list #'cl-ext-append-list "2025.02.10")
 
+;;;###autoload
 (defmacro cl-ext-nconcat (place &rest sequences)
   "Append the arguments (SEQUENCES) as strings to PLACE.
 the string found at PLACE and SEQUENCES are combined via
 `concat' and then set as the new value of PLACE."
   `(setq ,place (concat ,place ,@sequences)))
 
+;;;###autoload
 (defmacro cl-ext-save-point (&rest body)
   "Execute BODY and restore point to its original position.
 Any errors are caught and printed as simple messages.
@@ -96,6 +99,7 @@ Any errors are caught and printed as simple messages.
      user-ext-cl--result))
 (define-obsolete-function-alias 'cl-save-point #'cl-ext-save-point "2025.02.02")
 
+;;;###autoload
 (defmacro cl-ext-progn (&rest body)
   "Eval BODY forms sequentially and return value of last one.
 
