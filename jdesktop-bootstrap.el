@@ -5,8 +5,7 @@
 
 (use-package jdesktop
   :load-path "~/github/desktop-plus/"
-  :functions
-  jdesktop-default-bindings
+  :demand t
   :config
   (jdesktop-default-bindings))
 
