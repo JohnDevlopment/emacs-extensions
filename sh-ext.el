@@ -10,12 +10,16 @@
 
 ;; Variables
 
+(defmacro sh-ext--rx (&rest body)
+  `(rx-let ((identifier (seq (any "A-Za-z0-9" ?_ ?-))))
+     (rx ,@body)))
+
 (define-abbrev global-abbrev-table "NULL" "null" #'abbrev-ext-insert-hook :system t)
 
 (defconst user-ext-sh-function-regex
-  (rx bol (* (syntax whitespace))
+  (sh-ext--rx bol (* (syntax whitespace))
       (group "function" (+ (syntax whitespace))
-	     (group (+ (any "A-Za-z0-9" ?_ ?-))))
+	     (group (+ identifier)))
       (* (syntax whitespace)) ?{)
   "Regular expression for finding functions.
 Group 1 matches the first line of the declaration starting
