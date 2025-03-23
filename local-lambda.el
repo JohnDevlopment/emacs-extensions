@@ -1,7 +1,6 @@
 ;; -*- lexical-binding: t; -*-
 
 (eval-when-compile
-  (require 'use-package)
   (require 'cl-lib)
   (require 'cl-ext))
 
@@ -47,10 +46,10 @@ Interactively, KEY is prompted from the user with completion."
   (cl-check-type key symbol)
   (let ((fun (gethash key user-ext-local-lambda-lambdas)))
     (cl-assert fun)
-    (--print-expr var key)
     (if (commandp fun)
 	(call-interactively fun)
       (funcall fun))))
+(put 'local-lambda-ext-run-local-lambda 'interactive-only t)
 
 ;;;###autoload
 (defmacro local-lambda-ext-define-local-defun (name arglist &rest body)
