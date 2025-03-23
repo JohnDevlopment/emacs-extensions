@@ -18,7 +18,7 @@ class ElispFiles(DefaultFilter):
     def __call__(self, change: Change, path: str) -> bool:
         return (
             super().__call__(change, path) and
-            re.match(r'[a-z-]+\.el', path) is not None
+            re.search(r'\.el(?:\.gz)?$', path) is not None
         )
 
 def get_logging_env() -> int:
@@ -83,12 +83,10 @@ def main():
     logging.basicConfig(level=level)
     logging.info("Set logging level to '%s'", logging.getLevelName(level))
     event = Event()
-    it = chain(
-        Path("~/.emacs.d/extensions").expanduser().glob("*.el"),
-        Path("~/.emacs.d/extensions/packages").expanduser().glob("*.el")
-    )
+    filt = ElispFiles()
     signal.signal(signal.SIGINT, lambda x, y: on_keyboard_interrupt(event))
-    for changes in watch(*it, recursive=False, stop_event=event):
+    for changes in watch(Path("~/.emacs.d/extensions").expanduser(),
+                         watch_filter=filt, recursive=True, stop_event=event):
         for change, path in changes:
             on_change(change, Path(path))
 
