@@ -6,6 +6,6 @@ SRCDIR=~/.emacs.d/extensions
 # Only print, do no act on anything
 # find $SRCDIR -maxdepth 2 -type f -name '*.el' | parallel -X "cp -vrft . {}"
 
-cp -vft ./ $SRCDIR/*.el
+cp -vft ./ $SRCDIR/*{.el,.el.gz}
 cp -vfrt ./ $SRCDIR/packages/
 rm packages/*.elc
