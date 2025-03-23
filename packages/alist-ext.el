@@ -3,6 +3,7 @@
 (require 'debug-ext)
 (require 'cl-lib)
 
+;;;###autoload
 (defun alist-ext-from-list (list)
   "Turn a regular list LIST into an alist.
 LIST must have an even number of elements."
@@ -11,6 +12,7 @@ LIST must have an even number of elements."
     (user-error "Must have even number of arguments."))
   (seq-partition list 2))
 
+;;;###autoload
 (defmacro alist-ext-define (&rest pairs)
   "Construct an alist with PAIRS, where each key precedes its value.
 
@@ -23,7 +25,7 @@ be quoted.
   (let (res key value)
     (while pairs
       (setq key (pop pairs) value (pop pairs))
-      (cl-append-list (list 'cons key value) res))
+      (cl-ext-append-list (list 'cons key value) res))
     `(list ,@res)))
 
 (provide 'alist-ext)
