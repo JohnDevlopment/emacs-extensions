@@ -19,6 +19,21 @@
   (require 'cl-lib)
   (require 'cl-ext))
 
+;;;###autoload
+(defmacro fext-defalias (symbol definition &optional docstring)
+  "Define SYMBOL's definition to DEFINITION."
+  (declare (debug (symbolp function-form &optional stringp))
+	   (doc-string 3))
+  `(defalias ',symbol ,(pcase definition
+			 (`(function ,sym)
+			  (list 'function sym))
+			 ((and (pred listp) (guard (eql (car definition) 'lambda)))
+			  definition)
+			 ((pred symbolp)
+			  (list 'function definition))
+			 (x (error "Invalid form %S: must be symbol or lambda" x)))
+     ,docstring))
+
 (defmacro fext-replace-function (symbol file arglist &optional docstring &rest body)
   "Replace the function definition of SYMBOL.
 The new definition is
