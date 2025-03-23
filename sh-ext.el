@@ -136,23 +136,9 @@ the check."
   (cl-assert (and (boundp 'hs-minor-mode) hs-minor-mode))
   (cl-ext-save-point
     (and position (goto-char position))
-    (or (hs-already-hidden-p)
-	(progn (left-char)
-	       (hs-already-hidden-p)))))
-
-(defun sh-ext--looking-at (what &optional position)
-  "Return t if text point matches a pattern for form WHAT.
-WHAT is a symbol indicating the form we want to match.
-
-WHAT is one of the following:
-'function   Matches by regular expression
-            `user-ext-sh-function-regex'"
-  (cl-check-type position (or integer-or-marker null))
-  (cl-ext-save-point
-    (and position (goto-char position))
-    (pcase what
-      ('function
-       (looking-at user-ext-sh-function-regex)))))
+    (cl-ext-unless (hs-already-hidden-p)
+      (left-char)
+      (hs-already-hidden-p))))
 
 (defun sh-ext-show-function ()
   "Show the hidden function at point."
