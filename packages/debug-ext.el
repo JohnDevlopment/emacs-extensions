@@ -1,4 +1,4 @@
-;;; debug-ext.el --- Debug extension                     -*- lexical-binding: t; -*-
+;; -*- lexical-binding: t; -*-
 
 (eval-when-compile
   (require 'cl-ext)
@@ -47,6 +47,7 @@ This function emits a warning when it is byte compiled."
 
 (defun debug-ext-get-function-body (symbol)
   "Get the function definition of SYMBOL."
+  (declare (obsolete nil "2025-03-22"))
   (indirect-function symbol))
 
 (defmacro --ignore (&rest _args)
@@ -63,3 +64,7 @@ This function emits a warning when it is byte compiled."
 (provide 'debug-ext)
 
 ;;; debug-ext.el ends here
+
+;; Local Variables:
+;; eval: (local-lambda-ext-define-self-insert-command doc/byte-compile-warning "This function emits a warning when it is byte compiled.")
+;; End:
