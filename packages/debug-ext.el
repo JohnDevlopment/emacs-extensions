@@ -3,6 +3,10 @@
 (eval-when-compile
   (require 'cl-lib))
 
+(defmacro --show-compiler-warning (function)
+  (cl-check-type function symbol)
+  `(byte-compile-warn ,(format "Function %S is used here" function)))
+
 (defalias 'assert #'cl-assert)
 (make-obsolete 'assert #'cl-assert "2024-12-24")
 
@@ -40,8 +44,14 @@ FORM should not be quoted."
   (indirect-function symbol))
 
 (defmacro --ignore (&rest _args)
-  "Ignore all arguments."
-  (declare (debug t))
+  "Do nothing and return nil.
+This accepts any number of arguments but never evaluates,
+both in runtime and during compilation. This effectively
+acts as a comment.
+
+This function emits a warning when it is byte compiled."
+  (declare (debug (&rest sexp)))
+  (--show-compiler-warning --ignore)
   (list 'ignore t))
 
 (provide 'debug-ext)
