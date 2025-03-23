@@ -48,6 +48,80 @@ Group 2 matches the name of the function.")
 
 ;; Functions
 
+(cl-defstruct (sh-ext-function
+	       (:copier nil))
+  (name "" :type string)
+  (beg 0 :type integer-or-marker)
+  (end 0 :type integer-or-marker))
+
+(defun sh-ext--looking-at (what &optional position)
+  "Return t if text point matches a pattern for form WHAT.
+WHAT is a symbol indicating the form we want to match.
+
+WHAT is one of the following:
+'function   Matches by regular expression
+            `user-ext-sh-function-regex'"
+  (cl-check-type position (or integer-or-marker null))
+  (cl-ext-save-point
+    (and position (goto-char position))
+    (pcase what
+      ('function
+       (looking-at user-ext-sh-function-regex))
+      ('usage
+       (looking-at (sh-ext--rx
+		    "##" (* space)
+		    "usage:" (* space)
+		    (group (+ nonl))))))))
+
+(defun sh-ext-inside-function-p ()
+  "Return non-nil if point is inside a function.
+
+If point is inside a function, return a `sh-ext-function'
+object (which see)."
+  (interactive)
+  (save-excursion
+    (let* ((pps (syntax-ppss))
+	   (tl (syntax-ppss-toplevel-pos pps))
+	   (pps (make-ppss-easy pps)))
+      (cl-ext-when tl (goto-char tl))
+      (skip-chars-backward " \t\n\r")
+      (goto-char (line-beginning-position))
+      (cl-ext-when (looking-at user-ext-sh-function-regex)
+	(let ((beg (match-beginning 0))
+	      (end (match-end 0)))
+	  (goto-char end)
+	  (cl-assert (= (char-before) ?\{))
+	  (backward-char)
+	  (forward-sexp)
+	  (setq end (point))
+	  (make-sh-ext-function :name (match-string-no-properties 2)
+				:beg beg :end end))))))
+
+(defun sh-ext-get-usage ()
+  "Get the usage string of function containing point.
+
+A usage comment looks like this:
+  ## usage: commit-bootstrap [-ch]
+            ^--------------------^
+This returns the string after \"usage:\"."
+  (save-excursion
+    (let* ((inf (sh-ext-inside-function-p))
+	   (beg (cl-ext-when inf (sh-ext-function-beg inf)))
+	   col)
+      (cl-ext-when beg
+	(goto-char beg)
+	(setq col (current-column))
+	(forward-line -1)
+	(move-to-column col)
+	(if (sh-ext--looking-at 'usage)
+	    (match-string-no-properties 1)
+	  (skip-chars-backward " \t\n")
+	  (move-to-column col)
+	  (cl-ext-when (sh-ext--looking-at 'usage)
+	    (match-string-no-properties 1)))))))
+
+;; ---Hs minor mode
+
 (defun sh-ext--fold-map-prompt ()
   (format "Sh Fold: %s - hide function, %s - hide all functions, %s - show function"
 	  (propertize "f" 'face 'font-lock-constant-face)
@@ -127,18 +201,19 @@ WHAT is one of the following:
 	  (goto-char pos))
       (goto-char pos))))
 
+;; ---
+
 (defun sh-ext-mark-function ()
   "Mark the surrounding function."
   (interactive)
-  (let* ((ppss (syntax-ppss))
-	 (tl (syntax-ppss-toplevel-pos ppss)))
-    (goto-char tl)
-    (beginning-of-line)
-    (when (looking-at user-ext-sh-function-regex)
-      (goto-char (match-beginning 1))
-      (activate-mark)
-      (goto-char tl)
-      (forward-sexp))))
+  (let* ((inf (sh-ext-inside-function-p))
+	 (beg (and inf (sh-ext-function-beg inf)))
+	 (end (and inf (sh-ext-function-end inf))))
+    (cl-ext-when (and inf beg end)
+      (save-current-position)
+      (goto-char beg)
+      (set-mark-command nil)
+      (goto-char end))))
 
 (defun sh-ext-occur-functions (&optional nlines)
   "Run `occur' on the current buffer for function definitions.
