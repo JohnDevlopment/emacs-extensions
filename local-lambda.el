@@ -98,6 +98,21 @@ use of a highlighted region."
 	 (interactive "*P\nP")
 	 (skeleton-proxy-new ',skeleton str arg)))))
 
+;;;###autoload
+(defmacro local-lambda-ext-define-self-insert-command (name string)
+  (declare (debug (&define name stringp)))
+  (cl-check-type name symbol)
+  (cl-check-type string string)
+  `(progn
+     (local-lambda-ext-define-local-defun ,name (&optional _arg)
+       (interactive "P")
+       (cl-loop for c across ,string
+		do
+		(self-insert-command 1 c)
+		finally do
+		(call-interactively #'company-complete)))
+     ',name))
+
 ;; Minor mode
 
 (defvar local-lambda-mode-map
@@ -120,3 +135,7 @@ use of a highlighted region."
 
 (provide 'local-lambda)
 ;;; local-lambda.el ends here
+
+;; Local Variables:
+;; eval: (local-lambda-ext-define-self-insert-command mc-prefix "local-lambda-ext")
+;; End:
