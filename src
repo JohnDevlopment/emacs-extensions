@@ -67,11 +67,80 @@ function commit-doc-ext {
     commit -t update -m "Document ${1:?missing FILE}" -ct -
 }
 
-## usage: commit-bootstrap [-c]
+## usage: commit-bootstrap [-ch]
 function commit-bootstrap {
+    local OPT C
+
+    C=0
+    while getopts :ch OPT; do
+	case $OPT in
+	    c)
+		C=1
+		;;
+	    h)
+		echo "commit-bootstrap [-ch]"
+		return
+		;;
+	    *)
+		echo "commit-bootstrap [-ch]"
+		return 2
+	esac
+    done
+    shift $(( OPTIND - 1 ))
+    OPTIND=1
+
+    local tag extension message
+
+    select tag in add fix feature project refactor remove update; do
+	if [ -n "$tag" ]; then
+	    break
+	else
+	    echo "Abort" >&2
+	    return 1
+	fi
+    done
+
+    read -rp "Commit message: " message
+    read -rp "Extension (sans \"-bootstrap\" suffix): " extension
+
+    if [ $C -ne 0 ]; then
+	format-commit -c <<EOF
+$tag
+$message
+${extension}-bootstrap
+EOF
+    else
+	commit -t "$tag" -m "$message" -ct "$extension"
+    fi
+}
+
+## usage: commit-bootstraps [-c]
+function commit-bootstraps {
     local tag C
-    C=${1}
+    C=0
+
+    while getopts :ch OPT; do
+	case $OPT in
+	    c)
+		C=1
+		;;
+	    h)
+		echo "commit-bootstraps [-c]"
+		return 1
+		;;
+	    *)
+		echo "commit-bootstraps [-c]"
+		return 2
+	esac
+    done
+    shift $(( OPTIND - 1 ))
+    OPTIND=1
+
     read -p "Tag: " tag
+    if [ -z "$tag" ]; then
+	echo "Provide a tag" >&2
+	return 1
+    fi
 
     if [ "$C" = "-c" ]; then
 	format-commit -c <<EOF
@@ -91,6 +160,7 @@ Commands:
   * emacs (once, modifies history)
   * git-gui (once, modifies history)
   * commit-bootstrap
+  * commit-bootstraps
   * commit-doc-ext
   * commit-guide
 EOF
