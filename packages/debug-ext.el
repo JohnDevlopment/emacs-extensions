@@ -1,6 +1,7 @@
 ;;; debug-ext.el --- Debug extension                     -*- lexical-binding: t; -*-
 
 (eval-when-compile
+  (require 'cl-ext)
   (require 'cl-lib))
 
 (defmacro --show-compiler-warning (function)
@@ -29,13 +30,18 @@
 TYPE is used to indicate how FORM should be handled.
 Currently, it can be either symbol `var' or symbol `sexp'.
 
-FORM should not be quoted."
+This function emits a warning when it is byte compiled."
+  (declare (debug ([&or "var" "sexp"] form)))
+  (cl-ext-when (macroexp--compiling-p)
+    (--show-compiler-warning --print-expr))
   (pcase type
     ('var
      (cl-check-type form symbol)
-     `(message "DEBUG: %s = %S" (quote ,form) ,form))
+     `(cl-ext-progn
+	(message "DEBUG: %s = %S" (quote ,form) ,form)))
     ('sexp
-     `(message ,(concat "DEBUG: " (cl-prin1-to-string form) " = %S") ,form))
+     `(cl-ext-progn
+	(message ,(concat "DEBUG: " (cl-prin1-to-string form) " = %S") ,form)))
     (_ (error "Unknown type %S" type))))
 (define-obsolete-function-alias 'print-expr #'--print-expr "2025-03-10")
 
