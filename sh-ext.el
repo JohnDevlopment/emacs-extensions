@@ -292,6 +292,43 @@ The arguments are exactly the same as those for
    "\n")
   str)
 
+(sh-ext-define-skeleton while-getops
+    "Insert a while getops loop."
+  "optstring: "
+  > "while getopts :" str " OPT; do" \n
+  > "case $OPT in" \n
+  '(setq v1 (append (vconcat str) nil))
+  ( (let ((opt (cl-ext-when v1 (char-to-string (car v1))))
+	  (flag (nth 1 v1)))
+      (prog1 opt
+	(if (eql flag ?:)
+	    (setq v1 (nthcdr 2 v1)
+		  v2 "\"$OPTARG\"")
+	  (setq v1 (cdr v1)
+		v2 nil))))
+    > str sh-non-closing-paren \n
+    > _ v2 \n
+    > ";;" \n)
+  > ?* sh-non-closing-paren \n
+  > "echo \"usage: `basename $0` "
+  "[-" '(setq v1 (point)) str
+  '(save-excursion
+     (while (search-backward ":" v1 t)
+       (replace-match " ARG] [-" t t)))
+  (when (eql (preceding-char) ?-) -2)
+  (unless (eql (preceding-char) ?\ ) "] ")
+  "[--] ARGS...\"" \n
+  > (if (sh-ext-inside-function-p) "return 2" "exit 2") \n
+  "esac" >
+  \n "done"
+  > \n
+  "shift " (sh-add "OPTIND" -1) \n
+  "OPTIND=1"
+  '(setq v2 (sh-ext-get-usage))
+  '(save-excursion
+     (when (and v2 (search-backward-regexp "echo \".+\"$" nil v1))
+       (replace-match (format "echo \"%s\"" v2) t))))
+
 ;; Hook
 
 ;;;###autoload
@@ -309,6 +346,7 @@ The arguments are exactly the same as those for
 (define-abbrev sh-mode-abbrev-table "cmds" "" #'sh-ext-skeleton-src-command-list)
 (define-key sh-mode-map (kbd "C-c \\") #'sh-ext-color-escape)
 (define-key sh-mode-map (kbd "C-c [") #'sh-ext-insert-non-printing-escape)
+(define-key sh-mode-map [remap sh-while-getopts] #'sh-ext-skeleton-while-getops)
 
 (define-prefix-command 'user-ext-sh-fold-map nil (sh-ext--fold-map-prompt))
 (define-key sh-mode-map (kbd "C-c f") 'user-ext-sh-fold-map)
@@ -317,5 +355,4 @@ The arguments are exactly the same as those for
 (define-key user-ext-sh-fold-map (kbd "M-f") #'sh-ext-show-function)
 
 (provide 'sh-ext)
-
 ;;; sh-ext ends here
