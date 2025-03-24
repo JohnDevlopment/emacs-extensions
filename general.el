@@ -32,7 +32,29 @@ treated as a single value and formatted appropriately."
 (define-error 'wrong-argument "Wrong argument" 'invalid-argument)
 
 (eval-when-compile
+  (require 'embed-doc)
   (declare-function elisp-ext-minify "elisp-ext" (start end)))
+
+(embed-doc-document-symbol
+    general
+  "General functions, commands, and types."
+  :commands
+  bind-fill-region
+  capf-enable-ispell-locally
+  company-enable-ispell-locally
+  copy-line
+  count-words-region2
+  date-format-version
+  describe-region
+  enable-wrap
+  kill-and-quit
+  pop-saved-position
+  print-saved-positions
+  save-and-kill
+  save-current-position
+  sort-words
+  :functions
+  signal-wrong-argument)
 
 ;; Variables
 
