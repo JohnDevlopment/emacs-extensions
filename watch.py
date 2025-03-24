@@ -18,7 +18,7 @@ class ElispFiles(DefaultFilter):
     def __call__(self, change: Change, path: str) -> bool:
         return (
             super().__call__(change, path) and
-            re.match(r'[a-z].+\.el(?:\.gz)?', path) is not None
+            re.search(r'/[a-z]([^/.])+\.el(?:\.gz)?$', path) is not None
         )
 
 def get_logging_env() -> int:
