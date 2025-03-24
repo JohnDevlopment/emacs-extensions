@@ -67,7 +67,7 @@ the prefix argument, also prompt the user for SAFE and DEFER."
 		       (load f)))))
     (cond ((and safe defer (> defer 0))
 	   (message dmsg)
-	   (run-with-timer defer nil safe-load file msg))
+	   (run-with-idle-timer defer nil safe-load file msg))
 	  (safe
 	   (funcall safe-load file msg))
 	  (defer
