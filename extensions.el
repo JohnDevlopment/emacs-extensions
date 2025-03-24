@@ -205,6 +205,7 @@ evaluated."
 (load-extension-safe "yasnippets-ext")
 
 ;; Bootstraps for external packages
+(load-extension "jdesktop-bootstrap" nil 2)
 (load-extension "code-outline-bootstrap" nil 2)
 (load-extension "liquidsoap-bootstrap" nil 2)
 
