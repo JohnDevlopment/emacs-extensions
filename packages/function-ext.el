@@ -34,6 +34,7 @@
 			 (x (error "Invalid form %S: must be symbol or lambda" x)))
      ,docstring))
 
+;;;###autoload
 (defmacro fext-replace-function (symbol file arglist &optional docstring &rest body)
   "Replace the function definition of SYMBOL.
 The new definition is
@@ -63,6 +64,7 @@ compiler.
 				      code)))
        (defun ,symbol ,arglist ,docstring ,@body))))
 
+;;;###autoload
 (defmacro fext-defadvice (function args &rest body)
   "Define a piece of advice for FUNCTION (a symbol).
 The syntax of `fext-defadvice' is as follows:
