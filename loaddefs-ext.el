@@ -1,12 +1,19 @@
-;;; loaddefs-ext.el --- automatically extracted autoloads
-;;
-;;; Code:
+;; -*- lexical-binding: t; -*-
 
-
-;;;### (autoloads nil "abbrev-ext" "abbrev-ext.el" (0 0 0 0))
-;;; Generated autoloads from abbrev-ext.el
+;;;### (autoloads nil "basic-ext" "basic-ext.el" (0 0 0 0))
+;;; Generated autoloads from basic-ext.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "abbrev-ext" '("abbrev-ext-insert-hook" "global-abbrev-table" "user-ext-abbrev-insert-char-regex")))
+(autoload 'basic-generic-mode--extra-hook "basic-ext" nil nil nil)
+
+(add-hook 'basic-generic-mode-mode-hook #'basic-generic-mode--extra-hook)
+
+(autoload 'basic-libreoffice-mode "basic-ext" "\
+Programming mode for Libreoffice Basic.
+Derived from `basic-mode'.
+
+\(fn)" t nil)
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "basic-ext" '("basic-ext-add-to-list-local")))
 
 ;;;***
 
@@ -187,21 +194,36 @@ Hook for the `emacs-lisp-mode' extension." nil nil)
 
 (add-hook 'emacs-lisp-mode-hook #'elisp-ext--extra-hook)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "elisp-ext" '("elisp-ext-" "emacs-lisp-mode-abbrev-table" "user-ext-elisp-")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "elisp-ext" '("elisp-" "emacs-lisp-mode-abbrev-table" "occur-cross-reference" "user-ext-elisp-")))
 
 ;;;***
 
 ;;;### (autoloads nil "extensions" "extensions.el" (0 0 0 0))
 ;;; Generated autoloads from extensions.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "extensions" '("--extension-completion" "eval-after-require" "find-extension" "get-extension-documentation" "load-extension" "user-ext-extension-directory")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "extensions" '("--extension-c" "eval-after-require" "find-extension" "get-extension-documentation" "load-extension" "user-ext-extension-directory")))
 
 ;;;***
 
 ;;;### (autoloads nil "general" "general.el" (0 0 0 0))
 ;;; Generated autoloads from general.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "general" '("bind-fill-region" "company-enable-ispell-locally" "copy-line" "count-words-region2" "date-format-version" "describe-region" "enable-wrap" "invalid-argument" "kill-and-quit" "minify" "narrow-to-region2" "pop-saved-position" "print-saved-positions" "save-" "signal-wrong-argument" "sort-words" "user-ext-local-position-ring" "wrong-argument")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "general" '("bind-fill-region" "capf-enable-ispell-locally" "date-format-version" "describe-region" "enable-wrap" "invalid-argument" "kill-and-quit" "minify" "pop-saved-position" "print-saved-positions" "save-" "signal-wrong-argument" "sort-words" "user-ext-local-position-ring" "wrong-argument")))
+
+;;;***
+
+;;;### (autoloads nil "highlight-ext" "highlight-ext.el" (0 0 0 0))
+;;; Generated autoloads from highlight-ext.el
+
+(autoload 'highlight-ext-region "highlight-ext" "\
+
+
+\(fn BEG END FACE)" t nil)
+
+(autoload 'highlight-ext-remove-all-highlights "highlight-ext" "\
+docstring" t nil)
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "highlight-ext" '("highlight-ext--init" "user-ext-highlight-")))
 
 ;;;***
 
@@ -256,14 +278,6 @@ Imenu Hook for Python mode." nil nil)
 
 ;;;***
 
-;;;### (autoloads nil "jdesktop-bootstrap" "jdesktop-bootstrap.el"
-;;;;;;  (0 0 0 0))
-;;; Generated autoloads from jdesktop-bootstrap.el
-
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "jdesktop-bootstrap" '("load-jdesktop-package")))
-
-;;;***
-
 ;;;### (autoloads nil "jinja2" "jinja2.el" (0 0 0 0))
 ;;; Generated autoloads from jinja2.el
 
@@ -299,13 +313,13 @@ ARG is `toggle'; disable the mode otherwise.
 ;;;### (autoloads nil "keymaps-ext" "keymaps-ext.el" (0 0 0 0))
 ;;; Generated autoloads from keymaps-ext.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "keymaps-ext" '("define-contextual-key-func" "lookup-function" "map-revert-buffer" "remap-narrow-to-region")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "keymaps-ext" '("--contextual-key-func-warning" "define-contextual-key-func" "lookup-function" "map-revert-buffer")))
 
 ;;;***
 
-;;;### (autoloads nil "liquidsoap-ext" "liquidsoap-ext.el" (0 0 0
-;;;;;;  0))
-;;; Generated autoloads from liquidsoap-ext.el
+;;;### (autoloads nil "liquidsoap-ext" "liquidsoap-ext.el.gz" (0
+;;;;;;  0 0 0))
+;;; Generated autoloads from liquidsoap-ext.el.gz
 
 (autoload 'liquidsoap-ext-get-doc "liquidsoap-ext" "\
 Display a help window for the Liquidsoap COMMAND.
@@ -327,44 +341,62 @@ Extra hook for `liquidsoap-mode'." nil nil)
 ;;;### (autoloads nil "local-lambda" "local-lambda.el" (0 0 0 0))
 ;;; Generated autoloads from local-lambda.el
 
-(autoload 'local-lambda-ext-add-local-lambda "local-lambda" "\
+(autoload 'local-lambda-get "local-lambda" "\
+Return the lambda with the name NAME, or nil if it doesn't exist.
+NAME must be a symbol.
+
+\(fn NAME)" nil nil)
+
+(autoload 'local-lambda-add-local-lambda "local-lambda" "\
 Add a local function FUNCTION under key KEY.
-FUNCTION is saved to `user-ext-local-lambda-lambdas' under
+FUNCTION is saved to `local-lambda-lambdas' under
 KEY, which is a symbol.  FUNCTION is a `lambda' expression.
 
 \(fn KEY FUNCTION &optional OVERWRITE)" nil nil)
 
-(autoload 'local-lambda-ext-run-local-lambda "local-lambda" "\
+(autoload 'local-lambda-run-local-lambda "local-lambda" "\
 Run the local function under key KEY.
-KEY must be have previously been added via
-`local-lambda-ext-add-local-lambda' or
-`local-lambda-ext-define-local-defun'.
+KEY must be have previously been added via one of the other
+functions..
 
 Interactively, KEY is prompted from the user with completion.
 
 \(fn KEY)" t nil)
 
-(autoload 'local-lambda-ext-define-local-defun "local-lambda" "\
-Define NAME as a buffer-local function.
-Add NAME to the hash table at `user-ext-local-lambda-lambdas'
-under the key NAME.  ARGLIST is a list of arguments for a
-`defun'.
+(autoload 'local-lambda-define-local-defun "local-lambda" "\
+Define NAME as a buffer-local function with ARGLIST.
+ARGLIST is an argument list for a `defun', and BODY is a list
+of forms to add to it.
 
-This expands to a call to `local-lambda-ext-add-local-lambda'.
-
-As a result of this macro, NAME can be run as a function with
-`local-lambda-ext-run-local-lambda'.
+As a result of this macro, NAME can be run with
+`local-lambda-run-local-lambda'.
 
 \(fn NAME ARGS [DOCSTRING] [INTERACTIVE] BODY)" nil t)
 
-(function-put 'local-lambda-ext-define-local-defun 'doc-string-elt '3)
+(function-put 'local-lambda-define-local-defun 'doc-string-elt '3)
 
-(function-put 'local-lambda-ext-define-local-defun 'lisp-indent-function '2)
+(function-put 'local-lambda-define-local-defun 'lisp-indent-function '2)
 
-(autoload 'local-lambda-ext-define-skeleton "local-lambda" "\
+(autoload 'local-lambda-define-skeleton "local-lambda" "\
+Define NAME as a buffer-local skeleton command.
+SKELETON works the same way as the SKELETON argument in
+`define-skeleton', which see.
 
+\(fn NAME DOCSTRING &rest SKELETON)" nil t)
 
-\(fn NAME &rest SKELETON)" nil t)
+(function-put 'local-lambda-define-skeleton 'lisp-indent-function '1)
+
+(function-put 'local-lambda-define-skeleton 'doc-string-elt '2)
+
+(autoload 'local-lambda-define-self-insert-command "local-lambda" "\
+Define a buffer-local command NAME to insert STRING into buffer.
+By default, `company-complete' is called as a command after
+inserting STRING, unless NO-COMPLETE is non-nil, in which
+case it is not.
+
+\(fn NAME STRING &optional NO-COMPLETE)" nil t)
+
+(function-put 'local-lambda-define-self-insert-command 'lisp-indent-function '1)
 
 (autoload 'local-lambda-mode "local-lambda" "\
 A minor mode for running buffer-local functions.
@@ -378,7 +410,7 @@ toggle it if ARG is `toggle'; disable the mode otherwise.
 
 \(fn &optional ARG)" t nil)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "local-lambda" '("local-lambda-" "user-ext-local-lambda-lambdas")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "local-lambda" '("local-lambda-")))
 
 ;;;***
 
@@ -522,7 +554,21 @@ Extra hook for `org-mode'." nil nil)
 ;;;;;;  (0 0 0 0))
 ;;; Generated autoloads from packages/alist-ext.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "packages/alist-ext" '("alist-ext-")))
+(autoload 'alist-ext-from-list "packages/alist-ext" "\
+Turn a regular list LIST into an alist.
+LIST must have an even number of elements.
+
+\(fn LIST)" nil nil)
+
+(function-put 'alist-ext-from-list 'pure 't)
+
+(autoload 'alist-ext-define "packages/alist-ext" "\
+Construct an alist with PAIRS, where each key precedes its value.
+
+Each key can be any valid lisp object, but symbols have to
+be quoted.
+
+\(fn KEY VALUE ...)" nil t)
 
 ;;;***
 
@@ -530,7 +576,90 @@ Extra hook for `org-mode'." nil nil)
 ;;;;;;  0 0))
 ;;; Generated autoloads from packages/cl-ext.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "packages/cl-ext" '("cl-ext-")))
+(autoload 'cl-ext-when "packages/cl-ext" "\
+If COND yields non-nil, do FIRST-FORM and BODY, else return nil.
+When COND yields non-nil, eval FIRST-FORM and BODY forms
+sequentially and return value of last one.
+
+The main difference between `cl-ext-when' and `when' is that
+when BODY is empty, this expands to a `and' form; otherwise,
+it behaves exactly the same.
+
+When BODY is nil, if COND is itself a `and' form, ala `(and
+SUB-CONDS...)', SUB-CONDS is collapsed into COND.  As a
+result, the following form
+
+   (cl-ext-when (and n (> n 0))
+     n)
+
+expands to this:
+
+   (and n (> n 0) n)
+
+\(fn COND FIRST-FORM BODY...)" nil t)
+
+(function-put 'cl-ext-when 'lisp-indent-function '1)
+
+(autoload 'cl-ext-unless "packages/cl-ext" "\
+If COND yields nil, do FIRST-FORM and BODY, else return nil.
+When COND yields nil, eval FIRST-FORM and BODY forms
+sequentially and return value of last one.
+
+The main difference between `cl-ext-unless' and `unless' is
+that when BODY is empty, this expands to a `or' form;
+otherwise, it behaves exactly the same.
+
+\(fn COND FIRST-FORM BODY...)" nil t)
+
+(function-put 'cl-ext-unless 'lisp-indent-function '1)
+
+(autoload 'cl-ext-append "packages/cl-ext" "\
+Add X to the list stored in PLACE.
+
+\(fn X PLACE)" nil t)
+
+(autoload 'cl-ext-append-list "packages/cl-ext" "\
+Add X to the list stored in PLACE, but wrap X in a list.
+X is supposed to be a list, likely representing a Lisp
+expression; it's added to PLACE in such a way that it isn't
+destructured (see `append').
+
+Let's use an example.  Supposed you're building a list of
+Lisp expressions and adding another list to it:
+   (let ((body '(\"Docstring.\")))
+     (cl-append-list (interactive) body))
+   => (\"Docstring\" (interactive))
+
+\(fn X PLACE)" nil t)
+
+(function-put 'cl-ext-append-list 'pure 't)
+
+(autoload 'cl-ext-nconcat "packages/cl-ext" "\
+Append the arguments (SEQUENCES) as strings to PLACE.
+the string found at PLACE and SEQUENCES are combined via
+`concat' and then set as the new value of PLACE.
+
+\(fn PLACE &rest SEQUENCES)" nil t)
+
+(autoload 'cl-ext-save-point "packages/cl-ext" "\
+Execute BODY and restore point to its original position.
+Any errors are caught and printed as simple messages.
+
+\(fn BODY...)" nil t)
+
+(function-put 'cl-ext-save-point 'lisp-indent-function '0)
+
+(autoload 'cl-ext-progn "packages/cl-ext" "\
+Eval BODY forms sequentially and return value of last one.
+
+This expansion changes to different things depending on how
+many elements BODY has: if 0, this expands to a single call
+to `(ignore)'; if 1, to just that element; if 2 or greater,
+this behaves exactly like `progn'.
+
+\(fn BODY...)" nil t)
+
+(function-put 'cl-ext-progn 'lisp-indent-function '0)
 
 ;;;***
 
@@ -542,11 +671,34 @@ Extra hook for `org-mode'." nil nil)
 
 ;;;***
 
-;;;### (autoloads nil "packages/documentation-ext" "packages/documentation-ext.el"
+;;;### (autoloads nil "packages/embed-doc" "packages/embed-doc.el"
 ;;;;;;  (0 0 0 0))
-;;; Generated autoloads from packages/documentation-ext.el
+;;; Generated autoloads from packages/embed-doc.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "packages/documentation-ext" '("document-ext--")))
+(defsubst embed-doc-get-documentation (symbol) (cl-check-type symbol symbol) (let ((doc (get symbol embed-doc-prop))) (when doc (substitute-command-keys doc))))
+
+(autoload 'embed-doc-document-symbol "packages/embed-doc" "\
+Embed documentation in SYMBOL, starting with PREAMBLE.
+PREAMBLE is the first part of the documentation.
+
+  (embed-doc-document-symbol symbol
+    [:keyword [option]]...)
+
+:commands    Document commands (i.e., interactive functions).
+:customs     Document user options (i.e., variables defined
+             with `defcustom').
+:faces       Document faces (i.e., defined with `defface').
+:functions   Document functions.
+:variables   Document variables.
+
+It does not replace any existing documentation, so functions,
+variables, and faces.
+
+\(fn SYMBOL PREAMBLE ARG...)" nil t)
+
+(function-put 'embed-doc-document-symbol 'lisp-indent-function '1)
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "packages/embed-doc" '("embed-doc-")))
 
 ;;;***
 
@@ -554,7 +706,69 @@ Extra hook for `org-mode'." nil nil)
 ;;;;;;  (0 0 0 0))
 ;;; Generated autoloads from packages/function-ext.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "packages/function-ext" '("fext-" "user-ext-fext-valid-advice-classes")))
+(autoload 'fext-defalias "packages/function-ext" "\
+Define SYMBOL's definition to DEFINITION.
+
+\(fn SYMBOL DEFINITION &optional DOCSTRING)" nil t)
+
+(function-put 'fext-defalias 'doc-string-elt '3)
+
+(autoload 'fext-replace-function "packages/function-ext" "\
+Replace the function definition of SYMBOL.
+The new definition is
+\(lambda SYMBOL ARGLIST [DOCSTRING] BODY...).  The arguments
+are the same as `defun', which see.
+
+This function has two side effects: on the first invocation
+of this macro for SYMBOL, its original definition is saved
+to SYMBOL--old.  Second, SYMBOL is declared as a function
+via `declare-function'.  This is just to placate the byte-
+compiler.
+
+\(fn SYMBOL FILE ARGLIST [DOCSTRING] [DECL] BODY...)" nil t)
+
+(function-put 'fext-replace-function 'lisp-indent-function '3)
+
+(function-put 'fext-replace-function 'doc-string-elt '4)
+
+(autoload 'fext-defadvice "packages/function-ext" "\
+Define a piece of advice for FUNCTION (a symbol).
+The syntax of `fext-defadvice' is as follows:
+
+  (fext-defadvice FUNCTION (CLASS NAME [ARGLIST])
+    [KEYWORD-ARGS]
+    [DOCSTRING] [INTERACTIVE-FORM]
+    BODY...)
+
+FUNCTION ::= Name of the function being advised.
+CLASS ::= `before' | `before-while' `before-until' |
+    `around' | `after' | `after-while' |  `after-until' |
+    `activation' | `deactivation' | `override' |
+    `filter-args' | `filter-return'
+ARGLIST ::= Argument list for the advice.  Without it,
+    FUNCTION's argument list will consist of
+    `(&optional _args)'
+DOCSTRING ::= Optional documentation string for defined
+    function.
+INTERACTIVE-FORM ::= Optional interactive form.
+BODY ::= Any s-expression.
+
+For CLASS, see the WHERE argument of `add-function'.
+
+Keyword arguments can be provided at the beginning of BODY.
+The following keywords are supported:
+
+:remove FORM    If FORM evaluates to non-nil, the advice is
+                removed from FUNCTION.  In this case, the
+                rest of BODY is not evaluated.  CLASS and
+                NAME are used to specify what advice is
+                removed.
+
+\(fn FUNCTION (CLASS NAME [ARGLIST]) BODY...)" nil t)
+
+(function-put 'fext-defadvice 'lisp-indent-function '2)
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "packages/function-ext" '("user-ext-fext-valid-advice-classes")))
 
 ;;;***
 
@@ -687,35 +901,33 @@ Hook for `rustic-mode' extension." nil nil)
 
 ;;;***
 
-;;;### (autoloads nil "syntax-ext" "syntax-ext.el" (0 0 0 0))
-;;; Generated autoloads from syntax-ext.el
+;;;### (autoloads nil "syntax-ext" "syntax-ext.el.gz" (0 0 0 0))
+;;; Generated autoloads from syntax-ext.el.gz
 
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "syntax-ext" '("make-ppss-easy")))
 
 ;;;***
 
-;;;### (autoloads nil "tcl-ext" "tcl-ext.el" (0 0 0 0))
-;;; Generated autoloads from tcl-ext.el
+;;;### (autoloads nil "tcl-ext" "tcl-ext.el.gz" (0 0 0 0))
+;;; Generated autoloads from tcl-ext.el.gz
 
 (autoload 'tcl--extra-hook "tcl-ext" "\
 Extra hook for `tcl mode'." nil nil)
 
 (add-hook 'tcl-mode-hook #'tcl--extra-hook)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "tcl-ext" '("tcl-eval-region2")))
-
 ;;;***
 
-;;;### (autoloads nil "text-ext" "text-ext.el" (0 0 0 0))
-;;; Generated autoloads from text-ext.el
+;;;### (autoloads nil "text-ext" "text-ext.el.gz" (0 0 0 0))
+;;; Generated autoloads from text-ext.el.gz
 
 (autoload 'text-ext-highlight-even-lines "text-ext" "\
 Highlight every even-numbered line in the current buffer." t nil)
 
 ;;;***
 
-;;;### (autoloads nil "toml-ext" "toml-ext.el" (0 0 0 0))
-;;; Generated autoloads from toml-ext.el
+;;;### (autoloads nil "toml-ext" "toml-ext.el.gz" (0 0 0 0))
+;;; Generated autoloads from toml-ext.el.gz
 
 (autoload 'toml-mode--extra-hook "toml-ext" "\
 Extra hook for `toml-mode'." nil nil)
@@ -742,15 +954,17 @@ Extra hook for `toml-mode'." nil nil)
 ;;;***
 
 ;;;### (autoloads nil nil ("code-outline-bootstrap.el" "faces-ext.el"
-;;;;;;  "help-ext.el" "liquidsoap-bootstrap.el") (0 0 0 0))
+;;;;;;  "help-ext.el" "jdesktop-bootstrap.el" "liquidsoap-bootstrap.el.gz"
+;;;;;;  "packages/documentation-ext.el") (0 0 0 0))
 
 ;;;***
 
+;;;### (autoloads nil "abbrev-ext" "abbrev-ext.el" (0 0 0 0))
+;;; Generated autoloads from abbrev-ext.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "abbrev-ext" '("abbrev-ext-insert-hook" "global-abbrev-table" "user-ext-abbrev-insert-char-regex")))
+
+;;;***
+
 (provide 'loaddefs-ext)
-;; Local Variables:
-;; version-control: never
-;; no-byte-compile: t
-;; no-update-autoloads: t
-;; coding: utf-8
-;; End:
 ;;; loaddefs-ext.el ends here
