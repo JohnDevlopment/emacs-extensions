@@ -26,7 +26,6 @@
 
 (eval-when-compile
   (require 'cl-lib)
-  (require 'cl-ext)
   (require 'subr-x)
   (declare-function company-capf "company-capf" (command &optional arg &rest rest)))
 
@@ -41,7 +40,9 @@
 
 ;; Functions
 
-(defsubst embed-doc-error (msg) (error "embed-doc: %s" msg))
+(defun embed-doc-error (string &rest args)
+  (let ((string (apply #'format string args)))
+    (error "embed-doc: %s" string)))
 
 (defun embed-doc--split-list (pred xs)
   (let ((ys (list nil)) (zs (list nil)) flip)
@@ -65,7 +66,7 @@
 	   (args (car xs))		 ; -> (KW-ARGS...)
 	   (tail (cdr xs))		 ; -> (OTHER-ARGS...)
 	   (error-string (format "Unrecognized keyword: %S" keyword)))
-      (cl-ext-unless (memq keyword embed-doc-keywords)
+      (unless (memq keyword embed-doc-keywords)
 	(embed-doc-error error-string))
       (setq plist (embed-doc--normalize-plist name tail plist))
       (plist-put plist keyword args))))
@@ -77,7 +78,7 @@
 (defsubst embed-doc-get-documentation (symbol)
   (cl-check-type symbol symbol)
   (let ((doc (get symbol embed-doc-prop)))
-    (cl-ext-when doc
+    (when doc
       (substitute-command-keys doc))))
 
 (defmacro embed-doc-document-symbol (symbol preamble &rest args)
@@ -114,7 +115,7 @@ variables, and faces.
 	keyword kwargs)
     (while args
       (setq keyword (pop args) kwargs (pop args))
-      (cl-ext-when kwargs
+      (when kwargs
 	(pcase keyword
 	  (:commands
 	   (setq doc (embed-doc--string-section doc "Commands:" kwargs)))
