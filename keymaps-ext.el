@@ -118,7 +118,9 @@ Included modes are:
 
 (define-contextual-key-func "h" "hs-minor-mode")
 
-(define-contextual-key-func "l" "lsp-mode")
+(define-contextual-key-func "l"
+  "local-lambda-mode"
+  "lsp-mode")
 
 (define-contextual-key-func "o"
   "org-ext-tbl-minor-mode"
