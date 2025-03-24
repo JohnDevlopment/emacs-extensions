@@ -98,6 +98,7 @@ Included modes are:
 
 (define-contextual-key-func "o"
   "org-ext-tbl-minor-mode"
+  "outline-minor-mode"
   "outline-mode")
 
 (define-contextual-key-func "s"
