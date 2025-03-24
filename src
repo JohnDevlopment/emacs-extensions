@@ -36,13 +36,37 @@ if [ "$tag" = "readme" ]; then
     return
 elif [ "$tag" = "watch" ]; then
     set-title Watcher
-    ## usage: run
+    source .venv/bin/activate
+
+    export WATCH_LEVEL
+    echo "Setting \$WATCH_LEVEL. Select which logging level you want."
+    select WATCH_LEVEL in debug info warning error fatal; do
+	test -n "$WATCH_LEVEL" && break
+	echo "Try again"
+    done
+
+    ## usage: run [-q]
     function run {
-	source .venv/bin/activate
+	local Q OPT
+
+	Q=0
+	while getopts :q OPT; do
+	    case $OPT in
+		q)
+		    Q=1
+		    ;;
+		*)
+		    echo "usage: run [-q]"
+		    return 2
+	    esac
+	done
+	shift $(( OPTIND - 1 ))
+	OPTIND=1
+
 	python watch.py || return
-	exit
+	test $Q -ne 0 && exit
     }
-    echo "Command: run"
+    echo "Command: run [-q]"
     return
 fi
 
