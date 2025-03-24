@@ -75,12 +75,14 @@
   (format "%s\n\n%s\n%s" doc heading
 	  (mapconcat (lambda (x) (format "- `%S'" x)) symbols "\n")))
 
+;;;###autoload
 (defsubst embed-doc-get-documentation (symbol)
   (cl-check-type symbol symbol)
   (let ((doc (get symbol embed-doc-prop)))
     (when doc
       (substitute-command-keys doc))))
 
+;;;###autoload
 (defmacro embed-doc-document-symbol (symbol preamble &rest args)
   "Embed documentation in SYMBOL, starting with PREAMBLE.
 PREAMBLE is the first part of the documentation.
