@@ -15,6 +15,18 @@
 
 ;; ---
 
+(defun --contextual-key-func-warning (function value)
+  (cl-typecase value
+    (string
+     (display-warning 'user-extensions
+		      (format "In %S, the argument %s is invalid"
+			      function value)))
+    (list (setq prefix (format "In %S, the following arguments are invalid: "
+			       function))
+	  (display-warning 'user-extensions
+			   (format "In %S, the following arguments are invalid: %s"
+				   function (string-join value ", "))))))
+
 (defmacro define-contextual-key-func (key &rest args)
   "Define a function that enables one of the modes listed in ARGS.
 KEY is a string name for the key to press with the prefix
@@ -27,8 +39,8 @@ of modes using a completion function.
 
 \(fn KEY ARGS...)"
   (declare (indent 1))
-  (let ((fname (intern (concat "contextual-key-" key)))
-	doc modes)
+  (let* ((fname (intern (concat "contextual-key-" key)))
+	 doc modes)
     (unless args
       (error "No args provided"))
     ;; Collect modes from ARGS; handle keyword args
@@ -36,17 +48,29 @@ of modes using a completion function.
       (push arg modes))
     (setq modes (sort modes #'string<))	; alphabetically sort mode strings
     (if (= (length modes) 1)		; only one mode, so call directly as a function
-	(cl-ext-progn
-	  `(progn
-	     (defun ,fname ()
-	       ,(format "Call `%s'.
+	(let* ((mode (car modes))
+	       (mode-symbol (intern-soft mode)))
+	  (if (not mode-symbol)
+	      (cl-ext-progn
+		(--contextual-key-func-warning fname mode))
+	    `(progn
+	       (defun ,fname ()
+		 ,(format "Call `%s'.
 Likely called from C-c C-m %s." (car modes) key)
-	       (interactive)
-	       ;; ARGS is one mode, so call it directly
-	       ,(cl-assert (intern-soft (car modes)))
-	       (call-interactively (function ,(intern-soft (car modes)))))
-	     (define-key quick-mode-map (kbd ,key) (function ,fname))))
-      (cl-ext-progn
+		 (interactive)
+		 ;; ARGS is one mode, so call it directly
+		 (call-interactively (function ,mode-symbol)))
+	       (define-key quick-mode-map ,(kbd key) (function ,fname)))))
+      ;; Multiple modes; use ido to select one
+      (let (invalid-modes)
+	(setq invalid-modes (cl-loop
+			     for mode in modes
+			     unless (intern-soft mode)
+			     collect (cl-ext-progn
+				       (setq modes (cl-delete mode modes))
+				       mode)))
+	(when invalid-modes
+	  (--contextual-key-func-warning fname invalid-modes))
 	(setq doc (format "Choose from a list of modes to enable.
 Likely called from C-c C-m %s.
 
