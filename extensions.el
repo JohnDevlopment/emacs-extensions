@@ -5,12 +5,14 @@
 (add-to-list 'load-path "~/.emacs.d/extensions")
 (add-to-list 'load-path "~/.emacs.d/extensions/packages")
 
+(require 'cl-lib)
+
 (eval-when-compile
   (require 'alist-ext)
   (require 'bind-key)
   (require 'cl-ext))
 
-(require 'cl-lib)
+;; ---External packages via `use-package'
 
 (use-package f
   :functions
@@ -18,6 +20,13 @@
   f-exists-p
   f-glob
   f-newer-p)
+
+(use-package embed-doc
+  :autoload
+  embed-doc-document-symbol
+  embed-doc-get-documentation)
+
+;; ---
 
 (setq read-process-output-max 10485760
       frame-title-format (concat (and multiple-frames ()) " %b " invocation-name "@" (system-name)))
@@ -131,10 +140,18 @@ point."
 (defun get-extension-documentation (extension)
   "Display the full documentation EXTENSION."
   (interactive (--extension-completion "Get Help For Extension: "))
-  (let ((var (intern-soft (format "user-ext-%s-documentation" extension))))
-    (cl-ext-unless var
-      (user-error "No documentation exists for %s" extension))
-    (describe-variable var)))
+  (let* ((extension-symbol (intern-soft extension))
+	 (doc (embed-doc-get-documentation extension-symbol)))
+    (cond ((not extension-symbol)
+	   (user-error "Failed to intern symbol for %S" extension))
+	  ((not doc)
+	   (user-error "No documentation exists for %s" extension))
+	  (t
+	   (with-help-window (help-buffer)
+	     (princ doc)
+	     (help-setup-xref (list 'get-extension-documentation
+				    extension)
+			      (called-interactively-p 'interactive)))))))
 
 ;; ---
 
