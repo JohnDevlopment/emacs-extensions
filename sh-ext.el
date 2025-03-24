@@ -79,9 +79,7 @@ If point is inside a function, return a `sh-ext-function'
 object (which see)."
   (interactive)
   (save-excursion
-    (let* ((pps (syntax-ppss))
-	   (tl (syntax-ppss-toplevel-pos pps))
-	   (pps (make-ppss-easy pps)))
+    (let ((tl (syntax-ppss-toplevel-pos (syntax-ppss))))
       (cl-ext-when tl (goto-char tl))
       (skip-chars-backward " \t\n\r")
       (goto-char (line-beginning-position))
