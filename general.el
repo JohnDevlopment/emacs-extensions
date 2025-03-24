@@ -76,18 +76,19 @@ Interactively, START and END are the region."
   "Print the positions that are currently in the local ring.
 This merely prints the contents of `user-ext-local-position-ring'."
   (interactive)
-  (cl-assert (> (length user-ext-local-position-ring) 0) t
-	     "The local position ring is empty!")
-  (let (msg)
-    (setq msg
-	  (string-join
-	   (cl-loop
-	    with i = 0
-	    for pos in user-ext-local-position-ring
-	    collect
-	    (format "%d. %s" (cl-incf i) pos))
-	   "\n"))
-    (message msg)))
+  (cl-assert (>= (length user-ext-local-position-ring) 0) t)
+  (if (= (length user-ext-local-position-ring) 0)
+      (message "The local position ring is empty")
+    (let (msg)
+      (setq msg
+	    (string-join
+	     (cl-loop
+	      with i = 0
+	      for pos in user-ext-local-position-ring
+	      collect
+	      (format "%d. %s" (cl-incf i) pos))
+	     "\n"))
+      (message msg))))
 
 (defun save-current-position (&optional pos)
   "Save POS to the local position ring.
@@ -182,5 +183,4 @@ START and END specify the region to narrow to."
   (setq deactivate-mark t))
 
 (provide 'general)
-
 ;;; general ends here
