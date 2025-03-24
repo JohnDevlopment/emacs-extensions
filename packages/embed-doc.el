@@ -103,7 +103,8 @@ variables, and faces.
 			  [&optional ":customs" &rest symbolp]
 			  [&optional ":faces" &rest symbolp]
 			  [&optional ":functions" &rest symbolp]
-			  [&optional ":variables" &rest symbolp])))
+			  [&optional ":variables" &rest symbolp]))
+	   (indent 1))
   (cl-check-type symbol symbol)
   (cl-check-type preamble string)
   (let ((args (embed-doc--normalize-plist symbol args))
@@ -130,7 +131,3 @@ variables, and faces.
 
 (provide 'embed-doc)
 ;;; embed-doc.el ends here
-
-;; Local Variables:
-;; eval: (local-lambda-ext-define-self-insert-command mc-prefix "embed-doc")
-;; End:
