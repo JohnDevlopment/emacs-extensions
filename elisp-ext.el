@@ -166,10 +166,18 @@ Group 3 matches the name.")
     (elisp-ext--occur-buttonize-entries type-symbol)))
 
 (defun elisp-ext-occur-variables ()
+  "Display a list of this buffer's variables.
+Display a temp buffer that lists the current buffer's
+functions, distinguishing their types as functions and
+commands (i.e., interactive functions)."
   (interactive)
   (elisp-ext--occur "Elisp Variables" 'variables))
 
 (defun elisp-ext-occur-functions ()
+  "Display a list of this buffer's functions.
+Display a temp buffer that lists the current buffer's
+variables, distinguishing their types as constants, user
+options, and so on."
   (interactive)
   (elisp-ext--occur "Elisp Functions" 'functions))
 
@@ -390,20 +398,27 @@ Automatically activates `hs-minor-mode' when called."
 
 ;; Keymap
 
-(define-prefix-command 'user-ext-elisp-fold-map)
-(define-key emacs-lisp-mode-map (kbd "C-c f") #'user-ext-elisp-fold-map)
-(define-key user-ext-elisp-fold-map (kbd "t") #'elisp-ext-hide-toplevel-form)
-(define-key user-ext-elisp-fold-map (kbd "s") #'elisp-ext-show)
-(define-key user-ext-elisp-fold-map (kbd "C-o") #'elisp-ext-show-only)
-(define-key user-ext-elisp-fold-map (kbd "C-a") #'elisp-ext-hide-all)
-(define-key user-ext-elisp-fold-map (kbd "b") #'elisp-ext-hide-block)
+(eval-and-compile
+  (define-prefix-command 'user-ext-elisp-fold-map)
+  (define-key emacs-lisp-mode-map (kbd "C-c f") #'user-ext-elisp-fold-map)
+  (define-key user-ext-elisp-fold-map (kbd "t") #'elisp-ext-hide-toplevel-form)
+  (define-key user-ext-elisp-fold-map (kbd "s") #'elisp-ext-show)
+  (define-key user-ext-elisp-fold-map (kbd "C-o") #'elisp-ext-show-only)
+  (define-key user-ext-elisp-fold-map (kbd "C-a") #'elisp-ext-hide-all)
+  (define-key user-ext-elisp-fold-map (kbd "b") #'elisp-ext-hide-block)
 
-(define-key emacs-lisp-mode-map (kbd "C-c C-j") #'imenu)
-(define-key emacs-lisp-mode-map (kbd "C-c c b") #'emacs-lisp-byte-compile)
-(define-key emacs-lisp-mode-map (kbd "C-c c M-b") #'emacs-lisp-byte-compile-and-load)
+  (define-key emacs-lisp-mode-map (kbd "C-c C-j") #'imenu)
+  (define-key emacs-lisp-mode-map (kbd "C-c c M-d") #'elisp-ext-doc-scratch-buffer)
+  (define-key emacs-lisp-mode-map (kbd "C-c c b") #'emacs-lisp-byte-compile)
+  (define-key emacs-lisp-mode-map (kbd "C-c c M-b") #'emacs-lisp-byte-compile-and-load)
 
-(define-key lisp-interaction-mode-map [remap kill-and-quit] #'quit-window)
-(define-key lisp-interaction-mode-map (kbd "C-c M-f") #'elisp-ext-minify)
+  (define-key lisp-interaction-mode-map [remap kill-and-quit] #'quit-window)
+  (define-key lisp-interaction-mode-map (kbd "C-c M-f") #'elisp-ext-minify)
+
+  (define-prefix-command 'user-ext-elisp-occur-map)
+  (define-key emacs-lisp-mode-map (kbd "C-c C-o") #'user-ext-elisp-occur-map)
+  (define-key user-ext-elisp-occur-map (kbd "f") #'elisp-ext-occur-functions)
+  (define-key user-ext-elisp-occur-map (kbd "v") #'elisp-ext-occur-variables))
 
 ;; Hook
 
