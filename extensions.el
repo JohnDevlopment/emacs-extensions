@@ -167,6 +167,21 @@ evaluated."
 	   ,@body)
        (file-missing (message "Failed to load %S: %S" (quote ,feature) err)))))
 
+(eval-after-require embed-doc
+  (embed-doc-document-symbol
+   extensions
+   "Main loader for extensions."
+   :functions
+   eval-after-require
+   load-extension-safe
+   :variables
+   user-ext-extension-directory
+   :commands
+   find-extension
+   find-extension-at-point
+   get-extension-documentation
+   load-extension))
+
 ;; Autoloads
 (load-extension "loaddefs-ext" t)
 
