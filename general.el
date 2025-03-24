@@ -39,6 +39,11 @@ treated as a single value and formatted appropriately."
 (defvar-local user-ext-local-position-ring nil
   "Current buffer's mark ring.")
 
+;; Advice
+
+(fext-defadvice narrow-to-region (after narrow-to-region)
+  (deactivate-mark))
+
 ;; Functions
 
 (defun describe-region (&optional beg end)
@@ -173,14 +178,6 @@ Interactively, ARG is the prefix argument."
 	(kill-buffer)
 	(delete-window))
     (quit-window t)))
-
-;; TODO: Replace with :after advice
-(defun narrow-to-region2 (start end)
-  "Narrow to region and cancel region.
-START and END specify the region to narrow to."
-  (interactive "r")
-  (narrow-to-region start end)
-  (setq deactivate-mark t))
 
 (provide 'general)
 ;;; general ends here
