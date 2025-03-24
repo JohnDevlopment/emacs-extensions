@@ -9,7 +9,6 @@
 
 (define-prefix-command 'command-map)
 
-;; Prefix command for quickly turning on different modes
 (define-prefix-command 'quick-mode-map)
 (global-set-key (kbd "C-c m") #'quick-mode-map)
 
@@ -105,8 +104,7 @@ Included modes are:
 
 (define-contextual-key-func "d" "display-fill-column-indicator-mode")
 
-(define-contextual-key-func "f"
-  "flycheck-mode")
+(define-contextual-key-func "f" "flycheck-mode")
 
 (define-contextual-key-func "g"
   "electric-pair-mode"
