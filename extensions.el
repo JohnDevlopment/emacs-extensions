@@ -11,7 +11,13 @@
   (require 'cl-ext))
 
 (require 'cl-lib)
-(require 'f)
+
+(use-package f
+  :functions
+  f-join
+  f-exists-p
+  f-glob
+  f-newer-p)
 
 (setq read-process-output-max 10485760
       frame-title-format (concat (and multiple-frames ()) " %b " invocation-name "@" (system-name)))
@@ -82,14 +88,30 @@ the prefix argument, also prompt the user for SAFE and DEFER."
   (cl-check-type defer integer-or-null)
   `(load-extension ,extension t ,defer))
 
+(defun --extension-choose-file (files)
+  (if (> (length files) 0)
+      (let* ((files (cl-remove-if
+		     (lambda (x) (string-match-p "\\.elc$" x)) files)))
+	(car (if (= (length files) 1)
+		 files
+	       (cl-sort files #'f-newer-p))))
+    nil))
+
 (defun find-extension (extension)
   "Find the Emacs Lisp source of EXTENSION.
 
 Interactively, prompt for EXTENSION."
   (interactive (--extension-completion "Find Extension: "))
-  (prog1
-      (switch-to-buffer (find-file-noselect
-			 (concat "~/.emacs.d/extensions/" extension ".el")))))
+  (require 's)
+  (let* ((dir "~/.emacs.d/extensions/")
+	 (files (f-glob (concat (f-join dir extension) "*")))
+	 (file (or (--extension-choose-file files)
+		   (concat (f-join dir extension) ".el"))))
+    (cl-assert file)
+    (cl-ext-when (or (f-exists-p file)
+		     (yes-or-no-p
+		      (s-lex-format "${file} does not yet exist. Create it? ")))
+      (switch-to-buffer (find-file-noselect file)))))
 
 (defun find-extension-at-point (extension)
   "Find the Emacs Lisp source of EXTENSION at point.
