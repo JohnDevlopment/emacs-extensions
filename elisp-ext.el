@@ -161,9 +161,9 @@ Group 3 matches the name.")
 	    (lambda ()
 	      (with-current-buffer curbuf
 		(elisp-ext--list-symbols type-symbol))))
-      (tabulated-list-print))
-    (display-buffer buf)
-    (elisp-ext--occur-buttonize-entries type-symbol)))
+      (tabulated-list-print)
+      (elisp-ext--occur-buttonize-entries type-symbol))
+    (display-buffer buf)))
 
 (defun elisp-ext-occur-variables ()
   "Display a list of this buffer's variables.
