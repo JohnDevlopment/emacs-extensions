@@ -2,11 +2,10 @@
 
 (require 'ido)
 (require 'sh-script)
-(require 'cl-ext)
 
 (eval-when-compile
   (require 'cl-lib)
-  (defvar user-ext-sh-fold-map))
+  (require 'cl-ext))
 
 ;; Variables
 
