@@ -269,8 +269,23 @@ it is non-nil, \"1;\" is prepended to the color code."
   (insert "\\[\\]")
   (left-char 2))
 
-(define-skeleton sh-ext-skeleton-src-command-list
-  "Inserts a command list like is seen in \"src\"."
+;; Skeletons
+
+(defmacro sh-ext-define-skeleton (name docstring &rest skeleton)
+  "Define a Sh mode skeleton called sh-ext-skeleton-NAME.
+The arguments are exactly the same as those for
+`define-skeleton'."
+  (declare (indent 2) (doc-string 2)
+	   (debug (&define name stringp skeleton-edebug-spec)))
+  (cl-check-type name symbol)
+  (cl-check-type docstring string)
+  (cl-ext-unless skeleton
+    (error "Empty skeleton"))
+  (let ((fname (intern (format "sh-ext-skeleton-%S" name))))
+    `(define-skeleton ,fname ,docstring ,@skeleton)))
+
+(sh-ext-define-skeleton src-command-list
+    "Inserts a command list like is seen in \"src\"."
   "Delimter: "
   "cat <<" str \n
   "Commands:"\n
