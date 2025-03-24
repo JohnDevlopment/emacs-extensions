@@ -183,7 +183,6 @@ is non-nil."
 	   ("'" . save-current-position)
 	   ("&" . pop-saved-position)
 	   ("^" . print-saved-positions)
-	   ("M" . add-mode-comment)
 	   ("P" . add-file-local-variable-prop-line)
 	   ("M-P" . add-file-local-variable))
 
