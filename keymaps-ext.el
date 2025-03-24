@@ -110,8 +110,6 @@ Included modes are:
 
 (define-contextual-key-func "m" "map-revert-buffer")
 
-(define-contextual-key-func "r" "remap-narrow-to-region")
-
 (define-contextual-key-func "v" "activate-view-mode")
 
 (define-contextual-key-func "w" "enable-wrap")
@@ -147,13 +145,6 @@ is non-nil."
   (local-set-key (kbd "M-R") #'revert-buffer)
   (message "Mapped %s `revert-buffer'"
 	   (lookup-function 'revert-buffer nil t)))
-
-(defun remap-narrow-to-region ()
-  "Assign the key mapped to `narrow-to-region' to `narrow-to-region2'."
-  (interactive)
-  (local-set-key [remap narrow-to-region] #'narrow-to-region2)
-  (message "Remapped %s to `narrow-to-region2'"
-	   (lookup-function 'narrow-to-region nil t)))
 
 ;; Gloal commands
 (bind-keys ("C-c d" . bookmark-delete)
