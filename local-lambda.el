@@ -17,7 +17,7 @@
 (defun local-lambda-get (name)
   "Return the lambda with the name NAME, or nil if it doesn't exist.
 NAME must be a symbol."
-  (cl-check-type name symbol)
+  (cl-check-type name string)
   (gethash name local-lambda-lambdas))
 
 ;;;###autoload
@@ -28,11 +28,12 @@ KEY, which is a symbol.  FUNCTION is a `lambda' expression."
   (cl-check-type key symbol)
   (cl-check-type function (and (not symbol) function))
   (cl-ext-unless local-lambda-lambdas
-    (setq local-lambda-lambdas (make-hash-table :test 'eq)))
+    (setq local-lambda-lambdas (make-hash-table :test #'equal)))
   ;; Either KEY is not defined or overwrite is allowed
-  (cl-ext-when (or (not (gethash key local-lambda-lambdas))
-		   overwrite)
-    (puthash key function local-lambda-lambdas)))
+  (cl-ext-when (or overwrite
+		   (not (gethash key local-lambda-lambdas)))
+    (puthash (symbol-name key) function local-lambda-lambdas))
+  t)
 (define-obsolete-function-alias
   'local-lambda-ext-add-local-lambda
   #'local-lambda-add-local-lambda
@@ -43,8 +44,8 @@ KEY, which is a symbol.  FUNCTION is a `lambda' expression."
 	key)
     (cl-ext-unless hash
       (user-error "No local lambdas in buffer"))
-    (setq key (intern-soft (completing-read "Lambda: " hash nil t)))
-    (cl-assert key)
+    (setq key (completing-read "Lambda: " hash nil t))
+    (cl-assert key t)
     (list key)))
 (define-obsolete-function-alias
   'local-lambda-ext--completion
@@ -59,9 +60,9 @@ functions..
 
 Interactively, KEY is prompted from the user with completion."
   (interactive (local-lambda--completion))
-  (cl-check-type key symbol)
+  (cl-check-type key string)
   (let ((fun (local-lambda-get key)))
-    (cl-assert fun)
+    (cl-assert fun t)
     (if (commandp fun)
 	(call-interactively fun)
       (funcall fun))))
@@ -86,7 +87,9 @@ As a result of this macro, NAME can be run with
 	   (debug (&define name lambda-list lambda-doc
 			   ["&optional" ("interactive" interactive)]
 			   def-body)))
-  `(local-lambda-add-local-lambda ',name (lambda ,arglist ,@body) t))
+  `(progn
+     (local-lambda-add-local-lambda ',name (lambda ,arglist ,@body) t)
+     t))
 (define-obsolete-function-alias
   'local-lambda-ext-define-local-defun
   #'local-lambda-define-local-defun
