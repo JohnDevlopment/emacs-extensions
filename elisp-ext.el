@@ -191,18 +191,23 @@ options, and so on."
 
 ;; ---
 
-(defun elisp-ext-minify (start end)
+(defun elisp-ext-minify (start end &optional force)
   "Minify the code between START and END in current buffer.
+START and END are the two points in a region.  If the region
+is not active, minify the whole buffer, asking the user
+beforehand; unless FORCE is non-nil, in which, do it without
+asking.
+
 If called interactively, START and END are the region,
-provided the region is active.  But if the region is not
-active, the entire buffer is minified."
-  (interactive "r")
+provided the region is active, otherwise they are ignored.
+FORCE is the prefix argument."
+  (interactive "r\nP")
   (cl-block quit
     (let ((msg "The region is not active, so the entire buffer will be minified. Continue?")
 	  (reg (region-active-p))
 	  answer
 	  bstr)
-      (setq answer (or reg (y-or-n-p msg)))
+      (setq answer (or reg force (y-or-n-p msg)))
       (cond
        ((and (not reg) (not answer))
 	;; Quit; user said no and the region is not active
