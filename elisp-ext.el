@@ -25,6 +25,9 @@
 	    (identifier (+ identifier-char)))
      (rx ,@body)))
 
+(defvar-local user-ext-elisp--scratch-minify nil
+  "If non-nil, minify the contents of the scratch buffer.")
+
 (defconst user-ext-elisp--register ?e
   "Used with `window-configuration-to-register'.")
 
@@ -153,8 +156,12 @@ Group 3 matches the name.")
 
 (defun elisp-ext--occur (buffer-name type-symbol)
   (require 's)
-  (let ((buf (get-buffer-create (s-lex-format "*Occur: ${buffer-name}*")))
-	(curbuf (current-buffer)))
+  (let* ((bufname (s-lex-format "*Occur: ${buffer-name}*"))
+	 (curbuf (current-buffer))
+	 (buf (get-buffer bufname)))
+    (cl-ext-when buf
+      (kill-buffer buf))
+    (setq buf (get-buffer-create bufname))
     (with-current-buffer buf
       (elisp-occur-mode)
       (setq tabulated-list-entries
@@ -268,14 +275,24 @@ Updates the autoload definitions in the Lisp files in
 (defun elisp-ext--scratch-buffer-ctrl-c-ctrl-c ()
   "Kill the text inside buffer and quit."
   (interactive)
+  (cl-ext-when (re-search-forward "[ \t\n\r]+\\'" nil t)
+    (replace-match ""))
+  (cl-ext-when user-ext-elisp--scratch-minify
+    (elisp-ext-minify (point-min) (point-max) t))
   (kill-region (point-min) (point-max))
   (kill-and-quit))
 
 ;;;###autoload (autoload 'elisp-ext-scratch-buffer "elisp-ext" "Create a scratch buffer for Emacs lisp code." t)
-(define-scratch-buffer-function elisp-ext-scratch-buffer "elisp" nil
-  "Create a scratch buffer for Emacs lisp code."
-  nil
+(define-scratch-buffer-function elisp-ext-scratch-buffer "elisp" (&optional minify)
+  "Create a scratch buffer for Emacs lisp code.
+The user can type Emacs Lisp code and type C-c C-c to kill
+the buffer and its contents.  If MINIFY is non-nil, minify
+the buffer contents prior to killing it.
+
+When called interactively, MINIFY is the prefix argument."
+  "P"
   (emacs-lisp-mode)
+  (setq user-ext-elisp--scratch-minify minify)
   (unless (and (boundp 'electric-pair-mode) electric-pair-mode) ; Enable electric pair mode
     (electric-pair-local-mode t))				;
   (unless (and (boundp 'company-mode) company-mode) ; Enable company mode
@@ -413,6 +430,7 @@ Automatically activates `hs-minor-mode' when called."
   (define-key user-ext-elisp-fold-map (kbd "b") #'elisp-ext-hide-block)
 
   (define-key emacs-lisp-mode-map (kbd "C-c C-j") #'imenu)
+  (define-key emacs-lisp-mode-map (kbd "C-c c M-s") #'elisp-ext-scratch-buffer)
   (define-key emacs-lisp-mode-map (kbd "C-c c M-d") #'elisp-ext-doc-scratch-buffer)
   (define-key emacs-lisp-mode-map (kbd "C-c c b") #'emacs-lisp-byte-compile)
   (define-key emacs-lisp-mode-map (kbd "C-c c M-b") #'emacs-lisp-byte-compile-and-load)
