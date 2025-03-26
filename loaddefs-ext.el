@@ -51,6 +51,15 @@ Extra hook for `bbcode-mode'." nil nil)
 
 ;;;***
 
+;;;### (autoloads nil "bnf-ext" "bnf-ext.el.gz" (0 0 0 0))
+;;; Generated autoloads from bnf-ext.el.gz
+
+(autoload 'bnf--extra-hook "bnf-ext" nil nil nil)
+
+(add-hook 'bnf-mode-hook #'bnf--extra-hook)
+
+;;;***
+
 ;;;### (autoloads nil "buffers-ext" "buffers-ext.el" (0 0 0 0))
 ;;; Generated autoloads from buffers-ext.el
 
