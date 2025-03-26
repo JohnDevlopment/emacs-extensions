@@ -186,6 +186,7 @@ prompted for MODE."
   nil
   (auto-fill-mode 1)
   (outline-minor-mode 1)
+  (display-fill-column-indicator-mode 1)
   (set-fill-column 50)
   (setq header-line-format "Type C-c C-c when finished, C-x k to cancel editing.")
   (local-set-key (kbd "C-c C-c")
@@ -194,6 +195,8 @@ prompted for MODE."
 ARG, which is the prefix arg, is passed to `kill-and-quit'
 (which see)."
 		   (interactive "P")
+		   (when (re-search-backward "[ \t\n\r]+\\'" nil t)
+		     (replace-match ""))
 		   (kill-region (point-min)
 				(point-max))
 		   (kill-and-quit arg))))
