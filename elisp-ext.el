@@ -416,9 +416,10 @@ Automatically activates `hs-minor-mode' when called."
   (define-key emacs-lisp-mode-map (kbd "C-c c M-d") #'elisp-ext-doc-scratch-buffer)
   (define-key emacs-lisp-mode-map (kbd "C-c c b") #'emacs-lisp-byte-compile)
   (define-key emacs-lisp-mode-map (kbd "C-c c M-b") #'emacs-lisp-byte-compile-and-load)
+  (define-key emacs-lisp-mode-map (kbd "C-c M-f") #'elisp-ext-minify)
 
   (define-key lisp-interaction-mode-map [remap kill-and-quit] #'quit-window)
-  (define-key lisp-interaction-mode-map (kbd "C-c M-f") #'elisp-ext-minify)
+  ;; (define-key lisp-interaction-mode-map (kbd "C-c M-f") #'elisp-ext-minify)
 
   (define-prefix-command 'user-ext-elisp-occur-map)
   (define-key emacs-lisp-mode-map (kbd "C-c C-o") #'user-ext-elisp-occur-map)
