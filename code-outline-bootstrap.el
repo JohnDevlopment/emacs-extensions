@@ -2,7 +2,7 @@
 
 (use-package code-outline
   :load-path "~/github/code-outline/"
-  :mode ("\\.code\\'" . code-outline)
+  :mode ("\\.code\\'" . code-outline-mode)
   :commands
   code-outline-mode)
 
