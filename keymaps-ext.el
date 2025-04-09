@@ -1,12 +1,19 @@
 ;; -*- lexical-binding: t; -*-
 
 (require 'ido)
+(require 's)
+
+(eval-when-compile
+  (require 'subr-x))
 
 ;; ### Customization
 
 (defgroup keymaps-ext nil
   "Global user keymaps."
   :group 'user-extensions)
+
+(defvar user-ext-keymaps--key-translation-table nil
+  "Translation table used for `--contextual-key-func-warning'.")
 
 ;; ### Code
 
@@ -32,122 +39,170 @@
 			   (format "In %S, the following arguments are invalid: %s"
 				   function (string-join value ", "))))))
 
-(defmacro define-contextual-key-func (key &rest args)
-  "Define a function that enables one of the modes listed in ARGS.
-KEY is a string name for the key to press with the prefix
-C-c C-m.
+(defun --contextual-key-string (key)
+  "Convert KEY into a string which can be interned.
+KEY is a string in the format \"[MOD]K\", where MOD is a
+modifier prefix and K is one of the letters a-z.
 
-MODE is a string that is the name of a mode.  If there is
-only one mode, this is expanded into a direct function
-call.  Otherwise, the user is prompted to pick from a list
-of modes using a completion function.
+MOD, if provided, is the portion of KEY consisting of one to
+three modifiers separated by hyphens. The valid modifiers
+are C, M, and S. All three are optional but must appear in
+that order; that is, the string \"M-C-a\" is invalid, but
+\"C-M-a\" is valid.
 
-\(fn KEY ARGS...)"
-  (declare (indent 1))
-  (let* ((fname (intern (concat "contextual-key-" key)))
-	 doc modes)
-    (unless args
-      (error "No args provided"))
-    ;; Collect modes from ARGS; handle keyword args
-    (dolist (arg args)
-      (push arg modes))
-    (setq modes (sort modes #'string<))	; alphabetically sort mode strings
-    (if (= (length modes) 1)		; only one mode, so call directly as a function
-	(let* ((mode (car modes))
-	       (mode-symbol (intern-soft mode)))
-	  (if (not mode-symbol)
-	      (cl-ext-progn
-		(--contextual-key-func-warning fname mode))
-	    `(progn
-	       (defun ,fname ()
-		 ,(format "Call `%s'.
-Likely called from C-c C-m %s." (car modes) key)
-		 (interactive)
-		 ;; ARGS is one mode, so call it directly
-		 (call-interactively (function ,mode-symbol)))
-	       (define-key quick-mode-map ,(kbd key) (function ,fname)))))
-      ;; Multiple modes; use ido to select one
-      (let (invalid-modes)
-	(setq invalid-modes (cl-loop
-			     for mode in modes
-			     unless (intern-soft mode)
+The return value is a string describing what KEY is, and
+that string is valid for `intern'.
+
+Modifier  Translates to
+--------  -------------
+C         control
+M         meta
+S         shift"
+  (cl-ext-unless user-ext-keymaps--key-translation-table
+    (setq user-ext-keymaps--key-translation-table
+	  (let ((tbl (make-hash-table)))
+	    (puthash ?C "control" tbl)
+	    (puthash ?M "meta" tbl)
+	    (puthash ?S "shift" tbl)
+	    (puthash ?\  "-" tbl)
+	    tbl)))
+  (let ((regex (rx string-start
+		   (opt (group (opt "C-") (opt "M-") (opt "S-")))
+		   (group (any (?a . ?z)))
+		   string-end)))
+    (cl-ext-unless (string-match regex key)
+      (signal-invalid-argument key (eval-when-compile
+				     (concat "check docstring of `--contextual-key-string'"
+					     " for allowed values"))))
+    (let ((mods (match-string 1 key))
+	  (key (match-string 2 key)))
+      (cl-ext-when mods
+	  (setq mods
+		(thread-last
+		    (cl-loop with repl
+			     with tbl = user-ext-keymaps--key-translation-table
+			     for c across mods
 			     collect (cl-ext-progn
-				       (setq modes (cl-delete mode modes))
-				       mode)))
-	(when invalid-modes
-	  (--contextual-key-func-warning fname invalid-modes))
-	(setq doc (format "Choose from a list of modes to enable.
-Likely called from C-c C-m %s.
+				       (setq repl (gethash c tbl))
+				       (if repl repl (char-to-string c))))
+		  (apply #'concat))))
+      (concat mods key))))
 
-Included modes are:
-%s" key (string-join (mapcar (lambda (string)
-			       (format "- `%s'" string)) modes) "\n")))
-	`(progn
-	   (defun ,fname (choice)
-	     ,doc
-	     (interactive (list (ido-completing-read "Choose: " ',modes)))
-	     (cl-assert (intern-soft choice))
-	     (call-interactively (intern-soft choice)))
-	   (define-key quick-mode-map (kbd ,key) (function ,fname)))))))
+(defun --contextual-key-completion (cname)
+  (let ((choices (eval cname)))
+    (cl-case (length choices)
+      (0 (error "`%S' is empty" cname))
+      (1 choices)
+      (t
+       (thread-last
+	   (ido-completing-read
+	    "Function: " (mapcar (lambda (s) (symbol-name s)) choices)
+	    nil t)
+	 (intern)
+	 (list))))))
+
+(defmacro define-contextual-key-func (key &rest symbols)
+  "Define a so-called contextual key function for key KEY.
+More precisely, do two things: 1. declare customizable
+variable which holds the function symbols the user can
+choose from when calling the function. 2. Define an
+interactive function that acts on the variable.
+
+As a result of this macro, two things are created, a
+customizable variable named user-ext-keymaps-ctxmodes-X and
+a function called contextual-key-X.  In both cases, X is the
+result of converting KEY into a suffix that would be a valid
+symbol on its own.
+
+In the case of the customizable variable, SYMBOLS is used to
+its default value.  The variable is declared via `defcustom'
+and added to the customization group `keymaps-ext'."
+  (declare (debug t) (indent 1))
+  (cl-check-type key string)
+  (dolist (symbol symbols)
+    (cl-ext-unless (or (symbolp symbol) (functionp symbol))
+      (error "%S is invalid; must be a symbol" symbol)))
+  (let* ((keysym (make-symbol (--contextual-key-string key)))
+	 (cname (intern (format "user-ext-keymaps-ctxmodes-%S" keysym)))
+	 (fname (intern (format "contextual-key-%S" keysym)))
+	 (cdoc (format "List of functions allowed for the key \"%s\".
+These functions are added what the user can choose from when
+running `%S'." key fname))
+	 (fdoc (s-lex-format "Call CHOICE as an interactive function.
+When called interactively, prompt the user to choose from
+`${cname}' if it has more than one element; if it has 1
+element, then call that.  Raise an error if `${cname}' has
+zero elements."))
+	 (value (cl-ext-when symbols
+		    (cons 'quote (list symbols)))))
+    `(progn
+       (defcustom ,cname ,value
+	 ,cdoc
+	 :type 'hook
+	 :group 'keymaps-ext)
+       (defun ,fname (choice)
+	 ,fdoc
+	 (interactive (--contextual-key-completion ',cname))
+	 (cl-check-type choice symbol)
+	 (call-interactively choice))
+       (define-key quick-mode-map ,(kbd key) (function ,fname)))))
 
 (define-contextual-key-func "a"
-   "abbrev-mode"
-   "auto-fill-mode"
-   "auto-revert-mode")
+  abbrev-mode
+  auto-fill-mode
+  auto-revert-mode)
 
 (define-contextual-key-func "b"
-  "basic-generic-mode"
-  "basic-libreoffice-mode"
-  "bind-fill-region"
-  "bind-imenu"
-  "bind-imenu-lsp")
+  basic-generic-mode
+  basic-libreoffice-mode
+  bind-fill-region
+  bind-imenu
+  bind-imenu-lsp)
 
 (define-contextual-key-func "c"
-  "code-outline-mode"
-  "comment-tags-mode"
-  "company-mode"
-  "conf-mode")
+  comment-tags-mode
+  company-mode
+  conf-mode)
 
-(define-contextual-key-func "d" "display-fill-column-indicator-mode")
+(define-contextual-key-func "d" display-fill-column-indicator-mode)
 
-(define-contextual-key-func "f" "flycheck-mode")
+(define-contextual-key-func "f" fundamental-mode)
 
 (define-contextual-key-func "g"
-  "electric-pair-mode"
-  "global-comment-tags-mode"
-  "global-company-mode"
-  "global-flycheck-mode"
-  "global-visual-line-mode"
-  "yas-global-mode")
+  electric-pair-mode
+  global-comment-tags-mode
+  global-company-mode
+  global-visual-line-mode
+  yas-global-mode)
 
-(define-contextual-key-func "h" "hs-minor-mode")
+(define-contextual-key-func "h" hs-minor-mode)
 
 (define-contextual-key-func "l"
-  "local-lambda-mode"
-  "lsp-mode")
+  local-lambda-mode
+  lsp-mode)
 
 (define-contextual-key-func "o"
-  "org-ext-tbl-minor-mode"
-  "outline-minor-mode"
-  "outline-mode")
+  org-ext-tbl-minor-mode
+  outline-minor-mode
+  outline-mode)
 
-(define-contextual-key-func "s"
-  "shell-script-mode"
-  "sphinx-doc-mode")
+(define-contextual-key-func "p")
+
+(define-contextual-key-func "s" shell-script-mode)
 
 (define-contextual-key-func "j"
-  "jinja2-mode"
-  "jit-lock-debug-mode")
+  jinja2-mode
+  jit-lock-debug-mode)
 
-(define-contextual-key-func "m" "map-revert-buffer")
+(define-contextual-key-func "m" map-revert-buffer)
 
-(define-contextual-key-func "v" "activate-view-mode")
+(define-contextual-key-func "v" activate-view-mode)
 
-(define-contextual-key-func "w" "enable-wrap")
+(define-contextual-key-func "w" enable-wrap)
 
 (define-contextual-key-func "y"
-  "yaml-mode"
-  "yas-minor-mode")
+  yaml-mode
+  yas-minor-mode)
 
 (defun lookup-function (fn &optional keymap firstonly)
   "Lookup the key binding for FN.
