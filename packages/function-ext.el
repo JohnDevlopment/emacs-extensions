@@ -29,9 +29,11 @@
 			  (list 'function sym))
 			 ((and (pred listp) (guard (eql (car definition) 'lambda)))
 			  definition)
-			 ((pred symbolp)
+			 ((pred functionp)
 			  (list 'function definition))
-			 (x (error "Invalid form %S: must be symbol or lambda" x)))
+			 ((pred symbolp)
+			  (list 'quote definition))
+			 (x (error "Invalid form %S: must be symbol, function or lambda" x)))
      ,docstring))
 
 ;;;###autoload
