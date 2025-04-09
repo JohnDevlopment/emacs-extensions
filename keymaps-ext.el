@@ -2,6 +2,14 @@
 
 (require 'ido)
 
+;; ### Customization
+
+(defgroup keymaps-ext nil
+  "Global user keymaps."
+  :group 'user-extensions)
+
+;; ### Code
+
 (eval-after-require move-text
   (move-text-default-bindings))
 
@@ -20,9 +28,7 @@
      (display-warning 'user-extensions
 		      (format "In %S, the argument %s is invalid"
 			      function value)))
-    (list (setq prefix (format "In %S, the following arguments are invalid: "
-			       function))
-	  (display-warning 'user-extensions
+    (list (display-warning 'user-extensions
 			   (format "In %S, the following arguments are invalid: %s"
 				   function (string-join value ", "))))))
 
