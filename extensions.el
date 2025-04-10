@@ -10,9 +10,10 @@
 (eval-when-compile
   (require 'alist-ext)
   (require 'bind-key)
-  (require 'cl-ext))
+  (require 'cl-ext)
+  (require 'subr-x))
 
-;; ---External packages via `use-package'
+;; --- External packages via `use-package'
 
 (use-package f
   :functions
@@ -37,13 +38,25 @@
 
 ;; ---Loading/finding extensions
 
+(defun --list-extensions (&optional suffix completion)
+  (let* ((regex "\\`\\([a-z][a-z-]+\\)\\.el\\(?:\\.gz\\)?\\'")
+	 (files (thread-last
+		    (directory-files "~/.emacs.d/extensions")
+		  (cl-remove-if-not (lambda (file)
+				      (string-match-p regex file)))))
+	 (cf (lambda (file) (file-name-sans-extension file))))
+    (if completion
+	(cl-ext-progn
+	  (completion-table-dynamic
+	   (lambda (string) (all-completions string (mapcar cf files)))))
+      (if suffix
+	  (mapcar cf files)
+	files))))
+
 (defun --extension-completion (prompt &optional initial-input)
-  (let* ((path "~/.emacs.d/extensions")
-	 (args (list (completing-read
+  (let* ((args (list (completing-read
 		      prompt
-		      (apply-partially #'locate-file-completion-table
-				       (list path)
-				       (get-load-suffixes))
+		      (--list-extensions t t)
 		      nil nil initial-input)))
 	 completion-ignored-extensions)
     (when current-prefix-arg
@@ -65,19 +78,19 @@ Interactively, prompt the user for EXTENSION with completion.  With
 the prefix argument, also prompt the user for SAFE and DEFER."
   (interactive (--extension-completion "Load Extenion: "))
   (cl-check-type extension string)
-  (cl-check-type defer integer-or-null)
-  (let ((file (f-join "~/.emacs.d/extensions/" extension))
-	(msg (concat "Error loading " extension ": %S"))
-	(dmsg (cl-ext-when (and defer (> defer 0))
-		(format "Loading %s in %d seconds..." extension defer)))
-	(safe-load (lambda (f msg)
-		     (with-demoted-errors msg
-		       (load f)))))
+  (cl-check-type defer (or (integer 1 *) (float 0.01 *) null))
+  (let* ((file (f-join "~/.emacs.d/extensions/" extension))
+	 (dmsg (cl-ext-when (and defer (> defer 0))
+		 (format "Loading %s in %d seconds..." extension defer)))
+	 (safe-load (lambda (f) (condition-case err
+				    (load f)
+				  (error
+				   (message "Error loading %s: %S" f err))))))
     (cond ((and safe defer (> defer 0))
 	   (message dmsg)
-	   (run-with-idle-timer defer nil safe-load file msg))
+	   (run-with-idle-timer defer nil safe-load file))
 	  (safe
-	   (funcall safe-load file msg))
+	   (funcall safe-load file))
 	  (defer
 	    (message dmsg)
 	    (run-with-timer defer nil #'load file))
@@ -87,7 +100,7 @@ the prefix argument, also prompt the user for SAFE and DEFER."
 (defmacro load-extension-safe (extension &optional defer)
   "Load EXTENSION, capturing any error and displaying it as a message."
   (cl-check-type extension string)
-  (cl-check-type defer integer-or-null)
+  (cl-check-type defer (or (integer 1 *) (float 0.01 *) null))
   `(load-extension ,extension t ,defer))
 
 (defun --extension-choose-file (files)
