@@ -180,6 +180,7 @@ evaluated."
 
 (load-extension "types-ext")
 (load-extension "syntax-ext")
+(load-extension "errors")
 (load-extension "general")
 (load-extension "macro-ext")
 (load-extension "buffers-ext")
