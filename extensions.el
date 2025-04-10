@@ -31,13 +31,6 @@
 (setq read-process-output-max 10485760
       frame-title-format (concat (and multiple-frames ()) " %b " invocation-name "@" (system-name)))
 
-;; Types
-
-(cl-deftype list-or-null () '(or list null))
-(cl-deftype marker-or-null () '(or marker null))
-(cl-deftype integer-or-null () '(or integer null))
-(cl-deftype string-or-null () '(or string null))
-
 (put 'narrow-to-region 'disabled nil)
 
 ;; Functions
@@ -185,6 +178,7 @@ evaluated."
 ;; Autoloads
 (load-extension-safe "loaddefs-ext")
 
+(load-extension "types-ext")
 (load-extension "syntax-ext")
 (load-extension "general")
 (load-extension "macro-ext")
