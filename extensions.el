@@ -183,7 +183,17 @@ evaluated."
    load-extension))
 
 ;; Autoloads
-(load-extension "loaddefs-ext" t)
+(load-extension-safe "loaddefs-ext")
+
+(load-extension "syntax-ext")
+(load-extension "general")
+(load-extension "macro-ext")
+(load-extension "buffers-ext")
+
+;; Bootstraps for external packages
+(load-extension-safe "code-outline-bootstrap")
+(load-extension-safe "jdesktop-bootstrap")
+(load-extension-safe "liquidsoap-bootstrap")
 
 (load-extension-safe "abbrev-ext")
 (load-extension-safe "codeium-ext")
@@ -191,23 +201,13 @@ evaluated."
 (load-extension "custom-ext")
 (load-extension "help-ext")
 
-(load-extension "general")
-(load-extension "macro-ext")
-(load-extension "buffers-ext")
-
 (load-extension-safe "lsp-ext" 2)
 (load-extension-safe "desktop-ext" 2)
 (load-extension "dired-ext")
-(load-extension "imenu-ext" nil 2)
-(load-extension "syntax-ext")
+(load-extension-safe "imenu-ext" 2)
 
 (load-extension "keymaps-ext")
 (load-extension-safe "yasnippets-ext")
-
-;; Bootstraps for external packages
-(load-extension "jdesktop-bootstrap" nil 2)
-(load-extension "code-outline-bootstrap" nil 2)
-(load-extension "liquidsoap-bootstrap" nil 2)
 
 (provide 'extensions)
 ;;; extensions.el ends here
