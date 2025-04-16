@@ -1,5 +1,27 @@
 ;; -*- lexical-binding: t; -*-
 
+(defconst user-ext-cl-special-forms
+  '(let let* prog1 prog2 progn save-current-buffer save-excursion
+	save-mark-and-excursion save-restriction)
+  "A list of special forms that are recognized by cl-ext-* functions.
+This is a list of symbols which are special forms.  Any list
+whose car is one of these symbols will evaluate non-nil when
+passed `cl-ext--pcase-special-form'.")
+
+(defun cl-ext--pcase-special-form (form)
+  "Return non-nil if FORM is a special form.
+Return non-nil if FORM is a list whose car is one of the
+special forms listed in `user-ext-cl-special-forms'."
+  (pcase form
+    ((and (pred listp)
+	  (guard (>= (length form) 2))
+	  (or (guard (memq (car form) user-ext-cl-special-forms))
+	      (and (guard (macrop (car form)))
+		   (guard (memq (car (macroexpand-1 form))
+				user-ext-cl-special-forms)))))
+     form)
+    (_ nil)))
+
 ;;;###autoload
 (defmacro cl-ext-when (cond first-form &rest body)
   "If COND yields non-nil, do FIRST-FORM and BODY, else return nil.
@@ -8,21 +30,25 @@ sequentially and return value of last one.
 
 The main difference between `cl-ext-when' and `when' is that
 when BODY is empty, this expands to a `and' form; otherwise,
-it behaves exactly the same.
+it behaves exactly the same as the latter.
 
-When BODY is nil, if COND is itself a `and' form, ala \`(and
-SUB-CONDS...)', SUB-CONDS is collapsed into COND.  As a
-result, the following form
+If BODY is nil and COND is an `and' form ala
+\`(or SUB-CONDS...)', SUB-CONDS is collapsed into COND.  As
+a result, the form
 
    (cl-ext-when (and n (> n 0))
-     n)
+       n)
 
-expands to this:
+expands to
 
    (and n (> n 0) n)
 
+If BODY is nil, and FIRST-FORM returns non-nil on the
+predicate `cl-ext--pcase-special-form', this expands
+directly to an `if' form.
+
 \(fn COND FIRST-FORM BODY...)"
-  (declare (indent 1) (debug t))
+  (declare (indent 2) (debug t))
   (if body
       `(when ,cond
 	 ,first-form
@@ -31,7 +57,9 @@ expands to this:
       (`(and . ,x)
        `(and ,@x ,first-form))
       (_
-       `(and ,cond ,first-form)))))
+       (if (cl-ext--pcase-special-form first-form)
+	   `(if ,cond ,first-form)
+	 `(and ,cond ,first-form))))))
 
 ;;;###autoload
 (defmacro cl-ext-unless (cond first-form &rest body)
@@ -40,16 +68,38 @@ When COND yields nil, eval FIRST-FORM and BODY forms
 sequentially and return value of last one.
 
 The main difference between `cl-ext-unless' and `unless' is
-that when BODY is empty, this expands to a `or' form;
-otherwise, it behaves exactly the same.
+that when BODY is empty, this expands to an `or' form;
+otherwise, it behaves exactly the same as the latter.
+
+If BODY is nil and COND is an `or' form ala
+\`(or SUB-CONDS...)', SUB-CONDS is collapsed into COND.  As
+a result, the form
+
+   (cl-ext-unless (or n (<= n 0))
+       n)
+
+expands to
+
+   (or n (<= n 0) n)
+
+If BODY is nil, and FIRST-FORM returns non-nil on the
+predicate `cl-ext--pcase-special-form', this expands
+directly to an ...
 
 \(fn COND FIRST-FORM BODY...)"
-  (declare (indent 1) (debug t))
+  (declare (indent 2) (debug t))
   (if body
       `(unless ,cond
 	 ,first-form
 	 ,@body)
-    `(or ,cond ,first-form)))
+    (pcase cond
+      (`(or . ,x)
+       `(or ,@x ,first-form))
+      (_
+       (pcase first-form
+	 ((pred cl-ext--pcase-special-form)
+	  `(if ,cond ,first-form))
+	 (_ `(or ,cond ,first-form)))))))
 
 ;;;###autoload
 (defmacro cl-ext-append (x place)
