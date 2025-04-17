@@ -204,10 +204,13 @@ evaluated."
 (load-extension "macro-ext")
 (load-extension "buffers-ext")
 
-;; Bootstraps for external packages
+;; ### Bootstraps for external packages
+
+(load-extension-safe "jinja2-bootstrap")
 (load-extension-safe "code-outline-bootstrap")
 (load-extension-safe "jdesktop-bootstrap")
 (load-extension-safe "liquidsoap-bootstrap")
+(load-extension-safe "polymode-bootstrap")
 
 (load-extension-safe "abbrev-ext")
 (load-extension-safe "codeium-ext")
