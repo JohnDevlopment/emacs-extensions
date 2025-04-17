@@ -13,8 +13,6 @@
   (require 'cl-ext)
   (require 'subr-x))
 
-;; --- External packages via `use-package'
-
 (use-package f
   :functions
   f-join
@@ -22,19 +20,27 @@
   f-glob
   f-newer-p)
 
+(use-package s
+  :autoload
+  s-lex-format
+  s-lex-fmt|expand
+  s-lex-value-as-lisp)
+
 (use-package embed-doc
   :autoload
   embed-doc-document-symbol
   embed-doc-get-documentation)
 
-;; ---
-
 (setq read-process-output-max 10485760
-      frame-title-format (concat (and multiple-frames ()) " %b " invocation-name "@" (system-name)))
+      frame-title-format (concat (and multiple-frames ()) " %b "
+				 invocation-name "@"
+				 (system-name))
+      Info-directory-list (cons (expand-file-name "~/.local/share/info")
+				Info-directory-list))
 
 (put 'narrow-to-region 'disabled nil)
 
-;; Functions
+;; ### Functions
 
 ;; ---Loading/finding extensions
 
