@@ -166,6 +166,8 @@ zero elements."))
 
 (define-contextual-key-func "d" display-fill-column-indicator-mode)
 
+(define-contextual-key-func "e")
+
 (define-contextual-key-func "f" fundamental-mode)
 
 (define-contextual-key-func "g"
