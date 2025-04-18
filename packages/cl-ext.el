@@ -104,8 +104,9 @@ directly to an ...
 ;;;###autoload
 (defmacro cl-ext-append (x place)
   "Add X to the list stored in PLACE."
-  (declare (debug (form symbolp)))
-  `(setf ,place (append ,place ,x)))
+  (declare (debug (form symbol)))
+  (cl-check-type place symbol)
+  `(setq ,place (append ,place '(,x))))
 (define-obsolete-function-alias 'cl-append #'cl-ext-append "2025.02.10")
 (define-obsolete-function-alias 'cl-pushend 'cl-append "2024.12.21")
 
