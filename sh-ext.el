@@ -132,10 +132,11 @@ the check."
   (cl-check-type position (or integer-or-marker null))
   (cl-assert (and (boundp 'hs-minor-mode) hs-minor-mode))
   (cl-ext-save-point
-    (and position (goto-char position))
-    (cl-ext-unless (hs-already-hidden-p)
-      (left-char)
-      (hs-already-hidden-p))))
+    (cl-ext-when position
+      (goto-char position))
+    (or (hs-already-hidden-p)
+	(left-char)
+	(hs-already-hidden-p))))
 
 (defun sh-ext-show-function ()
   "Show the hidden function at point."
@@ -144,9 +145,9 @@ the check."
   (let ((buffer-read-only t)
 	(bol (line-beginning-position))
 	pos)
-    (when (and (sh-ext--looking-at 'function bol)
-	       (setq pos (match-end 0))
-	       (sh-ext--hidden pos))
+    (cl-ext-when (and (sh-ext--looking-at 'function bol)
+		      (setq pos (match-end 0))
+		      (sh-ext--hidden pos))
       (goto-char pos)
       (hs-show-block))))
 
