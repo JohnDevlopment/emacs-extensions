@@ -1,5 +1,9 @@
 ;; -*- lexical-binding: t; -*-
 
+;; ### Functions
+
+(require 'ert)
+
 (defconst user-ext-cl-special-forms
   '(let let* prog1 prog2 progn save-current-buffer save-excursion
 	save-mark-and-excursion save-restriction)
@@ -166,6 +170,32 @@ this behaves exactly like `progn'.
     (1 (car body))
     (_ `(progn ,@body))))
 
-(provide 'cl-ext)
+;; ### Tests
 
+(ert-deftest cl-ext-test-append ()
+  "Tests the result of `cl-ext-append'."
+  (let ((lst '(1 2)))
+    (should (equal lst '(1 2)))
+    (cl-ext-append 3 lst)
+    (should (equal lst '(1 2 3)))))
+
+(ert-deftest cl-ext-test-when ()
+  "Tests the expansion of `cl-ext-when'."
+  (should (equal (macroexpand '(cl-ext-when foo bar))
+		 '(and foo bar)))
+  (should (equal (macroexpand '(cl-ext-when foo bar baz))
+		 '(if foo (progn bar baz))))
+  (should (equal (macroexpand '(cl-ext-when foo (save-excursion bar)))
+		 '(if foo (save-excursion bar)))))
+
+(ert-deftest cl-ext-test-progn ()
+  "Tests the expansion of `cl-ext-progn'."
+  (should (equal (macroexpand '(cl-ext-progn))
+		 '(ignore)))
+  (should (equal (macroexpand '(cl-ext-progn foo))
+		 'foo))
+  (should (equal (macroexpand '(cl-ext-progn foo var))
+		 '(progn foo var))))
+
+(provide 'cl-ext)
 ;;; cl-ext.el ends here
