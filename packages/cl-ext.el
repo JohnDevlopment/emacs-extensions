@@ -160,7 +160,7 @@ to \`(ignore)'; if 1, to just that element; if 2 or greater,
 this behaves exactly like `progn'.
 
 \(fn BODY...)"
-  (declare (indent 0) (debug progn))
+  (declare (indent 0) (debug t))
   (pcase (length body)
     (0 '(ignore))
     (1 (car body))
