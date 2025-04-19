@@ -1,15 +1,15 @@
 ;; -*- lexical-binding: t; -*-
 
+(require 'cl-lib)
+
 (eval-when-compile
-  (require 'cl-ext)
-  (require 'cl-lib))
+  (require 'cl-ext))
 
 (defmacro --show-compiler-warning (function)
   (cl-check-type function symbol)
   `(byte-compile-warn ,(format "Function %S is used here" function)))
 
-(defalias 'assert #'cl-assert)
-(make-obsolete 'assert #'cl-assert "2024-12-24")
+(define-obsolete-function-alias 'assert #'cl-assert "2024-12-24")
 
 (defun --symbol-plist (symbol &rest props)
   (cl-ext-unless (= (mod (length props) 2) 0)
