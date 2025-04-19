@@ -1,5 +1,6 @@
 ;; -*- lexical-binding: t; -*-
 
+(require 'ert)
 
 (eval-when-compile
   (require 'cl-lib))
@@ -31,6 +32,13 @@ be quoted.
       (cl-ext-append-list (list 'cons key value) res))
     `(list ,@res)))
 
-(provide 'alist-ext)
 
+;; ### Tests
+
+(ert-deftest alist-ext-test-define ()
+  "Tests the result of `alist-ext-define'."
+  (let ((al (alist-ext-define 'a 1 'b 2)))
+    (should (equal al '((a . 1) (b . 2))))))
+
+(provide 'alist-ext)
 ;;; alist-ext.el ends here
