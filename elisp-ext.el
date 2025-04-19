@@ -1,27 +1,31 @@
 ;; -*- lexical-binding: t;  -*-
 
-(require 'cl-lib)
-(require 'cl-ext)
 (require 'autoload)
+(require 'button)
+(require 'cl-lib)
 (require 'function-ext)
 (require 'hideshow)
-(require 'button)
 
-;; Abbrevs
 
-(define-abbrev emacs-lisp-mode-abbrev-table "intry" "interactively"
-  #'abbrev-ext-insert-hook :system t)
+;; ### Abbrevs
 
-;; Advice
+(define-abbrev emacs-lisp-mode-abbrev-table "intry" "interactively" #'abbrev-ext-insert-hook :system t)
 
-(fext-defadvice eval-region (after eval-region)
-  (deactivate-mark))
+;; ### Advice
 
-;; Variables
+(advice-add 'eval-region :after #'deactivate-mark)
+
+;; ### Variables
 
 (defmacro elisp-ext--rx (&rest body)
+  "Translate regular expressions REGEXPS in sexp form to a regexp string.
+This is the same as `rx' but adds two additional constructs.
+
+identifier-char A character that is valid for symbols in
+                Emacs Lisp.
+identifier      A symbol consisting of one or more character
+                that match IDENTIFIER-CHAR."
   `(rx-let ((identifier-char (or (syntax word) (syntax symbol)))
-	    ;; (identifier (+ (or (syntax word) (syntax symbol))))
 	    (identifier (+ identifier-char)))
      (rx ,@body)))
 
@@ -30,6 +34,8 @@
 
 (defconst user-ext-elisp--register ?e
   "Used with `window-configuration-to-register'.")
+
+;; --- Regular expressions
 
 (defconst user-ext-elisp-defun-regexp
   (elisp-ext--rx
@@ -65,13 +71,14 @@ Group 1 matches one of \"const\" \"var\".
 Group 2 matches the mode this variable is local to.
 Group 3 matches the name.")
 
-;; Functions
+;; ### Functions
+
+;; --- Occur functions
 
 (defmacro elisp-ext--enable-minor-mode (mode1 &optional mode2)
   `(cl-ext-unless (and (boundp ',mode1) ,mode1)
      (,(or mode2 mode1) t)))
 
-;; ---Occur functions
 
 (define-button-type 'occur-cross-reference
   'action #'elisp-ext--occur-cross-reference)
@@ -80,13 +87,10 @@ Group 3 matches the name.")
   (let* ((label (button-label button))
 	 (symbol (intern-soft label))
 	 (fun (button-get button 'xref-function)))
-    (cl-assert symbol t)
     (cl-assert fun t)
-    (funcall fun symbol)))
-
-(defun elisp-ext-in-comment-p ()
-  "Return non-nil if inside a comment."
-  (ppss-comment-depth (make-ppss-easy (syntax-ppss))))
+    (if symbol
+	(funcall fun symbol)
+      (funcall fun label))))
 
 (defun elisp-ext--search-regexp (regexp fun)
   (cl-ext-save-point
@@ -197,6 +201,10 @@ options, and so on."
 (define-key elisp-occur-mode-map (kbd "k") #'kill-and-quit)
 
 ;; ---
+
+(defsubst elisp-ext-in-comment-p ()
+  "Return non-nil if inside a comment."
+  (ppss-comment-depth (make-ppss-easy (syntax-ppss))))
 
 (defun elisp-ext-minify (start end &optional force)
   "Minify the code between START and END in current buffer.
@@ -418,7 +426,7 @@ Automatically activates `hs-minor-mode' when called."
 	    (define-key map (kbd "C-c C-c") #'elisp-ext-doc-scratch-buffer--ctrl-c-ctrl-c)
 	    map))
 
-;; Keymap
+;; ### Keymap
 
 (eval-and-compile
   (define-prefix-command 'user-ext-elisp-fold-map)
@@ -444,7 +452,7 @@ Automatically activates `hs-minor-mode' when called."
   (define-key user-ext-elisp-occur-map (kbd "f") #'elisp-ext-occur-functions)
   (define-key user-ext-elisp-occur-map (kbd "v") #'elisp-ext-occur-variables))
 
-;; Hook
+;; ### Hook
 
 ;;;###autoload
 (defun elisp-ext--extra-hook ()
@@ -454,5 +462,4 @@ Automatically activates `hs-minor-mode' when called."
 (add-hook 'emacs-lisp-mode-hook #'elisp-ext--extra-hook)
 
 (provide 'elisp-ext)
-
 ;;; elisp-ext ends here
