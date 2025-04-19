@@ -50,6 +50,16 @@ This macro emits a warning when it is byte compiled."
     (_ (error "Unknown type %S" type))))
 (define-obsolete-function-alias 'print-expr #'--print-expr "2025-03-10")
 
+(defmacro --message (format-string &rest args)
+  "Display a message at the bottom of the screen.
+This is just a macro wrapper around `message'.  The only
+difference is that compiling this macro will emit a warning,
+like the other macros in this library."
+  (cl-ext-when (macroexp--compiling-p)
+    (--show-compiler-warning --message))
+  (declare (debug (stringp &rest form)))
+  `(message ,format-string ,@args))
+
 (defun debug-ext-get-function-body (symbol)
   "Get the function definition of SYMBOL."
   (declare (obsolete nil "2025-03-22"))
