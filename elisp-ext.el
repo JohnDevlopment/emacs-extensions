@@ -5,7 +5,10 @@
 (require 'cl-lib)
 (require 'function-ext)
 (require 'hideshow)
+(require 's)
 
+(eval-when-compile
+  (require 'cl-ext))
 
 ;; ### Abbrevs
 
@@ -32,17 +35,39 @@ identifier      A symbol consisting of one or more character
 (defvar-local user-ext-elisp--scratch-minify nil
   "If non-nil, minify the contents of the scratch buffer.")
 
+(defvar user-ext-elisp--doc-scratch nil
+  "The buffer being used by `elisp-ext-doc-scratch-buffer'.")
+
 (defconst user-ext-elisp--register ?e
   "Used with `window-configuration-to-register'.")
+
+(defconst user-ext-elisp-section-comment-regexp
+  (elisp-ext--rx
+   bol (seq ";;" (* (syntax whitespace))
+	    "###" (* (syntax whitespace)))
+   (group (+ nonl))))
+
+(defconst user-ext-elisp-subsection-comment-regexp
+  (elisp-ext--rx
+   bol (seq ";;" (* (syntax whitespace))
+	    "---" (* (syntax whitespace)))
+   (group (+ nonl))))
+
+(defconst user-ext-elisp-imenu-expression
+  `(("Sections" ,user-ext-elisp-section-comment-regexp 1)))
+
+(defconst user-ext-elisp-valid-occur-types
+  '(functions sections types variables))
 
 ;; --- Regular expressions
 
 (defconst user-ext-elisp-defun-regexp
   (elisp-ext--rx
-   ?\( (or "defun" "defmacro") (+ (syntax whitespace))
+   ?\( (group (or "cl-defgeneric" "defun" "defmacro")) (+ (syntax whitespace))
    (group identifier))
   "Regular expression for function-like definitions (e.g. defun).
-Group 1 matches the name of the definition.")
+Group 1 matches the keyword used to start the definition.
+Group 2 matches the name of the definition.")
 
 (defconst user-ext-elisp-variable-regexp
   (elisp-ext--rx
@@ -57,6 +82,18 @@ Group 1 can be one of the following:
 - \"custom\"
 - \"var\"
 - \"var-local\"")
+
+(defconst user-ext-elisp-face-regexp
+  (elisp-ext--rx
+   ?\( "defface" (+ (syntax whitespace)) (group identifier))
+  "Regular expression for face definitions.
+Group 1 matches the name of the face.")
+
+(defconst user-ext-elisp-structure-regexp
+  (elisp-ext--rx
+   ?\( "cl-defstruct" (+ (syntax whitespace)) (group identifier))
+  "Regular expression for structure definitions.
+Group 1 matches the name of the face.")
 
 (defconst user-ext-elisp-mode-local-variable-regexp
   (elisp-ext--rx ?\( "def"
@@ -79,6 +116,72 @@ Group 3 matches the name.")
   `(cl-ext-unless (and (boundp ',mode1) ,mode1)
      (,(or mode2 mode1) t)))
 
+(cl-defgeneric elisp-ext--list-x (_type)
+  "Return a list of certain constructs in buffer according to TYPE.
+Return a list of sublists of the form (ID ENTRY), where
+ENTRY is a vector with the form [NAME TYPE].")
+
+(cl-defmethod elisp-ext--list-x ((_type (eql functions)))
+  "Return a list of this buffer's functions."
+  (elisp-ext--search-regexp
+   user-ext-elisp-defun-regexp
+   (lambda ()
+     (let (sym name keyword type)
+       (setq keyword (match-string-no-properties 1)
+	     name (match-string-no-properties 2)
+	     sym (intern-soft name)
+	     name (propertize name 'length (length name))
+	     type (if sym
+		      (pcase keyword
+			((or "cl-defun" "defun")
+			 (if (commandp sym) "Command" "Function"))
+			((or "cl-defmacro" "defmacro") "Macro")
+			("cl-defgeneric" "Generic Function"))
+		    "Undefined"))
+       (list (make-symbol name)
+	     (vector name type))))))
+
+(cl-defmethod elisp-ext--list-x ((_type (eql variables)))
+  "Return a list of this buffer's variables."
+  (let (v1 v2)
+    (setq v1 (elisp-ext--search-regexp
+	      user-ext-elisp-variable-regexp
+	      (lambda (&optional type name)
+		(setq name (match-string-no-properties 2)
+		      name (propertize name 'length (length name))
+		      type (pcase (match-string-no-properties 1)
+			     ("const" "Constant")
+			     ("custom" "User Option")
+			     ("var" "Variable")
+			     ("var-local" "Buffer-Local Variable")))
+		(list (make-symbol name) (vector name type))))
+	  v2 (elisp-ext--search-regexp
+	      user-ext-elisp-mode-local-variable-regexp
+	      (lambda (&optional name type mode)
+		(setq name (match-string-no-properties 3)
+		      mode (match-string-no-properties 2)
+		      name (propertize name 'length (length name))
+		      type (pcase (match-string-no-properties 1)
+			     ("const" (format "Constant (local to %s)" mode))
+			     ("var" (format "Variable (local to %s)" mode))))
+		(list (make-symbol name) (vector name type)))))
+    (append (if v1 v1 nil)
+	    (if v2 v2 nil))))
+
+(cl-defmethod elisp-ext--list-x ((_type (eql sections)))
+  "Return a list of this buffer's (sub)sections.
+
+ID is the string name of the (sub)section.  Within ENTRY,
+NAME is also the string name of the (sub)section.  TYPE is
+either \"Section\" or \"Subsection\"."
+  (let ((sections (elisp-ext--get-sections))
+	entries)
+    (alist-ext-dolist (section subsections sections entries)
+      (push (list section (vector section "Section")) entries)
+      (dolist (subsection subsections)
+	(push (list subsection (vector subsection "Subsection"))
+	      entries)))
+    (nreverse entries)))
 
 (define-button-type 'occur-cross-reference
   'action #'elisp-ext--occur-cross-reference)
@@ -102,79 +205,126 @@ Group 3 matches the name.")
      (cl-ext-progn
        (funcall fun)))))
 
-(defun elisp-ext--list-symbols (type)
-  (cl-ecase type
-    (functions (elisp-ext--search-regexp
-		user-ext-elisp-defun-regexp
-		(lambda (&optional sym)
-		  (setq sym (intern-soft (match-string-no-properties 1)))
-		  (list sym (vector (symbol-name sym)
-				    (if (commandp sym)
-					"Command"
-				      "Function"))))))
-    (variables
-     (let (v1 v2)
-       (setq v1 (elisp-ext--search-regexp
-		 user-ext-elisp-variable-regexp
-		 (lambda (&optional type name)
-		   (setq name (match-string-no-properties 2)
-			 type (pcase (match-string-no-properties 1)
-				("const" "Constant")
-				("custom" "User Option")
-				("var" "Variable")
-				("var-local" "Buffer-Local Variable")))
-		   (list (make-symbol name) (vector name type))))
-	     v2 (elisp-ext--search-regexp
-		 user-ext-elisp-mode-local-variable-regexp
-		 (lambda (&optional name type mode)
-		   (setq name (match-string-no-properties 3)
-			 mode (match-string-no-properties 2)
-			 type (pcase (match-string-no-properties 1)
-				("const" (format "Constant (local to %s)" mode))
-				("var" (format "Variable (local to %s)" mode))))
-		   (list (make-symbol name) (vector name type)))))
-       (append (if v1 v1 nil)
-	       (if v2 v2 nil))))
-    ;; TODO: Maybe faces (i.e., defface)?
-    ;; TODO: Maybe structures (i.e., cl-defstruct)?
-    ))
+(defun elisp-ext--get-sections ()
+  "Return an alist of buffer's sections mapping to its subsections.
+
+The return value is an alist mapping each section to its
+respective subsections.  Each key is a string containing the
+name of a section; it maps to a list of strings each
+containing the name of a subsection.
+
+Each (sub)section string contains text properties.
+`position'  The buffer position of the (sub)section.
+`length'    The length of the string."
+  (save-excursion
+    (goto-char (point-min))
+    (let* ((rx (elisp-ext--rx bol ";;" (syntax whitespace) (or "###" "---")))
+	   section ssl al temp)
+      (cl-loop while (re-search-forward rx nil t) ; Searching for (sub)section comments
+	       do
+	       (goto-char (match-beginning 0))
+	       (cond
+		((looking-at user-ext-elisp-section-comment-regexp)
+		 ;; Section
+		 (cl-ext-when section
+		   ;; When there is a previous section
+		   (setf (alist-get section al) (cl-ext-when ssl (nreverse ssl))))
+		 (setq temp (match-string-no-properties 1))
+		 (setq section (propertize temp
+					   'length (length temp)
+					   'position (match-beginning 0))
+		       ssl nil))
+		((looking-at user-ext-elisp-subsection-comment-regexp)
+		 ;; Subsection
+		 (cl-ext-unless section
+		   (user-error "Subsection '%s' is not preceded by a section"
+			       (match-string 1)))
+		 (setq temp (match-string-no-properties 1))
+		 (push (propertize temp
+				   'length (length temp)
+				   'position (match-beginning 0))
+		       ssl)))
+	       (forward-line)
+	       finally do
+	       (cl-ext-when section
+		 (setf (alist-get section al) (cl-ext-when ssl (nreverse ssl)))))
+      (nreverse al))))
+
+(defun elisp-ext--occur-goto-section (_string-or-symbol)
+  (let (;; (string (if (cl-typep string-or-symbol 'symbol)
+	;; 	    (symbol-name string-or-symbol)
+	;; 	  string-or-symbol))
+	(position (get-text-property (point) 'position)))
+    (cl-assert (cl-typep position 'integer) t)
+    (cl-assert elisp-occur-original-buffer)
+    ;; (with-current-buffer elisp-occur-original-buffer
+    ;;   (goto-char position))
+    (pop-to-buffer elisp-occur-original-buffer)
+    (goto-char position)
+    (message "Jump to position %d" position)))
 
 (defun elisp-ext--occur-buttonize-entries (type)
   (cl-check-type type symbol)
+  (cl-assert (memq type user-ext-elisp-valid-occur-types) t)
   (goto-char (point-min))
   (save-excursion
     (let ((inhibit-read-only t)
-	  (type (cl-ecase type
-		  ('functions #'describe-function)
-		  ('variables #'describe-variable))))
+	  (type (cl-case type
+		  (functions #'describe-function)
+		  (variables #'describe-variable)
+		  (types #'describe-symbol)
+		  (sections #'elisp-ext--occur-goto-section))))
       (with-silent-modifications
-	(cl-loop with rx = (rx bol (+ (or (syntax word) (syntax symbol))))
-		 with beg
+	(cl-loop with start
 		 with end
-		 while (re-search-forward rx nil t)
+		 while (not (eobp))
 		 do
-		 (setq beg (match-beginning 0)
-		       end (match-end 0))
-		 (make-button beg end 'type 'occur-cross-reference
-			      'xref-function type))))))
+		 (buffer-substring (point) (+ (point) 1))
+		 (setq start (point)
+		       end (let ((sz (get-text-property (point) 'length)))
+			     (cl-check-type sz integer)
+			     (+ start sz)))
+		 (make-button start end 'type 'occur-cross-reference
+			      'xref-function type)
+		 (forward-line 1))))))
 
-(defun elisp-ext--occur (buffer-name type-symbol)
-  (require 's)
-  (let* ((bufname (s-lex-format "*Occur: ${buffer-name}*"))
-	 (curbuf (current-buffer))
-	 (buf (get-buffer bufname)))
-    (cl-ext-when buf
-      (kill-buffer buf))
-    (setq buf (get-buffer-create bufname))
-    (with-current-buffer buf
+(defun elisp-ext--occur-setup-buffer (type-symbol)
+  (cl-ext-when (eq type-symbol 'sections)
+    (setq tabulated-list-format [("Name" 50 nil) ("Type" 0 nil)]
+	  tabulated-list-sort-key nil)))
+
+(defun elisp-ext--occur (buffer-base-name type-symbol)
+  "Display a list of items according to TYPE-SYMBOL.
+BUFFER-BASE-NAME is the name of the buffer in which the list
+is displayed.  TYPE-SYMBOL indicates what kind of list to
+construct.  See `user-ext-elisp-valid-occur-types' for a
+list of valid symbols."
+  (cl-assert (memq type-symbol user-ext-elisp-valid-occur-types) t)
+  (let* ((current-buffer (current-buffer))
+	 (buffer-name (s-lex-format "*Occur: ${buffer-base-name}*"))
+	 (buffer (get-buffer buffer-name)))
+    (cl-ext-when buffer
+      (kill-buffer buffer))
+    (setq buffer (get-buffer-create buffer-name))
+    (with-current-buffer buffer
       (elisp-occur-mode)
+      (elisp-ext--occur-setup-buffer type-symbol)
+      (setq elisp-occur-original-buffer current-buffer
+	    elisp-occur-type type-symbol)
       (setq tabulated-list-entries
 	    (lambda ()
-	      (with-current-buffer curbuf
-		(elisp-ext--list-symbols type-symbol))))
+	      (with-current-buffer current-buffer
+		(elisp-ext--list-x type-symbol))))
       (tabulated-list-print)
       (elisp-ext--occur-buttonize-entries type-symbol))
-    (display-buffer buf)))
+    (display-buffer buffer)))
+
+(defun elisp-ext-occur-sections ()
+  "Display a list of this buffer's sections and subsection comments.
+Occurrences of such comments will be shown in a temporary
+buffer."
+  (interactive)
+  (elisp-ext--occur "Elisp Sections" 'sections))
 
 (defun elisp-ext-occur-variables ()
   "Display a list of this buffer's variables.
@@ -192,11 +342,40 @@ options, and so on."
   (interactive)
   (elisp-ext--occur "Elisp Functions" 'functions))
 
+(defun elisp-ext-occur-types ()
+  "Display a list of this buffer's types.
+Display a temp buffer that lists the current buffer's types
+(i.e., faces, structures, etc.)."
+  (interactive)
+  (elisp-ext--occur "Elisp Types" 'types))
+
+;; --- Elisp Ext Occur Major Mode
+
+(defun elisp-occur--revert-hook ()
+  (run-with-idle-timer 0.01 nil
+		       (lambda ()
+			 (elisp-ext--occur-buttonize-entries elisp-occur-type))))
+
+(fext-defadvice tabulated-list-sort (after tabulated-list-sort)
+  "Sorted entries in `elisp-occur-mode'."
+  (cl-assert elisp-occur-type)
+  (cl-ext-when (eq major-mode 'elisp-occur-mode)
+    (run-with-idle-timer 0.01 nil
+			 (lambda ()
+			   (elisp-ext--occur-buttonize-entries elisp-occur-type)))))
+
 (define-derived-mode elisp-occur-mode tabulated-list-mode "Elisp Occur"
   "Major mode for elisp-ext-occur* functions."
-  (setq tabulated-list-format [("Name" 50 t) ("Type" 0 t)])
-  (setq tabulated-list-sort-key '("Name" . nil))
+  (setq tabulated-list-format [("Name" 50 t) ("Type" 0 t)]
+	tabulated-list-sort-key '("Name" . nil))
+  (add-hook 'tabulated-list-revert-hook #'elisp-occur--revert-hook nil t)
   (tabulated-list-init-header))
+
+(defvar-local elisp-occur-original-buffer nil
+  "The buffer from which this one was launched.")
+
+(defvar-local elisp-occur-type nil
+  "The type of items being listed.")
 
 (define-key elisp-occur-mode-map (kbd "k") #'kill-and-quit)
 
@@ -450,7 +629,9 @@ Automatically activates `hs-minor-mode' when called."
   (define-prefix-command 'user-ext-elisp-occur-map)
   (define-key emacs-lisp-mode-map (kbd "C-c C-o") #'user-ext-elisp-occur-map)
   (define-key user-ext-elisp-occur-map (kbd "f") #'elisp-ext-occur-functions)
-  (define-key user-ext-elisp-occur-map (kbd "v") #'elisp-ext-occur-variables))
+  (define-key user-ext-elisp-occur-map (kbd "v") #'elisp-ext-occur-variables)
+  (define-key user-ext-elisp-occur-map (kbd "t") #'elisp-ext-occur-types)
+  (define-key user-ext-elisp-occur-map (kbd "#") #'elisp-ext-occur-sections))
 
 ;; ### Hook
 
