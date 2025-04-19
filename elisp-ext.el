@@ -546,11 +546,16 @@ Updates the autoload definitions in the Lisp files in
 (defun elisp-ext--scratch-buffer-ctrl-c-ctrl-c ()
   "Kill the text inside buffer and quit."
   (interactive)
-  (cl-ext-when (re-search-forward "[ \t\n\r]+\\'" nil t)
-    (replace-match ""))
-  (cl-ext-when user-ext-elisp--scratch-minify
-    (elisp-ext-minify (point-min) (point-max) t))
-  (kill-region (point-min) (point-max))
+  (let ((inhibit-read-only t))
+    (with-demoted-errors
+	"Error `elisp-ext--scratch-buffer-ctrl-c-ctrl-c': %S"
+      (goto-char (point-min))
+      (cl-ext-when (re-search-forward "[ \t\n\r]+\\'" nil t) ; Delete trailing whitespace
+	(replace-match ""))				     ; from the end of the buffer
+      (cl-ext-when user-ext-elisp--scratch-minify	     ; Minify the buffer
+	(elisp-ext-minify (point-min) (point-max) t))	     ; with prefix argument
+      (kill-region (point-min) (point-max))))
+  (setq user-ext-elisp--scratch-minify nil)
   (kill-and-quit))
 
 ;;;###autoload (autoload 'elisp-ext-scratch-buffer "elisp-ext" "Create a scratch buffer for Emacs lisp code." t)
