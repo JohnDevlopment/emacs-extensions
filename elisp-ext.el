@@ -385,6 +385,90 @@ Display a temp buffer that lists the current buffer's types
   "Return non-nil if inside a comment."
   (ppss-comment-depth (make-ppss-easy (syntax-ppss))))
 
+(defun elisp-ext-copy-kill-sexp (&optional fun n)
+  "Copy, kill, or delete the Lisp expression containing point.
+FUN is a function that accepts two arguments, the beginning
+and end of a region.  N, if non-nil, is the prefix argument,
+as gotten from `current-prefix-arg' or one of its
+counterparts (see below).
+
+N is used to control the level this function will traverse:
+a value of 1 means the immediate Lisp expression containing
+point, 2 the expression containing said expression, and so
+on.  A value of nil means 1.
+
+As a side note, FUN is meant to be one of the \"kill-ish\"
+functions that operate on regions.  This function is called
+by one these commands:
+
+- `elisp-ext-copy-sexp' --- passes `kill-ring-save' as FUN
+- `elisp-ext-kill-sexp' --- passes `kill-region' as FUN
+- `elisp-ext-delete-sexp' --- passes `delete-region' as FUN"
+  (let* ((pps (make-ppss-easy (syntax-ppss)))
+	 (n (and n (prefix-numeric-value n)))
+	 (beg (cl-ext-progn
+		(cl-assert pps t)
+		(if n
+		    (ppss-open-paren-depth pps n)
+		  (ppss-innermost-start pps))))
+	 end)
+    (cl-ext-unless beg
+      (user-error "Not inside a Lisp expression"))
+    (cl-ext-save-point
+      (goto-char beg)
+      (forward-sexp)
+      (setq end (point)))
+    (cl-ext-when (and beg end)
+      (funcall fun beg end))))
+
+(defun elisp-ext-delete-sexp (&optional n interactive-p)
+  "Delete the Lisp expression containing point without saving it.
+N is the prefix argument: if non-nil, it specifies the level
+to traverse from point (see below). A value of 1 denotes the
+Lisp expression containing point, 2 the containing Lisp
+expression of that, and so on.  A value of nil effectively
+means 1.
+
+See also `universal-argument'."
+  (interactive (list current-prefix-arg t))
+  (barf-if-buffer-read-only)
+  (cl-ext-unless interactive-p
+    (error "Must be called interactively"))
+  (elisp-ext-copy-kill-sexp #'delete-region n))
+(put 'elisp-ext-delete-sexp 'interactive-only "use `elisp-ext-copy-kill-sexp'.")
+
+(defun elisp-ext-kill-sexp (&optional n interactive-p)
+  "Kill (\"cut\") the Lisp expression containing point.
+N is the prefix argument: if non-nil, it specifies the level
+to traverse from point (see below). A value of 1 denotes the
+Lisp expression containing point, 2 the containing Lisp
+expression of that, and so on.  A value of nil effectively
+means 1.
+
+See also `universal-argument'."
+  (interactive (list current-prefix-arg t))
+  (barf-if-buffer-read-only)
+  (cl-ext-unless interactive-p
+    (error "Must be called interactively"))
+  (elisp-ext-copy-kill-sexp #'kill-region n))
+(put 'elisp-ext-kill-sexp 'interactive-only "use `elisp-ext-copy-kill-sexp'.")
+
+(defun elisp-ext-copy-sexp (&optional n interactive-p)
+  "Save the containing Lisp expression as if killed, but don't kill it.
+N is the prefix argument: if non-nil, it specifies the level
+to traverse from point (see below). A value of 1 denotes the
+Lisp expression containing point, 2 the containing Lisp
+expression of that, and so on.  A value of nil effectively
+means 1.
+
+See also `universal-argument'."
+  (interactive (list current-prefix-arg t))
+  (cl-ext-unless interactive-p
+    (error "Must be called interactively"))
+  (elisp-ext-copy-kill-sexp #'kill-ring-save n))
+(put 'elisp-ext-copy-sexp 'interactive-only "use `elisp-ext-copy-kill-sexp'.")
+
+;;;###autoload
 (defun elisp-ext-minify (start end &optional force)
   "Minify the code between START and END in current buffer.
 START and END are the two points in a region.  If the region
@@ -622,6 +706,14 @@ Automatically activates `hs-minor-mode' when called."
   (define-key emacs-lisp-mode-map (kbd "C-c c b") #'emacs-lisp-byte-compile)
   (define-key emacs-lisp-mode-map (kbd "C-c c M-b") #'emacs-lisp-byte-compile-and-load)
   (define-key emacs-lisp-mode-map (kbd "C-c M-f") #'elisp-ext-minify)
+  (define-key emacs-lisp-mode-map (kbd "C-c C-w") #'elisp-ext-kill-sexp)
+  (define-key emacs-lisp-mode-map (kbd "C-c M-w") #'elisp-ext-copy-sexp)
+  (define-key emacs-lisp-mode-map (kbd "C-c <delete>") #'elisp-ext-delete-sexp)
+
+  (define-key lisp-interaction-mode-map (kbd "C-c M-f") #'elisp-ext-minify)
+  (define-key lisp-interaction-mode-map (kbd "C-c C-w") #'elisp-ext-kill-sexp)
+  (define-key lisp-interaction-mode-map (kbd "C-c M-w") #'elisp-ext-copy-sexp)
+  (define-key lisp-interaction-mode-map (kbd "C-c <delete>") #'elisp-ext-delete-sexp)
 
   (define-key lisp-interaction-mode-map [remap kill-and-quit] #'quit-window)
   ;; (define-key lisp-interaction-mode-map (kbd "C-c M-f") #'elisp-ext-minify)
