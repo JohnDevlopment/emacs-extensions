@@ -647,6 +647,26 @@ Automatically activates `hs-minor-mode' when called."
 
 ;; --- Elisp doc minor mode
 
+(defvar elisp-ext-doc--data nil "Internal.")
+
+(defvar-local elisp-ext-doc-type nil
+  "Type of scratch buffer.
+0 for docstrings, 1 for commentary.")
+
+(defvar-local elisp-ext-doc-buffer nil
+  "The original buffer from which the command was launched.")
+
+(defvar-local elisp-ext-doc-origin nil
+  "The original point in buffer.")
+
+(defun elisp-ext-doc-scratch-buffer--setup-vars ()
+  (cl-destructuring-bind (type source-buffer origin) elisp-ext-doc--data
+    (cl-assert (and type source-buffer origin) t)
+    (setq elisp-ext-doc-type type
+	  elisp-ext-doc-buffer source-buffer
+	  elisp-ext-doc-origin origin
+	  elisp-ext-doc--data nil)))
+
 (defun elisp-ext-doc-scratch-buffer--shift-return ()
   "Insert a newline and change fill column."
   (interactive)
@@ -656,43 +676,172 @@ Automatically activates `hs-minor-mode' when called."
 (defun elisp-ext-doc-scratch-buffer--ctrl-c-ctrl-c ()
   "Kill the text inside this buffer and restore window."
   (interactive)
-  (let* ((beg (1+ (elisp-ext--find-quote)))
-	 (end (1- (elisp-ext--find-quote t))))
-    (kill-region beg end)
-    (kill-buffer)
-    (jump-to-register user-ext-elisp--register)))
+  (let (fail)
+    (unwind-protect
+	(cl-ext-progn
+	  (cl-case elisp-ext-doc-type
+	    (0 (let* ((start (1+ (elisp-ext--find-quote)))
+		      (end (1- (elisp-ext--find-quote t))))
+		 (run-with-idle-timer 0.1 nil
+				      #'message "Killed text from \"%s\""
+				      (buffer-substring start end))
+		 (kill-region start end)))
+	    (1 (let ((start (point-min))
+		     (end (point-max))
+		     pos
+		     string)
+		 (setq string
+		       (cl-loop initially do
+				(goto-char (point-min))
+				(delete-trailing-whitespace start end)
+				while (not (eobp))
+				do
+				(insert ";; ")
+				(forward-line 1)
+				finally do
+				(delete-trailing-whitespace start end)
+				(cl-return (buffer-string))))
+		 (cl-assert elisp-ext-doc-origin)
+		 (setq pos elisp-ext-doc-origin)
+		 (with-current-buffer elisp-ext-doc-buffer
+		   (goto-char pos)
+		   (insert string))))
+	    (t
+	     (run-with-idle-timer
+	      0.1 nil #'display-warning 'user-extensions
+	      (s-lex-format "Invalid type ${elisp-ext-doc-type}") :error)
+	     (setq fail t))))
+      (cl-ext-unless fail (kill-buffer))
+      (jump-to-register user-ext-elisp--register))))
 
-(define-scratch-buffer-function elisp-ext--doc-scratch-buffer "elisp docstring" nil
-  "Create a scratch buffer for Emacs lisp docstrings."
-  nil
+(defun elisp-ext-doc-scratch-buffer--doc-buffer-init ()
   (emacs-lisp-mode)
-  (elisp-ext-doc-minor-mode 1)
-  (auto-fill-mode t)
+  (elisp-ext-doc-scratch-buffer--setup-vars)
   (set-fill-column 67)
+  (elisp-ext--enable-minor-mode auto-fill-mode)
+  (elisp-ext--enable-minor-mode elisp-ext-doc-minor-mode)
   (elisp-ext--enable-minor-mode electric-pair-mode electric-pair-local-mode)
   (elisp-ext--enable-minor-mode company-mode)
   (elisp-ext--enable-minor-mode display-fill-column-indicator-mode)
-  (insert ";; Fill column is set to 67. Type S-<return> to set it to 60.\n"
-	  ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;\n"
-	  "\"\n\n\"")
-  (goto-char (1+ (elisp-ext--find-quote)))
+  (skeleton-insert '(nil ";; Fill column is set to 67. "
+			 "Type S-<return> to set it to 60.\n"
+			 ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;\n"
+			 "\"\n" _ "\n\""))
+  (goto-char (1+ (elisp-ext--find-quote))))
+
+(defun elisp-ext-doc-scratch-buffer--comment-buffer-init ()
+  "Called after opening the scratch buffer for commentary."
+  (text-mode)
+  (elisp-ext-doc-scratch-buffer--setup-vars)
+  (let (string)
+    (with-current-buffer elisp-ext-doc-buffer
+      (let* ((props (elisp-ext--get-commentary-block))
+	     (start (plist-get props :start))
+	     (end (plist-get props :end)))
+	(cl-assert start)
+	(cl-assert end)
+	(goto-char start)
+	(delete-region start end)
+	(setq string (plist-get props :string))))
+    (save-excursion (insert string))
+    (auto-fill-mode t)
+    (elisp-ext-doc-minor-mode t)
+    (set-fill-column 67)
+    (elisp-ext--enable-minor-mode electric-pair-mode electric-pair-local-mode)
+    (elisp-ext--enable-minor-mode company-mode)
+    (elisp-ext--enable-minor-mode display-fill-column-indicator-mode)
+    (add-hook 'completion-at-point-functions #'elisp-completion-at-point nil t)))
+
+(define-scratch-buffer-function elisp-ext--doc-scratch-buffer "elisp docstring"
+				(type source-buffer origin)
+  "Create a scratch buffer for Lisp docstrings."
+  noninteractive
+  (cl-check-type type integer)
+  (cl-check-type source-buffer buffer)
+  (setq elisp-ext-doc--data (list type source-buffer origin))
+  (cl-ecase type
+    ;; Documentation string buffer
+    (0 (elisp-ext-doc-scratch-buffer--doc-buffer-init))
+    ;; Commentary buffer
+    (1 (elisp-ext-doc-scratch-buffer--comment-buffer-init)))
   (setq header-line-format "Type C-c C-c when finished."))
 
 ;;;###autoload
 (defun elisp-ext-doc-scratch-buffer ()
   "Create a scratch buffer for Emacs Lisp docstrings."
-  (interactive)
+  (interactive "*")
   (window-configuration-to-register user-ext-elisp--register)
-  (elisp-ext--doc-scratch-buffer))
+  (elisp-ext--doc-scratch-buffer 0 (current-buffer) (point-marker)))
 
 (define-minor-mode elisp-ext-doc-minor-mode
-  "Minor mode for `elisp-ext-doc-scratch-buffer'.
+  "Minor mode for `elisp-ext--doc-scratch-buffer'.
 
 \\{elisp-ext-doc-minor-mode-map}"
   :keymap (let ((map (make-sparse-keymap)))
 	    (define-key map (kbd "<S-return>") #'elisp-ext-doc-scratch-buffer--shift-return)
 	    (define-key map (kbd "C-c C-c") #'elisp-ext-doc-scratch-buffer--ctrl-c-ctrl-c)
 	    map))
+
+;; --- Elisp commentary scratch
+
+(defun elisp-ext--get-comment-indent (&optional noerror)
+  "Get the indent of the comment after point.
+Search for a comment between point and the end of the visual
+line.  Return the column of text after the comment starter.
+
+The return value is an integer unless the search fails; in
+that case return nil if NOERROR is non-nil, else raise an
+error."
+  (cl-ext-progn
+    (comment-normalize-vars)
+    (save-excursion
+      (cl-ext-when (comment-search-forward (line-end-position) noerror)
+	  (current-column)))))
+
+(defun elisp-ext--get-commentary-block ()
+  "Parse a commentary block.
+Return a property list with the elements :string, :start,
+and :end.  Parsing starts at the comment at or around
+point.  Parse sucessive comment lines until a non-comment
+line is reached, and join into a string.
+
+Properties:
+:start   Start of the first comment line.
+:end     Position at the end of the final comment line.
+:string  The body of the comment block"
+  (let (pps col content pos line)
+    (setq pps (make-ppss-easy (syntax-ppss))
+	  pos (ppss-comment-or-string-start pps))
+    (if pos
+	(let (start end)
+	  (setq pos (and (goto-char pos)	    ; Move to start of comment
+			 (point-marker))	    ;
+		col (elisp-ext--get-comment-indent) ; Get column of comment body
+		start pos
+		end pos
+		content (cl-loop
+			 with in-comment = t
+			 initially do (goto-char pos)
+			 while in-comment
+			 collect (cl-ext-progn
+				   (move-to-column col)
+				   (setq line (buffer-substring (point) (line-end-position)))
+				   (forward-line)
+				   (setq in-comment (elisp-ext--get-comment-indent t)
+					 end (1- (point)))
+				   line)
+			 finally do
+			 (goto-char pos)))
+	  (list :string (string-trim (string-join content "\n"))
+		:start start :end end))
+      (error "Not inside a comment"))))
+
+;;;###autoload
+(defun elisp-ext-edit-commentary ()
+  "Edit the comment at point."
+  (interactive "*")
+  (window-configuration-to-register user-ext-elisp--register)
+  (elisp-ext--doc-scratch-buffer 1 (current-buffer) (point-marker)))
 
 ;; ### Keymap
 
@@ -708,6 +857,7 @@ Automatically activates `hs-minor-mode' when called."
   (define-key emacs-lisp-mode-map (kbd "C-c C-j") #'imenu)
   (define-key emacs-lisp-mode-map (kbd "C-c c M-s") #'elisp-ext-scratch-buffer)
   (define-key emacs-lisp-mode-map (kbd "C-c c M-d") #'elisp-ext-doc-scratch-buffer)
+  (define-key emacs-lisp-mode-map (kbd "C-c c M-c") #'elisp-ext-edit-commentary)
   (define-key emacs-lisp-mode-map (kbd "C-c c b") #'emacs-lisp-byte-compile)
   (define-key emacs-lisp-mode-map (kbd "C-c c M-b") #'emacs-lisp-byte-compile-and-load)
   (define-key emacs-lisp-mode-map (kbd "C-c M-f") #'elisp-ext-minify)
