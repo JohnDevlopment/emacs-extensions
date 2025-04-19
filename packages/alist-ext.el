@@ -1,7 +1,10 @@
-;;; alist-ext.el --- Functions for alists            -*- lexical-binding: t; -*-
+;; -*- lexical-binding: t; -*-
 
-(require 'debug-ext)
-(require 'cl-lib)
+
+(eval-when-compile
+  (require 'cl-lib))
+
+;; ### Functions
 
 ;;;###autoload
 (defun alist-ext-from-list (list)
