@@ -871,7 +871,6 @@ Properties:
   (define-key lisp-interaction-mode-map (kbd "C-c <delete>") #'elisp-ext-delete-sexp)
 
   (define-key lisp-interaction-mode-map [remap kill-and-quit] #'quit-window)
-  ;; (define-key lisp-interaction-mode-map (kbd "C-c M-f") #'elisp-ext-minify)
 
   (define-prefix-command 'user-ext-elisp-occur-map)
   (define-key emacs-lisp-mode-map (kbd "C-c C-o") #'user-ext-elisp-occur-map)
@@ -891,3 +890,9 @@ Properties:
 
 (provide 'elisp-ext)
 ;;; elisp-ext ends here
+
+;; Local Variables:
+;; eval: (local-lambda-define-self-insert-command variable-prefix "user-ext-elisp-")
+;; eval: (local-lambda-define-self-insert-command function-prefix "elisp-ext-")
+;; eval: (local-set-key (kbd "C-c C-c") nil)
+;; End:
