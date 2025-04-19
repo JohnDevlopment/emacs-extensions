@@ -215,6 +215,7 @@ evaluated."
 (load-extension-safe "abbrev-ext")
 (load-extension-safe "codeium-ext")
 (load-extension-safe "desktop-ext")
+(load-extension-safe "thingatpt-ext" 2)
 (load-extension "custom-ext")
 (load-extension "help-ext")
 
