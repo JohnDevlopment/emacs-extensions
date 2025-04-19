@@ -25,23 +25,28 @@
      (list 'setplist symbol nil))
     (_ form)))
 
-(defmacro --print-expr (type form)
+(defmacro --print-expr (type form &optional printcharfun)
   "Print the result of FORM.
 TYPE is used to indicate how FORM should be handled.
 Currently, it can be either symbol `var' or symbol `sexp'.
+PRINTCHARFUN is the output stream in which to print the
+result (see `princ').
 
-This function emits a warning when it is byte compiled."
-  (declare (debug ([&or "var" "sexp"] form)))
+This macro emits a warning when it is byte compiled."
+  (declare (debug ([&or "var" "sexp"] form &optional form)))
   (cl-ext-when (macroexp--compiling-p)
     (--show-compiler-warning --print-expr))
   (pcase type
     ('var
      (cl-check-type form symbol)
      `(cl-ext-progn
-	(message "DEBUG: %s = %S" (quote ,form) ,form)))
+	(princ (format "DEBUG: %s = %S" (quote ,form) ,form) ,printcharfun)
+	(princ "\n" ,printcharfun)))
     ('sexp
      `(cl-ext-progn
-	(message ,(concat "DEBUG: " (cl-prin1-to-string form) " = %S") ,form)))
+	(princ (format ,(concat "DEBUG: " (cl-prin1-to-string form) " = %S") ,form)
+	       ,printcharfun)
+	(princ "\n" ,printcharfun)))
     (_ (error "Unknown type %S" type))))
 (define-obsolete-function-alias 'print-expr #'--print-expr "2025-03-10")
 
