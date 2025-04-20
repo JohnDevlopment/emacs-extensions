@@ -2,35 +2,6 @@
 
 ;; Errors
 
-(defun signal-wrong-argument (arg valid)
-  "Signal an error to indicate an incorrect argument.
-ARG is the argument that caused the error and VALID denotes
-the accepted value(s).
-
-If VALID is a list of two elements, it is interpreted as a
-range and the message is formatted accordingly.  If the list
-is 3 or more elements long, then it is formatted into a
-comma-separated list (as a string).  Otherwise, VALID is
-treated as a single value and formatted appropriately."
-  (let (msg)
-    (setq msg (pcase valid
-		((pred listp) (format "Valid: %S," valid))
-    		(`(,x ,y) (format "Valid range: %S - %S" x y))
-    		(_ (format "Valid: %S" valid))))
-
-    (setq msg (if (cl-typep valid 'list)
-		  (pcase (length valid)
-		    (1 (format "Valid: %S" (car valid)))
-		    (2 (format "Valid range: %S-%S" (car valid) (car (cdr valid))))
-		    (_
-		     (setq valid (mapcar #'prin1-to-string valid))
-		     (format "Valid: %s" (string-join valid ", "))))
-		(format "Valid: %S" valid)))
-    (signal 'wrong-argument (list arg msg))))
-
-(define-error 'invalid-argument "Invalid argument")
-(define-error 'wrong-argument "Wrong argument" 'invalid-argument)
-
 (eval-when-compile
   (require 'embed-doc)
   (declare-function elisp-ext-minify "elisp-ext" (start end)))
