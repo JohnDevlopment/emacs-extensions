@@ -144,12 +144,6 @@ Call `count-words-region' and"
     (setq deactivate-mark t)
     nil))
 
-(defun date-format-version ()
-  "Formats a version string in YYYYMMDD.HHMM format."
-  (interactive)
-  (insert (format-time-string "%Y%m%d.%H%M")))
-(make-obsolete 'date-format-version nil "2025-01-20")
-
 (defun enable-wrap ()
   "Enable line wrap if it is not already."
   (interactive)
