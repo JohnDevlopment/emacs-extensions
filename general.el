@@ -57,6 +57,11 @@
   (interactive)
   (setq-local company-backends (cons #'company-ispell company-backends)))
 
+(defun capf-enable-ispell-locally ()
+  "Add `company-ispell' to the local binding of `completion-at-point-functions'."
+  (interactive)
+  (add-hook 'completion-at-point-functions #'ispell-complete-word nil t))
+
 (defun sort-words (separators start end)
   "Sort words in buffer between START and END via SEPARATORS.
 SEPARATORS is a regular expression used to match the
