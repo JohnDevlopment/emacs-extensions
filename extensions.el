@@ -13,6 +13,10 @@
   (require 'cl-ext)
   (require 'subr-x))
 
+(use-package python-mode
+  :autoload
+  rx)
+
 (use-package f
   :functions
   f-join
@@ -45,7 +49,12 @@
 ;; ---Loading/finding extensions
 
 (defun --list-extensions (&optional suffix completion)
-  (let* ((regex "\\`\\([a-z][a-z-]+\\)\\.el\\(?:\\.gz\\)?\\'")
+  ;; "\\`\\([a-z][a-z-]+\\)\\.el\\(?:\\.gz\\)?\\'"
+  (let* ((regex (rx string-start
+		    (any (?a . ?z))
+		    (+ (any "a-z0-9-"))
+		    ".el" (opt ".gz")
+		    string-end))
 	 (files (thread-last
 		    (directory-files "~/.emacs.d/extensions")
 		  (cl-remove-if-not (lambda (file)
