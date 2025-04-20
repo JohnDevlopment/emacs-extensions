@@ -27,17 +27,22 @@
   :functions
   signal-wrong-argument)
 
-;; Variables
+;; ### Variables
+
+(defvar temp t "A temporary variable to be used anywhere.")
 
 (defvar-local user-ext-local-position-ring nil
   "Current buffer's mark ring.")
 
-;; Advice
+;; ### Advice
 
 (fext-defadvice narrow-to-region (after narrow-to-region)
   (deactivate-mark))
 
-;; Functions
+;; ### Functions
+
+(defun --make-sure-user-actually-wants-to-quit ()
+  (y-or-n-p "Did you actually mean to quit?"))
 
 (defun describe-region (&optional beg end)
   "Describe the region."
