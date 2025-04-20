@@ -138,7 +138,7 @@ zero elements."))
     `(progn
        (defcustom ,cname ,value
 	 ,cdoc
-	 :type 'hook
+	 :type '(repeat symbol)
 	 :group 'keymaps-ext)
        (defun ,fname (choice)
 	 ,fdoc
