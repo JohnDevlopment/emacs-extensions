@@ -4,6 +4,21 @@
   (require 'abbrev)
   (require 'cl-ext))
 
+(eval-and-compile
+  (embed-doc-document-symbol abbrev-ext
+    "Extension to the abbrev system."
+    :commands
+    abbrev-ext-add-local-abbrev
+    abbrev-ext-install-local-abbrev-functions
+    abbrev-ext-inverse-add-local-abbrev
+    :variables
+    user-ext-abbrev-insert-chars
+    user-ext-abbrev-insert-char-regex
+    user-ext-abbrev-local-table
+    :functions
+    abbrev-ext-define-local-abbrev
+    abbrev-ext-insert-hook))
+
 ;; ### Variables
 
 (defconst user-ext-abbrev-insert-char-regex
