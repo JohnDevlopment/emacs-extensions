@@ -173,6 +173,18 @@ this behaves exactly like `progn'.
     (1 (car body))
     (_ `(progn ,@body))))
 
+;;;###autoload
+(defmacro cl-ext-check-type (form type &optional string)
+  "Verify FORM is of type TYPE; signal an error if not.
+To wit, signal `type-error' if VALUE does not match TYPE
+according to `cl-typep', which see.  Include STRING in the
+error message if provided."
+  `(cl-ext-unless (cl-typep ,form ',type)
+       (signal-type-error ,form ,(if string
+				     string
+				   `(type-of ,form))
+			  ',type)))
+
 ;; ### Tests
 
 (ert-deftest cl-ext-test-append ()
