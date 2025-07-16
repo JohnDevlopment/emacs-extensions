@@ -129,8 +129,7 @@ Lisp expressions and adding another list to it:
    (let ((body '(\"Docstring.\")))
      (cl-append-list (interactive) body))
    => (\"Docstring\" (interactive))"
-  (declare (pure t) (debug (form symbolp)))
-  (cl-check-type x listp)
+  (declare (debug (form symbolp)))
   (cl-check-type place symbol)
   `(setq ,place (append ,place (list ,x))))
 (define-obsolete-function-alias 'cl-append-list #'cl-ext-append-list "2025.02.10")
