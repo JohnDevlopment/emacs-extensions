@@ -41,7 +41,9 @@ See also the documentation for this extension by typing
     (setq msg (if (cl-typep valid 'list)
 		  (pcase valid
 		    (`(,x)
-		     (format "Valid: %S" x))
+		     (if (stringp x)
+			 (format "Valid: %s" x)
+		       (format "Valid: %S" x)))
 		    (`(,x ,y)
 		     (format "Valid range: %S-%S" x y))
 		    (`(,x ,y list)
