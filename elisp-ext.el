@@ -468,7 +468,9 @@ counterparts (see below).
 N is used to control the level this function will traverse:
 a value of 1 means the immediate Lisp expression containing
 point, 2 the expression containing said expression, and so
-on.  A value of nil means 1.
+on.  A value of nil means 1.  If N is negative, the absolute
+value is used to control the level, and the copied/killed
+text is minified via `minify'.
 
 As a side note, FUN is meant to be one of the \"kill-ish\"
 functions that operate on regions.  This function is called
@@ -482,17 +484,23 @@ by one these commands:
 	 (beg (cl-ext-progn
 		(cl-assert pps t)
 		(if n
-		    (ppss-open-paren-depth pps n)
+		    (ppss-open-paren-depth pps (abs n))
 		  (ppss-innermost-start pps))))
 	 end)
     (cl-ext-unless beg
-      (user-error "Not inside a Lisp expression"))
+	(user-error "Not inside a Lisp expression"))
     (cl-ext-save-point
       (goto-char beg)
       (forward-sexp)
       (setq end (point)))
     (cl-ext-when (and beg end)
-      (funcall fun beg end))))
+	(funcall fun beg end)
+      (cl-ext-when (and n (< n 0))
+	  (with-temp-buffer
+	    (yank)
+	    (goto-char (point-min))
+	    (minify 0 1 t)
+	    (kill-region (point-min) (point-max)))))))
 
 (defun elisp-ext-delete-sexp (&optional n interactive-p)
   "Delete the Lisp expression containing point without saving it.
