@@ -198,6 +198,35 @@ error message if provided."
 				   `(type-of ,form))
 			  ',type)))
 
+(defun cl-ext--cond-validate-clause (clause)
+  (pcase clause
+    (`(,condition . ,body)
+     (--print-expr var condition)
+     (--print-expr var body))
+    (_ (error "Invalid clause %S; must be of form (CONDITION BODY...)"
+	      clause))))
+
+(defmacro cl-ext-cond (clause &rest clauses)
+  "Try each clause until one succeeds.
+
+This works pretty much like `cond' (which see) except that
+it expands differently depending on how many clauses there
+are."
+  (declare (indent 1) (debug (cond-clause &rest cond-clause)))
+  (cl-ext-unless clause
+      (signal-wrong-argument clause "t or any valid form"))
+  (if-let (clauses)
+      (cl-ext-progn
+	(cl-loop for clause in clauses
+		 do (cl-ext--cond-validate-clause clause))
+	(push clause clauses)
+	`(cond ,@clauses))
+    (cl-ext--cond-validate-clause clause)
+    (cl-destructuring-bind (condition &rest body) clause
+      `(if ,condition
+	   (progn ,@body)))))
+(def-edebug-spec cond-clause ([&or "t" form] &rest form))
+
 ;; ### Tests
 
 (ert-deftest cl-ext-test-append ()
