@@ -41,6 +41,17 @@
 
 ;; ### Functions
 
+(cl-ext-unless (fboundp 'seq-union)
+    (defun seq-union (&rest sequences)
+      "Return a new list that is the union of the given SEQUENCES.
+Duplicates are removed."
+      (let ((result '()))
+	(dolist (seq sequences)
+	  (dolist (item seq)
+            (unless (member item result)
+              (push item result))))
+	(nreverse result))))
+
 (defun --make-sure-user-actually-wants-to-quit ()
   (y-or-n-p "Did you actually mean to quit?"))
 
