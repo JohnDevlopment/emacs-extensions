@@ -643,6 +643,24 @@ Updates the autoload definitions in the Lisp files in
 	(auto-revert-mode 1)))))
 (put 'elisp-ext-update-loadefs 'interactive-only t)
 
+(defun elisp-ext--find-quote (&optional reverse)
+  "Find the next quote.
+If REVERSE is non-nil, search backwards."
+  (save-excursion
+    (if reverse
+	(progn
+	  (goto-char (point-max))
+	  (search-backward "\"")
+	  (point))
+      (goto-char (point-min))
+      (search-forward "\"")
+      (point))))
+
+;; --- Scratch Buffer
+
+(eval-when-compile
+  (declare-function elisp-ext-scratch-minor-mode "elisp-ext"))
+
 (defun elisp-ext--scratch-buffer-ctrl-c-ctrl-c ()
   "Kill the text inside buffer and quit."
   (interactive)
@@ -655,7 +673,6 @@ Updates the autoload definitions in the Lisp files in
       (cl-ext-when user-ext-elisp--scratch-minify	     ; Minify the buffer
 	(elisp-ext-minify (point-min) (point-max) t))	     ; with prefix argument
       (kill-region (point-min) (point-max))))
-  (setq user-ext-elisp--scratch-minify nil)
   (kill-and-quit))
 
 ;;;###autoload (autoload 'elisp-ext-scratch-buffer "elisp-ext" "Create a scratch buffer for Emacs lisp code." t)
@@ -674,20 +691,15 @@ When called interactively, MINIFY is the prefix argument."
   (unless (and (boundp 'company-mode) company-mode) ; Enable company mode
     (company-mode t))				    ;
   (setq header-line-format "Type C-c C-c when finished, C-x k to cancel editing.")
-  (local-set-key (kbd "C-c C-c") #'elisp-ext--scratch-buffer-ctrl-c-ctrl-c))
+  (elisp-ext-scratch-minor-mode 1))
 
-(defun elisp-ext--find-quote (&optional reverse)
-  "Find the next quote.
-If REVERSE is non-nil, search backwards."
-  (save-excursion
-    (if reverse
-	(progn
-	  (goto-char (point-max))
-	  (search-backward "\"")
-	  (point))
-      (goto-char (point-min))
-      (search-forward "\"")
-      (point))))
+(define-minor-mode elisp-ext-scratch-minor-mode
+  "Minor mode for `elisp-ext-scratch-buffer'.
+
+\\{elisp-ext-scratch-minor-mode-map}"
+  :keymap (let ((map (make-sparse-keymap)))
+	    (define-key map (kbd "C-c C-c") #'elisp-ext--scratch-buffer-ctrl-c-ctrl-c)
+	    map))
 
 ;; --- Hs minor mode
 
@@ -783,8 +795,7 @@ Automatically activates `hs-minor-mode' when called."
 	    (0 (let* ((start (1+ (elisp-ext--find-quote)))
 		      (end (1- (elisp-ext--find-quote t))))
 		 (run-with-idle-timer 0.1 nil
-				      #'message "Killed text from \"%s\""
-				      (buffer-substring start end))
+				      #'message "Killed docstring")
 		 (kill-region start end)))
 	    (1 (let ((start (point-min))
 		     (end (point-max))
@@ -868,7 +879,28 @@ Automatically activates `hs-minor-mode' when called."
 
 ;;;###autoload
 (defun elisp-ext-doc-scratch-buffer ()
-  "Create a scratch buffer for Emacs Lisp docstrings."
+  "Create and switch to a scratch buffer for Emacs Lisp docstrings.
+When the buffer is opened, the cursor is placed between two
+double quotation characters, each on its own line.  The
+lines between the two quotations is used for the docstring.
+
+Auto fill mode is enabled when the buffer is first opened.
+Initially the fill column is set to 67, but when the user
+types \\[elisp-ext-doc-scratch-buffer--shift-return], a
+newline is added and the fill column is changed to 60.  This
+reflects the recommended line length as stated in Emacs'
+official style guide.
+
+When you are finished writing the docstring and want to exit,
+type \\[elisp-ext-doc-scratch-buffer--ctrl-c-ctrl-c].  Doing
+so does the following, in order:
+1. Kills (cuts) the text inbetween the quotation characters.
+2. Kills the buffer.
+3. Restores the previous window configuration (see below).
+
+The window configuration is saved when this command is run.
+As such, you exit this buffer in the way prescribed above,
+it is restored."
   (interactive "*")
   (window-configuration-to-register user-ext-elisp--register)
   (elisp-ext--doc-scratch-buffer 0 (current-buffer) (point-marker)))
