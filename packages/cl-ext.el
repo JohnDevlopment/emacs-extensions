@@ -100,12 +100,13 @@ directly to an ...
 	 ,@body)
     (pcase cond
       (`(or . ,x)
-       `(or ,@x ,first-form))
+       (if (cl-ext--pcase-special-form first-form)
+	   `(unless ,cond ,first-form)
+	 `(or ,@x ,first-form)))
       (_
-       (pcase first-form
-	 ((pred cl-ext--pcase-special-form)
-	  `(if ,cond ,first-form))
-	 (_ `(or ,cond ,first-form)))))))
+       (if (cl-ext--pcase-special-form first-form)
+	   `(unless ,cond ,first-form)
+	 `(or ,cond ,first-form))))))
 
 ;;;###autoload
 (defmacro cl-ext-append (x place)
