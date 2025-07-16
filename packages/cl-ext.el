@@ -59,7 +59,9 @@ directly to an `if' form.
 	 ,@body)
     (pcase cond
       (`(and . ,x)
-       `(and ,@x ,first-form))
+       (if (cl-ext--pcase-special-form first-form)
+	   `(if ,cond ,first-form)
+	 `(and ,@x ,first-form)))
       (_
        (if (cl-ext--pcase-special-form first-form)
 	   `(if ,cond ,first-form)
