@@ -136,6 +136,19 @@ Lisp expressions and adding another list to it:
 (define-obsolete-function-alias 'cl-append-list #'cl-ext-append-list "2025.02.10")
 
 ;;;###autoload
+(defmacro cl-ext-until (test &rest body)
+  "If TEST yields nil, eval BODY...and repeat.
+This is the opposite of `while'--BODY is evaluated every
+iteration of the loop until TEST returns non-nil.
+
+\(fn TEST BODY...)"
+  (declare (indent 1) (debug (form &rest form)))
+  `(while (not ,test)
+     ,@body))
+(cl-ext-unless (fboundp 'until)
+    (defalias 'until #'cl-ext-until))
+
+;;;###autoload
 (defmacro cl-ext-nconcat (place &rest sequences)
   "Append the arguments (SEQUENCES) as strings to PLACE.
 the string found at PLACE and SEQUENCES are combined via
