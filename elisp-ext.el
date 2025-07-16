@@ -16,7 +16,9 @@
 
 ;; ### Advice
 
-(advice-add 'eval-region :after #'deactivate-mark)
+(fext-defadvice eval-region (after eval-region)
+  "Deactive mark after evalling region."
+  (deactivate-mark))
 
 ;; ### Variables
 
@@ -454,11 +456,7 @@ Display a temp buffer that lists the current buffer's types
 
 (define-key elisp-occur-mode-map (kbd "k") #'kill-and-quit)
 
-;; ---
-
-(defsubst elisp-ext-in-comment-p ()
-  "Return non-nil if inside a comment."
-  (ppss-comment-depth (make-ppss-easy (syntax-ppss))))
+;; --- Copy/Kill Sexp
 
 (defun elisp-ext-copy-kill-sexp (&optional fun n)
   "Copy, kill, or delete the Lisp expression containing point.
@@ -538,10 +536,17 @@ means 1.
 
 See also `universal-argument'."
   (interactive (list current-prefix-arg t))
+  (--print-expr var n)
   (cl-ext-unless interactive-p
     (error "Must be called interactively"))
   (elisp-ext-copy-kill-sexp #'kill-ring-save n))
 (put 'elisp-ext-copy-sexp 'interactive-only "use `elisp-ext-copy-kill-sexp'.")
+
+;; --- Other Functions
+
+(defsubst elisp-ext-in-comment-p ()
+  "Return non-nil if inside a comment."
+  (ppss-comment-depth (make-ppss-easy (syntax-ppss))))
 
 ;;;###autoload
 (defun elisp-ext-minify (start end &optional force)
@@ -957,20 +962,14 @@ Properties:
   (define-key lisp-interaction-mode-map (kbd "C-c M-w") #'elisp-ext-copy-sexp)
   (define-key lisp-interaction-mode-map (kbd "C-c <delete>") #'elisp-ext-delete-sexp)
 
-  (define-key lisp-interaction-mode-map [remap kill-and-quit] #'quit-window)
-
-  (define-prefix-command 'user-ext-elisp-occur-map)
-  (define-key emacs-lisp-mode-map (kbd "C-c C-o") #'user-ext-elisp-occur-map)
-  (define-key user-ext-elisp-occur-map (kbd "f") #'elisp-ext-occur-functions)
-  (define-key user-ext-elisp-occur-map (kbd "v") #'elisp-ext-occur-variables)
-  (define-key user-ext-elisp-occur-map (kbd "t") #'elisp-ext-occur-types)
-  (define-key user-ext-elisp-occur-map (kbd "#") #'elisp-ext-occur-sections))
+  (define-key lisp-interaction-mode-map [remap kill-and-quit] #'quit-window))
 
 ;; ### Hook
 
 ;;;###autoload
 (defun elisp-ext--extra-hook ()
-  "Hook for the `emacs-lisp-mode' extension.")
+  "Hook for the `emacs-lisp-mode' extension."
+  (local-set-key (kbd "<") #'self-insert-command))
 
 ;;;###autoload
 (add-hook 'emacs-lisp-mode-hook #'elisp-ext--extra-hook)
