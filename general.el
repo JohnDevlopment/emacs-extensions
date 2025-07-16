@@ -91,46 +91,6 @@ Interactively, START and END are the region."
     (delete-region start end)
     (insert (string-join swords sep))))
 
-(defun print-saved-positions ()
-  "Print the positions that are currently in the local ring.
-This merely prints the contents of `user-ext-local-position-ring'."
-  (interactive)
-  (cl-assert (>= (length user-ext-local-position-ring) 0) t)
-  (if (= (length user-ext-local-position-ring) 0)
-      (message "The local position ring is empty")
-    (let (msg)
-      (setq msg
-	    (string-join
-	     (cl-loop
-	      with i = 0
-	      for pos in user-ext-local-position-ring
-	      collect
-	      (format "%d. %s" (cl-incf i) pos))
-	     "\n"))
-      (message msg))))
-
-(defun save-current-position (&optional pos)
-  "Save POS to the local position ring.
-Unless POS is provided, point is used."
-  (interactive)
-  (let ((pos (or pos (point-marker))))
-    (add-to-history 'user-ext-local-position-ring pos)
-    (message
-     (substitute-command-keys
-      "Position saved to local position ring. Go back with `\\[pop-saved-position]'."))))
-
-(defun pop-saved-position ()
-  "Move point to the last saved position.
-This pops the last-saved position from
-`user-ext-local-position-ring'."
-  (interactive)
-  (let (pos)
-    (cl-assert (> (length user-ext-local-position-ring) 0) t
-	       "The local position ring is empty!")
-    (setq pos (pop user-ext-local-position-ring))
-    (goto-char pos)
-    (message "Restored to position %s." pos)))
-
 (defalias 'minify #'elisp-ext-minify)
 
 (defun bind-fill-region ()
@@ -186,6 +146,46 @@ Interactively, ARG is the prefix argument."
 	(kill-buffer)
 	(delete-window))
     (quit-window t)))
+
+;; --- Positions
+
+(defun print-saved-positions ()
+  "Print the positions that are currently in the local ring.
+This merely prints the contents of `user-ext-local-position-ring'."
+  (interactive)
+  (cl-assert (>= (length user-ext-local-position-ring) 0) t)
+  (cl-ext-unless (> (length user-ext-local-position-ring) 0)
+      (error "The local position ring is empty"))
+  (let ((msg (string-join
+	      (cl-loop with i = 0
+		       for pos in user-ext-local-position-ring
+		       collect
+		       (format "%d. %s" (cl-incf i) pos))
+	      "\n")))
+    (message msg)))
+
+(defun save-current-position (&optional pos)
+  "Save POS to the local position ring.
+Unless POS is provided, point is used."
+  (interactive)
+  (let ((pos (or pos (point-marker))))
+    (add-to-history 'user-ext-local-position-ring pos)
+    (message
+     (substitute-command-keys
+      "Position saved to local position ring. Go back with `\\[pop-saved-position]'."))))
+
+(defun pop-saved-position ()
+  "Move point to the last saved position.
+This pops the last-saved position from
+`user-ext-local-position-ring'."
+  (interactive)
+  (let (pos)
+    (cl-assert (>= (length user-ext-local-position-ring) 0) t)
+    (cl-ext-unless (> (length user-ext-local-position-ring) 0)
+	(error "The local position ring is empty"))
+    (setq pos (pop user-ext-local-position-ring))
+    (goto-char pos)
+    (message "Restored to position %s." pos)))
 
 (provide 'general)
 ;;; general ends here
