@@ -4,6 +4,7 @@
 
 (define-error 'invalid-argument "Invalid argument")
 (define-error 'wrong-argument "Wrong argument" 'invalid-argument)
+(define-error 'type-error "Type error")
 
 (eval-and-compile
   (embed-doc-document-symbol
@@ -11,9 +12,10 @@
     "Error symbols and functions.
 
 Errors:
-
-`invalid-argument'
- └── `wrong-argument'"
+.
+├── `invalid-argument'
+│   └── `wrong-argument'
+└── `type-error'"
     :functions
     signal-wrong-argument
     signal-invalid-argument))
@@ -59,6 +61,14 @@ passing MSG and ARGS to `format'.
 See also the documentation for this extension by typing
 \\[get-extension-documentation] errors."
   (signal 'invalid-argument (list ivarg (format msg args))))
+
+(defsubst signal-type-error (value type expected-type)
+  "Signal a `type-error' error with VALUE, TYPE, and EXPECTED-TYPE.
+The error means that VALUE is not of an expected type: it
+details what type VALUE is and what type it was supposed to
+be.  EXPECTED-TYPE takes any form supported by `cl-typep',
+which see."
+  (signal 'type-error `(,value ,type . ,expected-type)))
 
 (provide 'errors)
 ;;; errors.el ends here
