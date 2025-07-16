@@ -110,6 +110,62 @@ Group 3 matches the name.")
 
 ;; ### Functions
 
+;; --- Skeletons
+
+(defmacro elisp-ext-define-skeleton (name docstring &rest skel)
+  "Define an Emacs Lisp mode command to insert a skeleton.
+The command will be named elisp-ext-skeleton-NAME.  DOC is
+the documentation of the command.  SKEL is the skeleton
+itself.
+
+\(fn NAME DOCSTRING INTERACTOR SKELETON...\)"
+  (declare (debug (&define name stringp skeleton-edebug-spec))
+	   (indent 1) (doc-string 2))
+  (cl-assert (symbolp name))
+  (let* ((function-name (intern (format "elisp-ext-skeleton-%S" name))))
+    `(progn
+       (define-skeleton ,function-name
+	 ,docstring
+	 ,@skel))))
+
+(elisp-ext-define-skeleton defun
+  "Insert a function."
+  "Name: "
+  "(defun " str " ("
+  ("Arg %s: " (unless (= (char-before) ?\()
+		" ")
+   str)
+  ?\) \n
+  (progn
+    (when (and (y-or-n-p "Docstring? ")
+	       (setq v1 (read-string "First line: " nil t))
+	       (not (string-empty-p v1)))
+      (format "\"%s\"\n" v1)))
+  >
+  (progn
+    (when (y-or-n-p "Interactive? ")
+      (setq v1 (read-string "Spec: "))
+      (if (not (string-empty-p v1))
+	  (concat "(interactive \"" v1 "\")")
+	"(interactive)")))
+  _ ?\))
+
+(elisp-ext-define-skeleton defmacro
+  "Insert a function."
+  "Name: "
+  "(defmacro " str " ("
+  ("Arg %s: " (unless (= (char-before) ?\()
+		" ")
+   str)
+  ?\) \n
+  (progn
+    (when (and (y-or-n-p "Docstring? ")
+	       (setq v1 (read-string "First line: " nil t))
+	       (not (string-empty-p v1)))
+      (format "\"%s\"\n" v1)))
+  >
+  _ ?\))
+
 ;; --- Occur functions
 
 (defmacro elisp-ext--enable-minor-mode (mode1 &optional mode2)
@@ -853,6 +909,18 @@ Properties:
   (define-key user-ext-elisp-fold-map (kbd "C-o") #'elisp-ext-show-only)
   (define-key user-ext-elisp-fold-map (kbd "C-a") #'elisp-ext-hide-all)
   (define-key user-ext-elisp-fold-map (kbd "b") #'elisp-ext-hide-block)
+
+  (define-prefix-command 'user-ext-elisp-skeleton-map)
+  (define-key emacs-lisp-mode-map (kbd "C-c C-s") #'user-ext-elisp-skeleton-map)
+  (define-key user-ext-elisp-skeleton-map (kbd "f") #'elisp-ext-skeleton-defun)
+  (define-key user-ext-elisp-skeleton-map (kbd "m") #'elisp-ext-skeleton-defmacro)
+
+  (define-prefix-command 'user-ext-elisp-occur-map)
+  (define-key emacs-lisp-mode-map (kbd "C-c C-o") #'user-ext-elisp-occur-map)
+  (define-key user-ext-elisp-occur-map (kbd "f") #'elisp-ext-occur-functions)
+  (define-key user-ext-elisp-occur-map (kbd "v") #'elisp-ext-occur-variables)
+  (define-key user-ext-elisp-occur-map (kbd "t") #'elisp-ext-occur-types)
+  (define-key user-ext-elisp-occur-map (kbd "#") #'elisp-ext-occur-sections)
 
   (define-key emacs-lisp-mode-map (kbd "C-c C-j") #'imenu)
   (define-key emacs-lisp-mode-map (kbd "C-c c M-s") #'elisp-ext-scratch-buffer)
