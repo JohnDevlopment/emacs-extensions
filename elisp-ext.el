@@ -45,7 +45,16 @@ identifier      A symbol consisting of one or more character
   (elisp-ext--rx
    bol (seq ";;" (* (syntax whitespace))
 	    "###" (* (syntax whitespace)))
-   (group (+ nonl))))
+   (group (+ nonl)))
+  "Regular expression for section comments.")
+
+(define-obsolete-variable-alias
+  'user-ext-elisp-separator-regexp
+  'user-ext-elisp-separator-comment-regexp
+  "2025-06-22")
+(defconst user-ext-elisp-separator-comment-regexp
+  (elisp-ext--rx bol ";; " (group (>= 10 ?-)))
+  "Regular expression for so-called separator comments.")
 
 (defconst user-ext-elisp-subsection-comment-regexp
   (elisp-ext--rx
@@ -235,7 +244,10 @@ either \"Section\" or \"Subsection\"."
     (alist-ext-dolist (section subsections sections entries)
       (push (list section (vector section "Section")) entries)
       (dolist (subsection subsections)
-	(push (list subsection (vector subsection "Subsection"))
+	(push (list subsection
+		    (vector subsection
+			    (if (elisp-ext--occur-separator-string subsection)
+				"" "Subsection")))
 	      entries)))
     (nreverse entries)))
 
@@ -298,12 +310,14 @@ Each (sub)section string contains text properties.
 		 (setq temp (match-string-no-properties 1))
 		 (push (propertize temp
 				   'length (length temp)
-				   'position (match-beginning 0))
+				   'position (cl-ext-unless (elisp-ext--occur-separator-string
+							     temp)
+						 (match-beginning 0)))
 		       ssl)))
 	       (forward-line)
 	       finally do
 	       (cl-ext-when section
-		 (setf (alist-get section al) (cl-ext-when ssl (nreverse ssl)))))
+		 (setf (alist-get section al) (and ssl (nreverse ssl)))))
       (nreverse al))))
 
 (defun elisp-ext--occur-goto-section (_string-or-symbol)
@@ -318,6 +332,9 @@ Each (sub)section string contains text properties.
     (pop-to-buffer elisp-occur-original-buffer)
     (goto-char position)
     (message "Jump to position %d" position)))
+
+(defsubst elisp-ext--occur-separator-string (string)
+  (string-match "^-\\{10,\\}" string))
 
 (defun elisp-ext--occur-buttonize-entries (type)
   (cl-check-type type symbol)
@@ -340,8 +357,10 @@ Each (sub)section string contains text properties.
 		       end (let ((sz (get-text-property (point) 'length)))
 			     (cl-check-type sz integer)
 			     (+ start sz)))
-		 (make-button start end 'type 'occur-cross-reference
-			      'xref-function type)
+		 (cl-ext-unless (elisp-ext--occur-separator-string
+				 (buffer-substring-no-properties start end))
+		     (make-button start end 'type 'occur-cross-reference
+				  'xref-function type))
 		 (forward-line 1))))))
 
 (defun elisp-ext--occur-setup-buffer (type-symbol)
