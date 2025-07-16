@@ -502,6 +502,18 @@ by one these commands:
 	    (minify 0 1 t)
 	    (kill-region (point-min) (point-max)))))))
 
+(defun elisp-ext-jump-sexp-level (&optional n)
+  (interactive "p")
+  (let* ((pps (make-ppss-easy (syntax-ppss)))
+	 (pos (cl-ext-progn
+		(cl-assert pps t)
+		(if n
+		    (ppss-open-paren-depth pps n)
+		  (ppss-innermost-start pps)))))
+    (cl-ext-unless pos
+	(user-error "Not inside a Lisp expression"))
+    (goto-char pos)))
+
 (defun elisp-ext-delete-sexp (&optional n interactive-p)
   "Delete the Lisp expression containing point without saving it.
 N is the prefix argument: if non-nil, it specifies the level
@@ -964,11 +976,13 @@ Properties:
   (define-key emacs-lisp-mode-map (kbd "C-c C-w") #'elisp-ext-kill-sexp)
   (define-key emacs-lisp-mode-map (kbd "C-c M-w") #'elisp-ext-copy-sexp)
   (define-key emacs-lisp-mode-map (kbd "C-c <delete>") #'elisp-ext-delete-sexp)
+  (define-key emacs-lisp-mode-map (kbd "C-c ^") #'elisp-ext-jump-sexp-level)
 
   (define-key lisp-interaction-mode-map (kbd "C-c M-f") #'elisp-ext-minify)
   (define-key lisp-interaction-mode-map (kbd "C-c C-w") #'elisp-ext-kill-sexp)
   (define-key lisp-interaction-mode-map (kbd "C-c M-w") #'elisp-ext-copy-sexp)
   (define-key lisp-interaction-mode-map (kbd "C-c <delete>") #'elisp-ext-delete-sexp)
+  (define-key lisp-interaction-mode-map (kbd "C-c ^") #'elisp-ext-jump-sexp-level)
 
   (define-key lisp-interaction-mode-map [remap kill-and-quit] #'quit-window))
 
