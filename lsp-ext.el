@@ -45,6 +45,10 @@
 (defvar user-ext-lsp-temporary-workspace-folders nil
   "Folders added with `lsp-workspace-folders-add-temp'.")
 
+(defconst user-ext-lsp-open-project-config-alist
+  '((pyright . #1=python)
+    (ruff . #1#)))
+
 ;; ### Advice
 
 (fext-defadvice lsp-execute-code-action (after lsp-code-action)
@@ -124,6 +128,40 @@ temporary folders from the workspace."
   (cl-pushnew project-root user-ext-lsp-temporary-workspace-folders :test #'string=))
 (define-obsolete-function-alias 'lsp-workspace-folders-add-temp
   'lsp-ext-workspace-folders-add-temp "2025-06-03")
+
+(defun lsp-ext--project-type (servers)
+  (let ((types (mapcar (lambda (server)
+			 (alist-get server user-ext-lsp-open-project-config-alist))
+		       servers)))
+    (cl-ext-when (apply #'eq types)
+	(car types))))
+
+(defun lsp-ext--prompt-project-root ()
+  (read-directory-name "Workspace folder: "
+		       (or (lsp--suggest-project-root) default-directory) nil t))
+
+;;;###autoload
+(defun lsp-ext-open-project-config (project-root)
+  "Open the project config file."
+  (interactive (list (lsp-ext--prompt-project-root)))
+  (let* ((servers (mapcar (lambda (workspace)
+			    (lsp--client-server-id (lsp--workspace-client workspace)))
+			  (lsp-workspaces)))
+	 (type (and servers (lsp-ext--project-type servers))))
+    (cl-ext-unless (and type)
+	(user-error "Failed to get LSP server type. Is LSP even on?"))
+    (lsp-ext--open-project-config project-root type)))
+
+(cl-defgeneric lsp-ext--open-project-config (project-root type)
+  "Open project config.")
+
+(cl-defmethod lsp-ext--open-project-config ((project-root string) (type (eql python)))
+  "Open the Python project's config file."
+  (let ((file (f-join project-root "pyproject.toml")))
+    (message "Open config for %s project" type)
+    (if (f-exists-p file)
+	(find-file file)
+      (user-error "No pyproject.toml was found under %s" project-root))))
 
 ;; ### Keymaps
 
