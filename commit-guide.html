@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2025-07-16 Wed 20:43 -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Commit Guide</title>
+<meta name="generator" content="Org mode">
+<meta name="author" content="JohnDevlopment">
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  /* Languages per Org manual */
+  pre.src-asymptote:before { content: 'Asymptote'; }
+  pre.src-awk:before { content: 'Awk'; }
+  pre.src-C:before { content: 'C'; }
+  /* pre.src-C++ doesn't work in CSS */
+  pre.src-clojure:before { content: 'Clojure'; }
+  pre.src-css:before { content: 'CSS'; }
+  pre.src-D:before { content: 'D'; }
+  pre.src-ditaa:before { content: 'ditaa'; }
+  pre.src-dot:before { content: 'Graphviz'; }
+  pre.src-calc:before { content: 'Emacs Calc'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-fortran:before { content: 'Fortran'; }
+  pre.src-gnuplot:before { content: 'gnuplot'; }
+  pre.src-haskell:before { content: 'Haskell'; }
+  pre.src-hledger:before { content: 'hledger'; }
+  pre.src-java:before { content: 'Java'; }
+  pre.src-js:before { content: 'Javascript'; }
+  pre.src-latex:before { content: 'LaTeX'; }
+  pre.src-ledger:before { content: 'Ledger'; }
+  pre.src-lisp:before { content: 'Lisp'; }
+  pre.src-lilypond:before { content: 'Lilypond'; }
+  pre.src-lua:before { content: 'Lua'; }
+  pre.src-matlab:before { content: 'MATLAB'; }
+  pre.src-mscgen:before { content: 'Mscgen'; }
+  pre.src-ocaml:before { content: 'Objective Caml'; }
+  pre.src-octave:before { content: 'Octave'; }
+  pre.src-org:before { content: 'Org mode'; }
+  pre.src-oz:before { content: 'OZ'; }
+  pre.src-plantuml:before { content: 'Plantuml'; }
+  pre.src-processing:before { content: 'Processing.js'; }
+  pre.src-python:before { content: 'Python'; }
+  pre.src-R:before { content: 'R'; }
+  pre.src-ruby:before { content: 'Ruby'; }
+  pre.src-sass:before { content: 'Sass'; }
+  pre.src-scheme:before { content: 'Scheme'; }
+  pre.src-screen:before { content: 'Gnu Screen'; }
+  pre.src-sed:before { content: 'Sed'; }
+  pre.src-sh:before { content: 'shell'; }
+  pre.src-sql:before { content: 'SQL'; }
+  pre.src-sqlite:before { content: 'SQLite'; }
+  /* additional languages in org.el's org-babel-load-languages alist */
+  pre.src-forth:before { content: 'Forth'; }
+  pre.src-io:before { content: 'IO'; }
+  pre.src-J:before { content: 'J'; }
+  pre.src-makefile:before { content: 'Makefile'; }
+  pre.src-maxima:before { content: 'Maxima'; }
+  pre.src-perl:before { content: 'Perl'; }
+  pre.src-picolisp:before { content: 'Pico Lisp'; }
+  pre.src-scala:before { content: 'Scala'; }
+  pre.src-shell:before { content: 'Shell Script'; }
+  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
+  /* additional language identifiers per "defun org-babel-execute"
+       in ob-*.el */
+  pre.src-cpp:before  { content: 'C++'; }
+  pre.src-abc:before  { content: 'ABC'; }
+  pre.src-coq:before  { content: 'Coq'; }
+  pre.src-groovy:before  { content: 'Groovy'; }
+  /* additional language identifiers from org-babel-shell-names in
+     ob-shell.el: ob-shell is the only babel language using a lambda to put
+     the execution function name together. */
+  pre.src-bash:before  { content: 'bash'; }
+  pre.src-csh:before  { content: 'csh'; }
+  pre.src-ash:before  { content: 'ash'; }
+  pre.src-dash:before  { content: 'dash'; }
+  pre.src-ksh:before  { content: 'ksh'; }
+  pre.src-mksh:before  { content: 'mksh'; }
+  pre.src-posh:before  { content: 'posh'; }
+  /* Additional Emacs modes also supported by the LaTeX listings package */
+  pre.src-ada:before { content: 'Ada'; }
+  pre.src-asm:before { content: 'Assembler'; }
+  pre.src-caml:before { content: 'Caml'; }
+  pre.src-delphi:before { content: 'Delphi'; }
+  pre.src-html:before { content: 'HTML'; }
+  pre.src-idl:before { content: 'IDL'; }
+  pre.src-mercury:before { content: 'Mercury'; }
+  pre.src-metapost:before { content: 'MetaPost'; }
+  pre.src-modula-2:before { content: 'Modula-2'; }
+  pre.src-pascal:before { content: 'Pascal'; }
+  pre.src-ps:before { content: 'PostScript'; }
+  pre.src-prolog:before { content: 'Prolog'; }
+  pre.src-simula:before { content: 'Simula'; }
+  pre.src-tcl:before { content: 'tcl'; }
+  pre.src-tex:before { content: 'TeX'; }
+  pre.src-plain-tex:before { content: 'Plain TeX'; }
+  pre.src-verilog:before { content: 'Verilog'; }
+  pre.src-vhdl:before { content: 'VHDL'; }
+  pre.src-xml:before { content: 'XML'; }
+  pre.src-nxml:before { content: 'XML'; }
+  /* add a generic configuration mode; LaTeX export needs an additional
+     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
+  pre.src-conf:before { content: 'Configuration File'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .equation-container {
+    display: table;
+    text-align: center;
+    width: 100%;
+  }
+  .equation {
+    vertical-align: middle;
+  }
+  .equation-label {
+    display: table-cell;
+    text-align: right;
+    vertical-align: middle;
+  }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  .org-svg { width: 90%; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2020 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<header>
+<h1 class="title">Commit Guide</h1>
+</header><nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org6895123">1. Anatomy of a Commit</a></li>
+<li><a href="#orgbe08ac7">2. Commit Formats</a>
+<ul>
+<li><a href="#org6030063">2.1. Refactoring A Single Extension</a></li>
+<li><a href="#org4e0c896">2.2. Actions Within A Single Extension</a>
+<ul>
+<li><a href="#org538cf38">2.2.1. Scope</a></li>
+</ul>
+</li>
+<li><a href="#orgf3c2fa1">2.3. Actions Within A Single Bootstrap</a>
+<ul>
+<li><a href="#org355abb3">2.3.1. Scope</a></li>
+</ul>
+</li>
+<li><a href="#org43d37ee">2.4. Add/Remove/Modify Bootstraps</a></li>
+<li><a href="#orgeb99312">2.5. Add/Remove/Modify Extensions</a></li>
+<li><a href="#org85be9ac">2.6. Moving Code Into A New Extension</a></li>
+<li><a href="#org99eca98">2.7. A Single Action Within Multiple Extensions</a></li>
+<li><a href="#orgf9166cc">2.8. Refactoring Multiple Extensions</a></li>
+<li><a href="#org5c70d29">2.9. A single action within a so-called package</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</nav>
+
+<div id="outline-container-org6895123" class="outline-2">
+<h2 id="org6895123"><span class="section-number-2">1</span> Anatomy of a Commit</h2>
+<div class="outline-text-2" id="text-1">
+<pre class="example">
+[TAG] SCOPE: MESSAGE
+
+BODY
+</pre>
+
+<p>
+<i>BODY</i> is optional.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgbe08ac7" class="outline-2">
+<h2 id="orgbe08ac7"><span class="section-number-2">2</span> Commit Formats</h2>
+<div class="outline-text-2" id="text-2">
+</div>
+<div id="outline-container-org6030063" class="outline-3">
+<h3 id="org6030063"><span class="section-number-3">2.1</span> Refactoring A Single Extension</h3>
+<div class="outline-text-3" id="text-2-1">
+<pre class="example">
+[REFACTOR] Elisp-ext
+
+* (Sub)section comments
+* Advice
+* Requires
+* elisp-ext-in-comment-p
+** Move
+** Make inline
+* elisp-ext--rx
+** Docstring
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org4e0c896" class="outline-3">
+<h3 id="org4e0c896"><span class="section-number-3">2.2</span> Actions Within A Single Extension</h3>
+<div class="outline-text-3" id="text-2-2">
+</div>
+<div id="outline-container-org538cf38" class="outline-4">
+<h4 id="org538cf38"><span class="section-number-4">2.2.1</span> Scope</h4>
+<div class="outline-text-4" id="text-2-2-1">
+<ul class="org-ul">
+<li>The name of the extension without the <code>-ext</code> (e.g., <code>sh</code>)
+<ul class="org-ul">
+<li>Exceptions
+<ul class="org-ul">
+<li><code>extensions</code>: referred to as <code>main</code></li>
+<li>Extensions with no ~-ext~suffix
+<ul class="org-ul">
+<li><code>errors</code></li>
+<li><code>general</code></li>
+<li><code>local-lambda</code></li>
+</ul></li>
+</ul></li>
+<li>For extensions that implement some external feature (such as a minor mode),
+append a <code>/X</code>, with <code>X</code> being one of the following:
+<ul class="org-ul">
+<li>Hs minor mode &#x2014; e.g., <code>sh/hs</code></li>
+<li>Skeletons &#x2014; e.g., <code>sh/skeletons</code></li>
+<li>Ert tests &#x2014; e.g., <code>pkg:cl/ert</code></li>
+</ul></li>
+</ul></li>
+</ul>
+
+<p>
+If the subject line would be empty, it may be replaced with the scope, like so: <code>[REFACTOR] General</code>
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgf3c2fa1" class="outline-3">
+<h3 id="orgf3c2fa1"><span class="section-number-3">2.3</span> Actions Within A Single Bootstrap</h3>
+<div class="outline-text-3" id="text-2-3">
+</div>
+<div id="outline-container-org355abb3" class="outline-4">
+<h4 id="org355abb3"><span class="section-number-4">2.3.1</span> Scope</h4>
+<div class="outline-text-4" id="text-2-3-1">
+<ul class="org-ul">
+<li>The name of any extension ending in "-bootstrap" (e.g., "jdesktop-bootstrap")</li>
+</ul>
+
+<hr>
+
+<pre class="example">
+[UPDATE] Jdesktop-bootstrap: Improvements
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org43d37ee" class="outline-3">
+<h3 id="org43d37ee"><span class="section-number-3">2.4</span> Add/Remove/Modify Bootstraps</h3>
+<div class="outline-text-3" id="text-2-4">
+<table>
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-left">
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">Tag:</td>
+<td class="org-left">update</td>
+</tr>
+
+<tr>
+<td class="org-left">Scope:</td>
+<td class="org-left">main</td>
+</tr>
+
+<tr>
+<td class="org-left">Subject:</td>
+<td class="org-left">Bootstraps</td>
+</tr>
+
+<tr>
+<td class="org-left">Body:</td>
+<td class="org-left"><i>action list</i></td>
+</tr>
+</tbody>
+</table>
+
+<p>
+For the <i>action list</i>, each item has the form <code>ACTION: EXTENSION</code>. <i>ACTION</i> is
+one of add, change, delete, or move. <i>EXTENSION</i> is the name of the extension
+which contains the bootstrap code. <i>EXTENSION</i> refers to an extension whose name
+ends in "-bootstrap"; however, <i>EXTENSION</i> itself shall remove that suffix. Case
+in point: for an extension called <code>foo-bootstrap</code>, <i>EXTENSION</i> shall be <code>foo</code>.
+</p>
+
+<p>
+Here is an example of such a commit:
+</p>
+
+<pre class="example">
+[UPDATE] Main: Bootstraps
+
+* Add: code-outline
+* Change: liquidsoap
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orgeb99312" class="outline-3">
+<h3 id="orgeb99312"><span class="section-number-3">2.5</span> Add/Remove/Modify Extensions</h3>
+<div class="outline-text-3" id="text-2-5">
+<table>
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-left">
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">Tag:</td>
+<td class="org-left">update</td>
+</tr>
+
+<tr>
+<td class="org-left">Scope:</td>
+<td class="org-left">main</td>
+</tr>
+
+<tr>
+<td class="org-left">Subject:</td>
+<td class="org-left">Extensions</td>
+</tr>
+
+<tr>
+<td class="org-left">Body:</td>
+<td class="org-left"><i>action list</i></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div id="outline-container-org85be9ac" class="outline-3">
+<h3 id="org85be9ac"><span class="section-number-3">2.6</span> Moving Code Into A New Extension</h3>
+<div class="outline-text-3" id="text-2-6">
+<table>
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-left">
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">Tag:</td>
+<td class="org-left">update</td>
+</tr>
+
+<tr>
+<td class="org-left">Scope:</td>
+<td class="org-left"><i>extension from which code is removed</i></td>
+</tr>
+
+<tr>
+<td class="org-left">Subject:</td>
+<td class="org-left">Move code into <i>extension</i></td>
+</tr>
+
+<tr>
+<td class="org-left">Body:</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+</table>
+
+<pre class="example">
+[UPDATE] Desktop: Move code into jdesktop-bootstrap
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org99eca98" class="outline-3">
+<h3 id="org99eca98"><span class="section-number-3">2.7</span> A Single Action Within Multiple Extensions</h3>
+<div class="outline-text-3" id="text-2-7">
+<table>
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-left">
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">Tag:</td>
+<td class="org-left"><i>tag</i></td>
+</tr>
+
+<tr>
+<td class="org-left">Scope:</td>
+<td class="org-left">Multiple</td>
+</tr>
+
+<tr>
+<td class="org-left">Subject:</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">Body:</td>
+<td class="org-left"><i>list of extensions</i></td>
+</tr>
+</tbody>
+</table>
+
+<pre class="example">
+[REMOVE] Multiple: Documentation
+
+* buffers
+* comment-tags
+* custom
+* dired
+* elisp
+* extensions
+* general
+* help
+* imenu
+* lsp
+* rust
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orgf9166cc" class="outline-3">
+<h3 id="orgf9166cc"><span class="section-number-3">2.8</span> Refactoring Multiple Extensions</h3>
+<div class="outline-text-3" id="text-2-8">
+<pre class="example">
+[REFACTOR] Multiple
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org5c70d29" class="outline-3">
+<h3 id="org5c70d29"><span class="section-number-3">2.9</span> A single action within a so-called package</h3>
+<div class="outline-text-3" id="text-2-9">
+<p>
+This applies to extensions under <code>packages/</code>.
+</p>
+
+<table>
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-left">
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">Tag:</td>
+<td class="org-left"><i>tag</i></td>
+</tr>
+
+<tr>
+<td class="org-left">Scope:</td>
+<td class="org-left">pkg:​<i>extension</i></td>
+</tr>
+
+<tr>
+<td class="org-left">Subject:</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">Body:</td>
+<td class="org-left"><i>list of extensions</i></td>
+</tr>
+</tbody>
+</table>
+
+<pre class="example">
+[UPDATE] Pkg:debug: Improve --ignore
+
+* Add more specific edebug spec
+* Show warning when compiled
+</pre>
+
+<p>
+If the message is empty, the scope may replace it, resulting in this:
+</p>
+
+<pre class="example">
+[REFACTOR] Pkg:cl
+</pre>
+</div>
+</div>
+</div>
+</div>
+<footer id="postamble" class="status">
+<p class="author">Author: JohnDevlopment</p>
+<p class="date">Created: 2025-07-16 Wed 20:43</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</footer>
+</body>
+</html>

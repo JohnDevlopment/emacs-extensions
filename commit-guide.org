@@ -1,0 +1,154 @@
+#+title: Commit Guide
+#+startup: content
+
+* Anatomy of a Commit
+
+#+begin_example
+  [TAG] SCOPE: MESSAGE
+
+  BODY
+#+end_example
+
+/BODY/ is optional.
+
+* Commit Formats
+
+** Refactoring A Single Extension
+
+#+begin_example
+  [REFACTOR] Elisp-ext
+
+  ,* (Sub)section comments
+  ,* Advice
+  ,* Requires
+  ,* elisp-ext-in-comment-p
+  ,** Move
+  ,** Make inline
+  ,* elisp-ext--rx
+  ,** Docstring
+#+end_example
+
+** Actions Within A Single Extension
+
+*** Scope
+
+- The name of the extension without the ~-ext~ (e.g., ~sh~)
+  - Exceptions
+    - ~extensions~: referred to as ~main~
+    - Extensions with no ~-ext~suffix
+      - ~errors~
+      - ~general~
+      - ~local-lambda~
+  - For extensions that implement some external feature (such as a minor mode),
+    append a ~/X~, with ~X~ being one of the following:
+    - Hs minor mode --- e.g., ~sh/hs~
+    - Skeletons --- e.g., ~sh/skeletons~
+    - Ert tests --- e.g., ~pkg:cl/ert~
+
+If the subject line would be empty, it may be replaced with the scope, like so: ~[REFACTOR] General~
+
+** Actions Within A Single Bootstrap
+
+*** Scope
+
+- The name of any extension ending in "-bootstrap" (e.g., "jdesktop-bootstrap")
+
+-----
+
+#+begin_example
+  [UPDATE] Jdesktop-bootstrap: Improvements
+#+end_example
+
+** Add/Remove/Modify Bootstraps
+
+| Tag:     | update        |
+| Scope:   | main          |
+| Subject: | Bootstraps    |
+| Body:    | /action list/ |
+
+For the /action list/, each item has the form ~ACTION: EXTENSION~. /ACTION/ is
+one of add, change, delete, or move. /EXTENSION/ is the name of the extension
+which contains the bootstrap code. /EXTENSION/ refers to an extension whose name
+ends in "-bootstrap"; however, /EXTENSION/ itself shall remove that suffix. Case
+in point: for an extension called ~foo-bootstrap~, /EXTENSION/ shall be ~foo~.
+
+Here is an example of such a commit:
+
+#+begin_example
+  [UPDATE] Main: Bootstraps
+
+  ,* Add: code-outline
+  ,* Change: liquidsoap
+#+end_example
+
+** Add/Remove/Modify Extensions
+
+| Tag:     | update        |
+| Scope:   | main          |
+| Subject: | Extensions    |
+| Body:    | /action list/ |
+
+** Moving Code Into A New Extension
+
+|          | <40>                                   |
+| Tag:     | update                                 |
+| Scope:   | /extension from which code is removed/ |
+| Subject: | Move code into /extension/             |
+| Body:    |                                        |
+
+#+begin_example
+  [UPDATE] Desktop: Move code into jdesktop-bootstrap
+#+end_example
+
+** A Single Action Within Multiple Extensions
+
+|          | <40>                 |
+| Tag:     | /tag/                |
+| Scope:   | Multiple             |
+| Subject: |                      |
+| Body:    | /list of extensions/ |
+
+#+begin_example
+  [REMOVE] Multiple: Documentation
+
+  ,* buffers
+  ,* comment-tags
+  ,* custom
+  ,* dired
+  ,* elisp
+  ,* extensions
+  ,* general
+  ,* help
+  ,* imenu
+  ,* lsp
+  ,* rust
+#+end_example
+
+** Refactoring Multiple Extensions
+
+#+begin_example
+  [REFACTOR] Multiple
+#+end_example
+
+** A single action within a so-called package
+
+This applies to extensions under ~packages/~.
+
+| Tag:     | /tag/                |
+| Scope:   | pkg:​/extension/      |
+| Subject: |                      |
+| Body:    | /list of extensions/ |
+
+#+begin_example
+  [UPDATE] Pkg:debug: Improve --ignore
+
+  ,* Add more specific edebug spec
+  ,* Show warning when compiled
+#+end_example
+
+If the message is empty, the scope may replace it, resulting in this:
+
+#+begin_example
+  [REFACTOR] Pkg:cl
+#+end_example
+
