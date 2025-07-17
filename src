@@ -25,11 +25,20 @@ select tag in readme watch main; do
 done
 
 if [ "$tag" = "readme" ]; then
+    if [ -z "$PORT" ]; then
+	echo -e "No port specified\nusage: source $0" >&2
+	return 1
+    fi
+    echo "README will be shown on localhost port $PORT"
+
     set-title README
     ## usage: run
     function run {
-	(sleep 2; xdg-open "http://localhost:${PORT:=5010}/README.md") &
-	python -m http.server $PORT || return
+	(sleep 2; xdg-open "http://localhost:$PORT/README.md") &
+	python -m http.server $PORT || {
+	    echo "Invalid port $PORT" >&2
+	    return
+	}
 	exit
     }
     echo "Command: run"
@@ -134,7 +143,7 @@ $message
 ${extension}-bootstrap
 EOF
     else
-	commit -t "$tag" -m "$message" -ct "$extension"
+	commit -t "$tag" -m "$message" -ct "${extension}-bootstrap"
     fi
 }
 
@@ -189,6 +198,9 @@ Commands:
   * commit-guide
 EOF
 }
+
+EDITOR=emacsclient
+VISUAL=emacsclient-gui
 
 history -c
 HISTFILE="$ROOTDIR/.bash_history"
