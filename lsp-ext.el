@@ -228,6 +228,33 @@ temporary folders from the workspace."
 (define-face-alias 'lsp-flycheck-info-unnecessary 'lsp-flycheck-info-unnecessary-face)
 (define-face-alias 'lsp-flycheck-warning-unnecessary 'lsp-flycheck-warning-unnecessary-face)
 
+;; --- Python-specific functions
+
+(defsubst lsp-ext-python--error-if-not-mode ()
+  (cl-ext-cond
+      ((not (eq major-mode 'python-mode))
+       (user-error "Must be in Python mode"))))
+
+;;;###autoload
+(defun lsp-ext-python-rename-buffer ()
+  "Rename the current buffer."
+  (interactive)
+  (lsp-ext-python--error-if-not-mode)
+  (-when-let* ((root (lsp-headerline--workspace-root))
+	       (segments (append
+			  (lsp-headerline--path-up-to-project-root
+			   root
+			   (lsp-f-parent (buffer-file-name)))
+			  (list (lsp-headerline--build-file-string)))))
+    (let* ((module (concat
+		    "."
+		    (mapconcat
+		     (lambda (elt)
+		       (set-text-properties 0 (length elt) nil elt)
+		       (s-trim-left (f-base elt)))
+		     (cdr segments) "."))))
+      (rename-buffer module))))
+
 ;; ### Keymaps
 
 (define-key lsp-mode-map (kbd "<C-return>") #'lsp-find-definition)
