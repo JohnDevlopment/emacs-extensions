@@ -1,8 +1,4 @@
-;;; markdown-ext --- Markdown extension  -*- lexical-binding: t;  -*-
-
-;;; Commentary:
-
-;;; Code:
+;; -*- lexical-binding: t; -*-
 
 (require 'cl-lib)
 (require 'markdown-mode)
@@ -18,7 +14,7 @@
 (declare-function 'markdown-ext-scratch "markdown-ext.el" nil)
 (declare-function 'markdown-footnote-counter-inc "markdown-mode.el" nil)
 
-;; Skeletons
+;; ### Skeletons
 
 (defmacro markdown-skeleton-define (name doc &rest skel)
   "Define a `markdown-mode' skeleton using NAME, DOC, and SKEL.
@@ -37,7 +33,7 @@ The skeleton will be bound to markdown-skeleton-NAME."
   "<a id=\"" str "\"></a>" \n
   _ \n)
 
-;; Functions
+;; ### Functions
 
 (defun markdown-ext--cell-to-list (cell)
   (let ((buf (tmpbuf "cell"))
