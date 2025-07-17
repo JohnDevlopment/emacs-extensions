@@ -14,23 +14,27 @@
   (require 'subr-x))
 
 (use-package python-mode
+  :defer t
   :autoload
   rx)
 
 (use-package f
-  :functions
+  :defer t
+  :autoload
   f-join
   f-exists-p
   f-glob
   f-newer-p)
 
 (use-package s
+  :defer t
   :autoload
   s-lex-format
   s-lex-fmt|expand
   s-lex-value-as-lisp)
 
 (use-package embed-doc
+  :defer t
   :autoload
   embed-doc-document-symbol
   embed-doc-get-documentation)
@@ -42,14 +46,13 @@
       Info-directory-list (cons (expand-file-name "~/.local/share/info")
 				Info-directory-list))
 
-(put 'narrow-to-region 'disabled nil)
+(function-put #'narrow-to-region 'disabled nil)
 
 ;; ### Functions
 
 ;; ---Loading/finding extensions
 
 (defun --list-extensions (&optional suffix completion)
-  ;; "\\`\\([a-z][a-z-]+\\)\\.el\\(?:\\.gz\\)?\\'"
   (let* ((regex (rx string-start
 		    (any (?a . ?z))
 		    (+ (any "a-z0-9-"))
@@ -188,26 +191,28 @@ evaluated."
 	   ,@body)
        (file-missing (message "Failed to load %S: %S" (quote ,feature) err)))))
 
-(eval-after-require embed-doc
-  (embed-doc-document-symbol
-   extensions
-   "Main loader for extensions."
-   :functions
-   eval-after-require
-   load-extension-safe
-   :variables
-   user-ext-extension-directory
-   :commands
-   find-extension
-   find-extension-at-point
-   get-extension-documentation
-   load-extension))
+(eval-and-compile
+  (eval-after-require embed-doc
+    (embed-doc-document-symbol extensions
+      "Main loader for extensions."
+      :functions
+      eval-after-require
+      load-extension-safe
+      :variables
+      user-ext-extension-directory
+      :commands
+      find-extension
+      find-extension-at-point
+      get-extension-documentation
+      load-extension)))
 
 ;; Autoloads
 (load-extension-safe "loaddefs-ext")
 
+;; ### Initialization
+
 (load-extension "types-ext")
-(load-extension "syntax-ext")
+;; (load-extension "syntax-ext")
 (load-extension "errors")
 (load-extension "general")
 (load-extension "macro-ext")
@@ -228,13 +233,16 @@ evaluated."
 (load-extension "custom-ext")
 (load-extension "help-ext")
 
-(load-extension-safe "lsp-ext" 2)
-(load-extension-safe "desktop-ext" 2)
-(load-extension "dired-ext")
+;; (load-extension-safe "lsp-ext" 1)
+(load-extension-safe "desktop-ext" 1)
+(load-extension "dired-ext" nil 1)
 (load-extension-safe "imenu-ext" 2)
 
 (load-extension "keymaps-ext")
 (load-extension-safe "yasnippets-ext")
+
+;; Autoloaded:
+;; lsp-ext
 
 (provide 'extensions)
 ;;; extensions.el ends here
