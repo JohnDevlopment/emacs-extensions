@@ -58,11 +58,12 @@
 		    (+ (any "a-z0-9-"))
 		    ".el" (opt ".gz")
 		    string-end))
+	 (regex2 (rx ".el" (opt ".gz") string-end))
 	 (files (thread-last
 		    (directory-files "~/.emacs.d/extensions")
 		  (cl-remove-if-not (lambda (file)
 				      (string-match-p regex file)))))
-	 (cf (lambda (file) (file-name-sans-extension file))))
+	 (cf (lambda (file) (replace-regexp-in-string regex2 "" file))))
     (if completion
 	(cl-ext-progn
 	  (completion-table-dynamic
