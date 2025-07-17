@@ -68,6 +68,64 @@ This is supposed to be called after `lsp--before-save'."
 
 ;; ### Functions
 
+(defun lsp-ext-fix-flycheck-face-errors ()
+  (interactive)
+  (defvar lsp-flycheck-warning-unnecessary 'lsp-flycheck-warning-unnecessary-face)
+  (defvar lsp-flycheck-info-unnecessary 'lsp-flycheck-info-unnecessary-face)
+  (run-with-idle-timer 1 nil
+		       (lambda ()
+			 (fmakunbound 'lsp-ext-fix-flycheck-face-errors)
+			 (message "`lsp-ext-fix-flycheck-face-errors' is no longer valid"))))
+(put 'lsp-ext-fix-flycheck-face-errors 'disabled t)
+
+(defun lsp-ext--start-hook ()
+  (let (failed)
+    (message "Adding missing error levels...")
+    (add-hook 'lsp-configure-hook #'lsp-ext--start-hook)
+    (condition-case err
+	(progn
+	  (lsp-ext-define-error-level 'info '(unnecessary) t)
+	  (lsp-ext-define-error-level 'warning '(unnecessary) t))
+      ((debug error)
+       (message "lsp-ext--start-hook: %S" err)
+       (setq failed t)))
+    (if failed
+	(cl-ext-progn
+	  (message "Adding missing error levels...failed")
+	  nil)
+      (remove-hook 'lsp-configure-hook #'lsp-ext--start-hook)
+      (message "Adding missing error levels...done")
+      t)))
+
+(defun lsp-ext-define-error-level (flycheck-level tags &optional force)
+  (let ((name (format "lsp-flycheck-%s-%s"
+                      flycheck-level
+                      (mapconcat #'symbol-name tags "-"))))
+    (cl-ext-when (or force (intern-soft name))
+	(let* ((face (--doto (intern (format "%s-face" name))
+                       (copy-face (-> flycheck-level
+                                      (get 'flycheck-overlay-category)
+                                      (get 'face))
+				  it)
+                       (mapc (lambda (tag)
+                               (apply #'set-face-attribute it nil
+                                      (cl-rest (assoc tag lsp-diagnostics-attributes))))
+                             tags)))
+               (category (--doto (intern (format "%s-category" name))
+			   (setf (get it 'face) face
+				 (get it 'priority) 100)))
+               (new-level (intern name))
+               (bitmap (or (get flycheck-level 'flycheck-fringe-bitmaps)
+			   (get flycheck-level 'flycheck-fringe-bitmap-double-arrow))))
+	  (flycheck-define-error-level new-level
+            :severity (get flycheck-level 'flycheck-error-severity)
+            :compilation-level (get flycheck-level 'flycheck-compilation-level)
+            :overlay-category category
+            :fringe-bitmap bitmap
+            :fringe-face (get flycheck-level 'flycheck-fringe-face)
+            :error-list-face face)
+	  new-level))))
+
 ;;;###autoload
 (defun kill-lsp-buffers ()
   "Kill all buffers that have to do with function `lsp-mode'."
@@ -166,6 +224,9 @@ temporary folders from the workspace."
     (if (f-exists-p file)
 	(find-file file)
       (user-error "No pyproject.toml was found under %s" project-root))))
+
+(define-face-alias 'lsp-flycheck-info-unnecessary 'lsp-flycheck-info-unnecessary-face)
+(define-face-alias 'lsp-flycheck-warning-unnecessary 'lsp-flycheck-warning-unnecessary-face)
 
 ;; ### Keymaps
 
