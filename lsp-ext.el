@@ -61,6 +61,10 @@ This is supposed to be called after `lsp--before-save'."
   (unless (memq major-mode user-ext-lsp-safe-inlay-modes)
     (lsp-inlay-hints-mode -1)))
 
+(fext-defadvice lsp-disconnect (before lsp-disconnect)
+  "Stuff to do before disabling LSP."
+  (flycheck-mode 0)
+  (company-mode 0))
 
 ;; ### Functions
 
