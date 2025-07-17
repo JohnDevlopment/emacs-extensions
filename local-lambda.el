@@ -84,9 +84,11 @@ As a result of this macro, NAME can be run with
 \(fn NAME ARGS [DOCSTRING] [INTERACTIVE] BODY)"
   (declare (doc-string 3)
 	   (indent 2)
-	   (debug (&define name lambda-list lambda-doc
+	   (debug (&define name lambda-list [&optional lambda-doc]
 			   ["&optional" ("interactive" interactive)]
 			   def-body)))
+  (cl-check-type name symbol)
+  (cl-check-type arglist list)
   `(progn
      (local-lambda-add-local-lambda ',name (lambda ,arglist ,@body) t)
      t))
@@ -96,7 +98,7 @@ As a result of this macro, NAME can be run with
   local-lambda-package-version)
 
 ;;;###autoload
-(defmacro local-lambda-define-skeleton (name docstring &rest skeleton)
+(defmacro local-lambda-define-skeleton (name &optional docstring &rest skeleton)
   "Define NAME as a buffer-local skeleton command.
 SKELETON works the same way as the SKELETON argument in
 `define-skeleton', which see."
