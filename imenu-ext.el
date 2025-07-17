@@ -1,7 +1,5 @@
 ;; -*- lexical-binding: t; -*-
 
-(require 'python-mode)
-
 ;;;###autoload
 (defun bind-imenu ()
   "Binds `imenu' to the right-mouse button locally.
@@ -25,33 +23,19 @@ buffers sharing the same major mode will be affected."
     (local-set-key (kbd "<double-mouse-1>") #'imenu)
     (message "Bind `imenu' to the left mouse button double-clicked")))
 
-;; (defun imenu--sh-hook ()
+;; (defun imenu--python-hook ()
+;;   "Imenu Hook for Python mode."
 ;;   (setq imenu-generic-expression
 ;; 	(list `("*Functions*"
 ;; 		,(rx line-start (* (syntax whitespace))
-;; 		     "function" (+ (syntax whitespace))
-;; 		     (group (* (syntax symbol)))
-;; 		     (* (syntax whitespace)) (opt "()")) 1)
-;; 	      `("*Functions*"
-;; 		,(rx line-start (* (syntax whitespace))
-;; 		     (group (* (syntax symbol)))
-;; 		     (* (syntax whitespace)) (opt "()"))))))
+;; 		     (opt "async" (+ (syntax whitespace)))
+;; 		     "def" (+ (syntax whitespace))
+;; 		     (group (+ (syntax symbol)))
+;; 		     "(" (* nonl) ")"
+;; 		     (* nonl) ":")
+;; 		1))))
 
-;;;###autoload
-(defun imenu--python-hook ()
-  "Imenu Hook for Python mode."
-  (setq imenu-generic-expression
-	(list `("*Functions*"
-		,(rx line-start (* (syntax whitespace))
-		     (opt "async" (+ (syntax whitespace)))
-		     "def" (+ (syntax whitespace))
-		     (group (+ (syntax symbol)))
-		     "(" (* nonl) ")"
-		     (* nonl) ":")
-		1))))
-
-;;;###autoload
-(add-hook 'python-mode-hook #'imenu--python-hook)
+;; (add-hook 'python-mode-hook #'imenu--python-hook)
 
 (provide 'imenu-ext)
 
