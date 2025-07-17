@@ -1,0 +1,14 @@
+[project]
+name = "emacs-extensions"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "basedpyright>=1.31.0",
+    "icecream>=2.1.5",
+    "ruff>=0.12.4",
+]
