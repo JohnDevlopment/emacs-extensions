@@ -137,11 +137,16 @@ The skeleton will be bound to markdown-skeleton-NAME."
 	   ("C-c C-t x" . markdown-toc-follow-link-at-point)
 	   ("C-c C-t r" . markdown-toc-refresh-toc))
 
-;; Hook
+;; ### Hook
 
 ;;;###autoload
 (defun markdown--extra-hook ()
-  "Hook for `markdown-mode' extension.")
+  "Hook for `markdown-mode' extension."
+  (if (boundp 'electric-pair-text-pairs)
+      (setq-local electric-pair-pairs
+                  (append '((?\` . ?\`) (?‘ . ?’))
+                          electric-pair-pairs))
+    (message "TODO: Add electric pair hook for `markdown-mode'.")))
 
 ;;;###autoload
 (add-hook 'markdown-mode-hook #'markdown--extra-hook)
