@@ -20,14 +20,14 @@
 (eval-after-require move-text
   (move-text-default-bindings))
 
-;; ---Prefix Commands
+;; ### Prefix Commands
 
 (define-prefix-command 'command-map)
 
 (define-prefix-command 'quick-mode-map)
 (global-set-key (kbd "C-c m") #'quick-mode-map)
 
-;; ---
+;; ### Functions
 
 (defun --contextual-key-func-warning (function value)
   (cl-typecase value
@@ -234,7 +234,9 @@ is non-nil."
   (message "Mapped %s `revert-buffer'"
 	   (lookup-function 'revert-buffer nil t)))
 
-;; Gloal commands
+;; ### Key bindings
+
+;; --- Global commands
 (bind-keys ("C-c d" . bookmark-delete)
 	   ("C-<tab>" . tab-next)		; tab commands
 	   ("C-S-<iso-lefttab>" . tab-previous) ;
@@ -247,9 +249,10 @@ is non-nil."
 	   ("C-x M-=" . describe-char)
 	   ("C-x Q" . macro-ext-query)
 	   ("C-x Z" . save-and-kill)	; killing buffers
-	   ("C-c M-q" . kill-and-quit))	;
+	   ("C-c M-q" . kill-and-quit)	;
+	   )
 
-;; Prefix command for misc commands
+;; --- Prefix command for misc commands
 (bind-keys :prefix-map command-map
 	   :prefix "C-c c"
 	   ("%" . nonincremental-re-search-forward)
@@ -265,7 +268,7 @@ is non-nil."
 	   ("P" . add-file-local-variable-prop-line)
 	   ("M-P" . add-file-local-variable))
 
-;; Extension-related commands
+;; --- Extension-related commands
 (bind-keys :prefix-map extension-map
 	   :prefix "C-c e"
 	   ("l" . load-extension)
