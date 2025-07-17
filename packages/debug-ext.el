@@ -12,11 +12,11 @@
 (define-obsolete-function-alias 'assert #'cl-assert "2024-12-24")
 
 (defun --symbol-plist (symbol &rest props)
-  (cl-ext-unless (= (mod (length props) 2) 0)
-    (error "PROPS requires an even number of elements"))
+  (cl-ext-unless (cl-evenp (length props))
+      (error "PROPS requires an even number of elements"))
   (if props
       (cl-ext-when (eq (car-safe props) :set)
-	(pop props)
+	  (pop props)
 	(setplist symbol props)))
   (cl-prettyprint (symbol-plist symbol)))
 (cl-define-compiler-macro --symbol-plist (&whole form symbol &rest props)
