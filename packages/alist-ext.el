@@ -27,9 +27,11 @@ be quoted.
   (unless (= (mod (length pairs) 2) 0)
     (error "alist-ext-define requires an even number of arguments (key-value pairs)."))
   (let (res key value)
-    (while pairs
-      (setq key (pop pairs) value (pop pairs))
-      (cl-ext-append-list (list 'cons key value) res))
+    (setq res (cl-loop while pairs
+		       collect (cl-ext-progn
+				 (setq key (pop pairs)
+				       value (pop pairs))
+				 `(cons ,key ,value))))
     `(list ,@res)))
 
 ;;;###autoload

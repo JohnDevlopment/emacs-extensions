@@ -199,9 +199,7 @@ error message if provided."
 
 (defun cl-ext--cond-validate-clause (clause)
   (pcase clause
-    (`(,condition . ,body)
-     (--print-expr var condition)
-     (--print-expr var body))
+    (`(,_condition . ,_body) t)
     (_ (error "Invalid clause %S; must be of form (CONDITION BODY...)"
 	      clause))))
 
