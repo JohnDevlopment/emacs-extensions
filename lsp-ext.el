@@ -131,7 +131,8 @@ This is supposed to be called after `lsp--before-save'."
   "Kill all buffers that have to do with function `lsp-mode'."
   (interactive)
   (dolist (brx user-ext-lsp-buffers-to-kill)
-    (kill-buffers brx)))
+    (kill-buffers brx))
+  (kill-buffer "*lsp log*"))
 
 ;;;###autoload
 (defun lsp-ext--delete-temp-workspace-folders ()
@@ -258,6 +259,8 @@ temporary folders from the workspace."
 ;; ### Keymaps
 
 (define-key lsp-mode-map (kbd "<C-return>") #'lsp-find-definition)
+
+(define-key lsp-mode-map (kbd "C-c l T I") #'lsp-ui-imenu)
 
 ;; ### Hooks
 
