@@ -17,6 +17,95 @@ Derived from `basic-mode'.
 
 ;;;***
 
+;;;### (autoloads nil "_buffers-ext" "_buffers-ext.el" (0 0 0 0))
+;;; Generated autoloads from _buffers-ext.el
+
+(autoload 'define-scratch-buffer-function "_buffers-ext" "\
+Define a function NAME for creating a scratch buffer.
+The scratch buffer is named \"BUFFER-NAME\".  NAME has
+ARG-LIST and DOCSTRING as its argument list and
+documentation string, respectively.  Likewise, INT-SPEC is
+used as the argument to `interactive' if non-nil.  The rest
+of the arguments is the BODY of function NAME.
+
+BODY is evaluated with the scratch buffer as the current one.
+The last form of BODY is returned by the defined function.
+
+\(fn NAME BUFFER-NAME ARG-LIST DOCSTRING INT-SPEC &rest BODY)" nil t)
+
+(function-put 'define-scratch-buffer-function 'lisp-indent-function '3)
+
+(function-put 'define-scratch-buffer-function 'doc-string-elt '4)
+ (autoload 'faces-buffer "_buffers-ext" "Open a buffer listing all the faces.\n\n\(fn)" t)
+ (autoload 'general-scratch "_buffers-ext" "Open a general-purpose scratch buffer.\n\n\(fn MODE)" t)
+
+(autoload 'tmpbuf "_buffers-ext" "\
+Open a temporary buffer with the name BUFFER-NAME.
+Create the buffer if it does not already exist.  If SWITCH is
+non-nil, switch to the newly buffer.
+
+If this is called interactively, switch to the buffer.
+
+\(fn BUFFER-NAME &optional SWITCH)" t nil)
+
+(autoload 'kill-certain-temp-buffers "_buffers-ext" "\
+Convenience function to kill certain buffers you do not need.
+
+This kills buffers belonging to `user-ext-temp-buffers-to-kill' and
+`user-ext-temp-buffers-to-kill-regex'." t nil)
+
+(autoload 'kill-customization-buffers "_buffers-ext" "\
+Close all customization buffers.
+Internally, calls `kill-buffers' with \"^*Customize.*\" as the pattern." t nil)
+
+(autoload 'kill-buffers "_buffers-ext" "\
+Close all buffers matching PATTERN.
+If PREDICATE is specified, it is a function that accepts a
+buffer object and returns a non-nil value if said buffer
+should be killed.
+
+Called interactively, PREDICATE cannot be specified.
+
+\(fn PATTERN &optional PREDICATE)" t nil)
+
+(autoload 'clone-indirect-buffer-this-window "_buffers-ext" "\
+Create an indirect buffer that is a twin copy of the current buffer." t nil)
+
+(autoload 'revert-all-buffers "_buffers-ext" "\
+Reverts all buffers, including special buffers.
+This reverts all buffers in like manner to `revert-buffer'.  The user is NOT
+asked to confirm, so be careful when using this function.  IGNORE-AUTO and
+PREVERSE-MODES are the same as for `revert-buffer', and they are specified
+as prefix args." t nil)
+
+(autoload 'activate-view-mode "_buffers-ext" "\
+Activate view mode in current buffer and maybe setup exit actions.
+If ARG is non-nil, setup buffer to be killed when View mode
+is exited, similar to the behavior of `view-buffer' or
+`view-file'.
+
+Interactively, ARG is the raw prefix argument.
+
+\(fn &optional ARG)" t nil)
+
+(autoload 'clone-and-view-buffer "_buffers-ext" "\
+Create an indirect buffer and show it in another window.
+
+Creates an indirect buffer of BASE-BUFFER and shows it in
+another window.  BASE-BUFFER should be a live buffer or the
+name of an existing buffer.  If the optional arg CLONE is
+non-nil, BASE-BUFFER's state is preserved in the indirect
+buffer, meaning things like minor and major modes.  Otherwise,
+the indirect buffer's state is reset to default values.
+
+Interactively, CLONE is a prefix argument.
+
+\(fn BASE-BUFFER &optional CLONE)" t nil)
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "_buffers-ext" '("faces-buffer" "general-scratch" "text-scratch--complete-mode")))
+
+;;;***
+
 ;;;### (autoloads nil "basic-ext" "basic-ext.el" (0 0 0 0))
 ;;; Generated autoloads from basic-ext.el
 
@@ -58,12 +147,26 @@ Extra hook for `bbcode-mode'." nil nil)
 
 (add-hook 'bnf-mode-hook #'bnf--extra-hook)
 
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "bnf-ext" '("user-ext-bnf--init")))
+
+;;;***
+
+;;;### (autoloads nil "bookmark-menu-ext" "bookmark-menu-ext.el"
+;;;;;;  (0 0 0 0))
+;;; Generated autoloads from bookmark-menu-ext.el
+
+(autoload 'bookmark-bmenu--extra-hook "bookmark-menu-ext" nil nil nil)
+
+(add-hook 'bookmark-bmenu-mode-hook #'bookmark-bmenu--extra-hook)
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "bookmark-menu-ext" '("bookmark-bmenu-ext-this-window-alternate")))
+
 ;;;***
 
 ;;;### (autoloads nil "buffers-ext" "buffers-ext.el" (0 0 0 0))
 ;;; Generated autoloads from buffers-ext.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "buffers-ext" '("activate-view-mode" "clone-" "define-scratch-buffer-function" "faces-buffer" "git-commit-scratch" "kill-" "narrow-to-region2" "revert-all-buffers" "text-scratch--complete-mode" "tmpbuf" "user-ext-temp-buffers-to-kill")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "buffers-ext" '("set-current-window-dedicated" "user-ext-temp-buffers-to-kill" "with-tmpbuf")))
 
 ;;;***
 
@@ -92,6 +195,8 @@ Extra hook for `bbcode-mode'." nil nil)
 (autoload 'comment-tags-mode-turn-on "comment-tags-ext" "\
 Turn on `comment-tags-mode' if the buffer has TODO-ish comments." t nil)
 
+(autoload 'comment-tags-ext-remove-comment "comment-tags-ext" nil t nil)
+
 (put 'global-comment-tags-mode 'globalized-minor-mode t)
 
 (defvar global-comment-tags-mode nil "\
@@ -116,7 +221,15 @@ See `comment-tags-mode' for more information on Comment-Tags mode.
 
 \(fn &optional ARG)" t nil)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "comment-tags-ext" '("global-comment-tags-regexp" "user-ext-global-comment-tags-exclude")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "comment-tags-ext" '("user-ext-global-comment-tags-")))
+
+;;;***
+
+;;;### (autoloads nil "commit-helper" "commit-helper.el" (0 0 0 0))
+;;; Generated autoloads from commit-helper.el
+ (autoload 'commit-helper "commit-helper" nil t)
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "commit-helper" '("commit-helper-")))
 
 ;;;***
 
@@ -174,8 +287,32 @@ Extra hook for `dtext-mode'." nil nil)
 
 ;;;***
 
+;;;### (autoloads nil "ebnf-ext" "ebnf-ext.el" (0 0 0 0))
+;;; Generated autoloads from ebnf-ext.el
+
+(autoload 'ebnf--extra-hook "ebnf-ext" nil nil nil)
+
+(add-hook 'ebnf-mode-hook #'ebnf--extra-hook)
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "ebnf-ext" '("user-ext-ebnf--init")))
+
+;;;***
+
 ;;;### (autoloads nil "elisp-ext" "elisp-ext.el" (0 0 0 0))
 ;;; Generated autoloads from elisp-ext.el
+
+(autoload 'elisp-ext-minify "elisp-ext" "\
+Minify the code between START and END in current buffer.
+START and END are the two points in a region.  If the region
+is not active, minify the whole buffer, asking the user
+beforehand; unless FORCE is non-nil, in which, do it without
+asking.
+
+If called interactively, START and END are the region,
+provided the region is active, otherwise they are ignored.
+FORCE is the prefix argument.
+
+\(fn START END &optional FORCE)" t nil)
 
 (autoload 'elisp-ext-forward-or-backward-sexp "elisp-ext" "\
 Go to the matching parenthesis to the one is adjacent at point.
@@ -196,7 +333,31 @@ Updates the autoload definitions in the Lisp files in
  (autoload 'elisp-ext-scratch-buffer "elisp-ext" "Create a scratch buffer for Emacs lisp code." t)
 
 (autoload 'elisp-ext-doc-scratch-buffer "elisp-ext" "\
-Create a scratch buffer for Emacs Lisp docstrings." t nil)
+Create and switch to a scratch buffer for Emacs Lisp docstrings.
+When the buffer is opened, the cursor is placed between two
+double quotation characters, each on its own line.  The
+lines between the two quotations is used for the docstring.
+
+Auto fill mode is enabled when the buffer is first opened.
+Initially the fill column is set to 67, but when the user
+types \\[elisp-ext-doc-scratch-buffer--shift-return], a
+newline is added and the fill column is changed to 60.  This
+reflects the recommended line length as stated in Emacs'
+official style guide.
+
+When you are finished writing the docstring and want to exit,
+type \\[elisp-ext-doc-scratch-buffer--ctrl-c-ctrl-c].  Doing
+so does the following, in order:
+1. Kills (cuts) the text inbetween the quotation characters.
+2. Kills the buffer.
+3. Restores the previous window configuration (see below).
+
+The window configuration is saved when this command is run.
+As such, you exit this buffer in the way prescribed above,
+it is restored." t nil)
+
+(autoload 'elisp-ext-edit-commentary "elisp-ext" "\
+Edit the comment at point." t nil)
 
 (autoload 'elisp-ext--extra-hook "elisp-ext" "\
 Hook for the `emacs-lisp-mode' extension." nil nil)
@@ -207,17 +368,31 @@ Hook for the `emacs-lisp-mode' extension." nil nil)
 
 ;;;***
 
+;;;### (autoloads nil "errors" "errors.el" (0 0 0 0))
+;;; Generated autoloads from errors.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "errors" '("invalid-argument" "signal-" "type-error" "wrong-argument")))
+
+;;;***
+
 ;;;### (autoloads nil "extensions" "extensions.el" (0 0 0 0))
 ;;; Generated autoloads from extensions.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "extensions" '("--extension-c" "eval-after-require" "find-extension" "get-extension-documentation" "load-extension" "user-ext-extension-directory")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "extensions" '("--" "eval-after-require" "find-extension" "get-extension-documentation" "load-extension" "user-ext-extension-directory")))
 
 ;;;***
 
 ;;;### (autoloads nil "general" "general.el" (0 0 0 0))
 ;;; Generated autoloads from general.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "general" '("bind-fill-region" "capf-enable-ispell-locally" "date-format-version" "describe-region" "enable-wrap" "invalid-argument" "kill-and-quit" "minify" "pop-saved-position" "print-saved-positions" "save-" "signal-wrong-argument" "sort-words" "user-ext-local-position-ring" "wrong-argument")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "general" '("--make-sure-user-actually-wants-to-quit" "bind-fill-region" "capf-enable-ispell-locally" "describe-region" "enable-wrap" "kill-and-quit" "minify" "pop-saved-position" "print-saved-positions" "save-" "sort-words" "temp" "user-ext-local-position-ring")))
+
+;;;***
+
+;;;### (autoloads nil "help-ext" "help-ext.el" (0 0 0 0))
+;;; Generated autoloads from help-ext.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "help-ext" '("help-")))
 
 ;;;***
 
@@ -267,6 +442,15 @@ If point is on a buffer, toggle the group it is in." t nil)
 
 ;;;***
 
+;;;### (autoloads nil "image-ext" "image-ext.el" (0 0 0 0))
+;;; Generated autoloads from image-ext.el
+
+(autoload 'image--extra-hook "image-ext" nil nil nil)
+
+(add-hook 'image-mode-hook #'image--extra-hook)
+
+;;;***
+
 ;;;### (autoloads nil "imenu-ext" "imenu-ext.el" (0 0 0 0))
 ;;; Generated autoloads from imenu-ext.el
 
@@ -280,29 +464,30 @@ Binds `imenu' to the double left-click mouse button locally.
 The bindings are local to the active keymap, which means
 buffers sharing the same major mode will be affected." t nil)
 
-(autoload 'imenu--python-hook "imenu-ext" "\
-Imenu Hook for Python mode." nil nil)
-
-(add-hook 'python-mode-hook #'imenu--python-hook)
-
 ;;;***
 
-;;;### (autoloads nil "jinja2" "jinja2.el" (0 0 0 0))
-;;; Generated autoloads from jinja2.el
+;;;### (autoloads nil "info" "info.el" (0 0 0 0))
+;;; Generated autoloads from info.el
 
-(autoload 'jinja2-mode "jinja2" "\
-Minor mode for editing Jinja2 templates within major modes.
+(autoload 'info-node "info" "\
+Enter Info, the documentation browser, for NODE.
+NODE is an Info node of the form \"(FILENAME)NODENAME\".  Optional
+argument BUFFER specifies the Info buffer name; the default buffer
+name is \"*info*\".  If BUFFER exists, just switch to it; otherwise,
+create a new buffer with the top-level Info directory.
 
-If called interactively, enable Jinja2 mode if ARG is positive,
-and disable it if ARG is zero or negative.  If called from Lisp,
-also enable the mode if ARG is omitted or nil, and toggle it if
-ARG is `toggle'; disable the mode otherwise.
+In interactive use, a numeric prefix argument of N selects an Info
+buffer named \"*info*<N>\".
 
-\\{jinja2-mode-map}
+Aside from these differences, this works exactly the same as
+`info'.
 
-\(fn &optional ARG)" t nil)
+\(fn NODE &optional BUFFER)" t nil)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "jinja2" '("jinja2-" "tag-match-")))
+(autoload 'info-node-other-window "info" "\
+Like `info-node' but show buffer in another window.
+
+\(fn NODE &optional BUFFER)" t nil)
 
 ;;;***
 
@@ -322,7 +507,7 @@ ARG is `toggle'; disable the mode otherwise.
 ;;;### (autoloads nil "keymaps-ext" "keymaps-ext.el" (0 0 0 0))
 ;;; Generated autoloads from keymaps-ext.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "keymaps-ext" '("--contextual-key-func-warning" "define-contextual-key-func" "lookup-function" "map-revert-buffer")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "keymaps-ext" '("--contextual-key-" "define-contextual-key-func" "lookup-function" "map-revert-buffer" "user-ext-keymaps--key-translation-table")))
 
 ;;;***
 
@@ -391,7 +576,7 @@ Define NAME as a buffer-local skeleton command.
 SKELETON works the same way as the SKELETON argument in
 `define-skeleton', which see.
 
-\(fn NAME DOCSTRING &rest SKELETON)" nil t)
+\(fn NAME &optional DOCSTRING &rest SKELETON)" nil t)
 
 (function-put 'local-lambda-define-skeleton 'lisp-indent-function '1)
 
@@ -453,7 +638,47 @@ Extra hook for `log4j-mode'." nil nil)
 ;;;### (autoloads nil "lsp-ext" "lsp-ext.el" (0 0 0 0))
 ;;; Generated autoloads from lsp-ext.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "lsp-ext" '("kill-lsp-buffers" "lsp-" "user-ext-lsp-")))
+(autoload 'kill-lsp-buffers "lsp-ext" "\
+Kill all buffers that have to do with function `lsp-mode'." t nil)
+
+(autoload 'lsp-ext--delete-temp-workspace-folders "lsp-ext" "\
+Remove temporary folders from the LSP workspace.
+
+Remove the contents of `user-ext-lsp-temporary-workspace-folders'
+from the workspace list.  Effectively, this removes
+temporary folders from the workspace." nil nil)
+
+(autoload 'lsp-ext-workspace-folders-remove-list "lsp-ext" "\
+Call `lsp-workspace-folders-remove' one or more times in a loop." t nil)
+
+(autoload 'lsp-ext-workspace-blocklist-add "lsp-ext" "\
+Add PROJECT-ROOT to the workspace blocklist.
+
+\(fn PROJECT-ROOT)" t nil)
+
+(autoload 'lsp-ext-workspace-blocklist-remove-all "lsp-ext" "\
+Remove all folders in the workspace blocklist." t nil)
+
+(autoload 'lsp-ext-workspace-folders-add-temp "lsp-ext" "\
+Temporarily add PROJECT-ROOT to the list of workspace folders.
+
+\(fn PROJECT-ROOT)" t nil)
+
+(autoload 'lsp-ext-open-project-config "lsp-ext" "\
+Open the project config file.
+
+\(fn PROJECT-ROOT)" t nil)
+
+(autoload 'lsp-ext-python-rename-buffer "lsp-ext" "\
+Rename the current buffer." t nil)
+
+(autoload 'lsp-ext--start-hook "lsp-ext" nil nil nil)
+
+(add-hook 'kill-emacs-hook #'lsp-ext--delete-temp-workspace-folders)
+
+(add-hook 'lsp-configure-hook #'lsp-ext--start-hook)
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "lsp-ext" '("lsp-" "user-ext-lsp-")))
 
 ;;;***
 
@@ -533,7 +758,7 @@ Extra hook for `org-mode'." nil nil)
 
 (add-hook 'org-mode-hook #'org--extra-hook)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "org-ext" '("org-ext-" "user-ext-browse-url-brave-arguments")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "org-ext" '("org-ext-" "user-ext-org-")))
 
 ;;;***
 
@@ -557,6 +782,8 @@ Extra hook for `org-mode'." nil nil)
 
 (add-hook 'outline-mode-hook #'outline--extra-hook)
 
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "outline-ext" '("outline-ext--after-premote-demote")))
+
 ;;;***
 
 ;;;### (autoloads nil "packages/alist-ext" "packages/alist-ext.el"
@@ -579,6 +806,16 @@ be quoted.
 
 \(fn KEY VALUE ...)" nil t)
 
+(autoload 'alist-ext-dolist "packages/alist-ext" "\
+Loop over an alist.
+Evaluate BODY with KVAR and VVAR bound the key and value of
+each association from ALIST.  Then evaluate RESULT to get
+the return value, defaulting to nil.
+
+\(fn (KEY-VAR VAL-VAR ALIST [RESULT]) BODY...)" nil t)
+
+(function-put 'alist-ext-dolist 'lisp-indent-function '1)
+
 ;;;***
 
 ;;;### (autoloads nil "packages/cl-ext" "packages/cl-ext.el" (0 0
@@ -592,22 +829,26 @@ sequentially and return value of last one.
 
 The main difference between `cl-ext-when' and `when' is that
 when BODY is empty, this expands to a `and' form; otherwise,
-it behaves exactly the same.
+it behaves exactly the same as the latter.
 
-When BODY is nil, if COND is itself a `and' form, ala `(and
-SUB-CONDS...)', SUB-CONDS is collapsed into COND.  As a
-result, the following form
+If BODY is nil and COND is an `and' form ala
+`(or SUB-CONDS...)', SUB-CONDS is collapsed into COND.  As
+a result, the form
 
    (cl-ext-when (and n (> n 0))
-     n)
+       n)
 
-expands to this:
+expands to
 
    (and n (> n 0) n)
 
+If BODY is nil, and FIRST-FORM returns non-nil on the
+predicate `cl-ext--pcase-special-form', this expands
+directly to an `if' form.
+
 \(fn COND FIRST-FORM BODY...)" nil t)
 
-(function-put 'cl-ext-when 'lisp-indent-function '1)
+(function-put 'cl-ext-when 'lisp-indent-function '2)
 
 (autoload 'cl-ext-unless "packages/cl-ext" "\
 If COND yields nil, do FIRST-FORM and BODY, else return nil.
@@ -615,12 +856,27 @@ When COND yields nil, eval FIRST-FORM and BODY forms
 sequentially and return value of last one.
 
 The main difference between `cl-ext-unless' and `unless' is
-that when BODY is empty, this expands to a `or' form;
-otherwise, it behaves exactly the same.
+that when BODY is empty, this expands to an `or' form;
+otherwise, it behaves exactly the same as the latter.
+
+If BODY is nil and COND is an `or' form ala
+`(or SUB-CONDS...)', SUB-CONDS is collapsed into COND.  As
+a result, the form
+
+   (cl-ext-unless (or n (<= n 0))
+       n)
+
+expands to
+
+   (or n (<= n 0) n)
+
+If BODY is nil, and FIRST-FORM returns non-nil on the
+predicate `cl-ext--pcase-special-form', this expands
+directly to an ...
 
 \(fn COND FIRST-FORM BODY...)" nil t)
 
-(function-put 'cl-ext-unless 'lisp-indent-function '1)
+(function-put 'cl-ext-unless 'lisp-indent-function '2)
 
 (autoload 'cl-ext-append "packages/cl-ext" "\
 Add X to the list stored in PLACE.
@@ -641,7 +897,14 @@ Lisp expressions and adding another list to it:
 
 \(fn X PLACE)" nil t)
 
-(function-put 'cl-ext-append-list 'pure 't)
+(autoload 'cl-ext-until "packages/cl-ext" "\
+If TEST yields nil, eval BODY...and repeat.
+This is the opposite of `while'--BODY is evaluated every
+iteration of the loop until TEST returns non-nil.
+
+\(fn TEST BODY...)" nil t)
+
+(function-put 'cl-ext-until 'lisp-indent-function '1)
 
 (autoload 'cl-ext-nconcat "packages/cl-ext" "\
 Append the arguments (SEQUENCES) as strings to PLACE.
@@ -670,13 +933,23 @@ this behaves exactly like `progn'.
 
 (function-put 'cl-ext-progn 'lisp-indent-function '0)
 
+(autoload 'cl-ext-check-type "packages/cl-ext" "\
+Verify FORM is of type TYPE; signal an error if not.
+To wit, signal `type-error' if VALUE does not match TYPE
+according to `cl-typep', which see.  Include STRING in the
+error message if provided.
+
+\(fn FORM TYPE &optional STRING)" nil t)
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "packages/cl-ext" '("cl-ext-" "user-ext-cl-special-forms")))
+
 ;;;***
 
 ;;;### (autoloads nil "packages/debug-ext" "packages/debug-ext.el"
 ;;;;;;  (0 0 0 0))
 ;;; Generated autoloads from packages/debug-ext.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "packages/debug-ext" '("--" "assert" "debug-ext-get-function-body")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "packages/debug-ext" '("--" "debug-ext-get-function-body")))
 
 ;;;***
 
@@ -727,6 +1000,10 @@ Replace the function definition of SYMBOL.
 The new definition is
 \(lambda SYMBOL ARGLIST [DOCSTRING] BODY...).  The arguments
 are the same as `defun', which see.
+
+If the first element of BODY is the keyword :remove, SYMBOL
+is reverted to its original state, with its original function
+definition.
 
 This function has two side effects: on the first invocation
 of this macro for SYMBOL, its original definition is saved
@@ -797,6 +1074,14 @@ The following keywords are supported:
 
 ;;;***
 
+;;;### (autoloads nil "packages/variable-ext" "packages/variable-ext.el"
+;;;;;;  (0 0 0 0))
+;;; Generated autoloads from packages/variable-ext.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "packages/variable-ext" '("defconst2")))
+
+;;;***
+
 ;;;### (autoloads nil "perl-ext" "perl-ext.el" (0 0 0 0))
 ;;; Generated autoloads from perl-ext.el
 
@@ -806,6 +1091,24 @@ The following keywords are supported:
 (add-hook 'perl-mode-hook #'perl-mode--extra-hook)
 
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "perl-ext" '("perl-ext-scratch-buffer")))
+
+;;;***
+
+;;;### (autoloads nil "plantuml-ext" "plantuml-ext.el" (0 0 0 0))
+;;; Generated autoloads from plantuml-ext.el
+
+(autoload 'plantuml--extra-hook "plantuml-ext" nil nil nil)
+
+(add-hook 'plantuml-mode-hook #'plantuml--extra-hook)
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "plantuml-ext" '("plantuml-ext-" "user-ext-plantuml-")))
+
+;;;***
+
+;;;### (autoloads nil "polymode-ext" "polymode-ext.el" (0 0 0 0))
+;;; Generated autoloads from polymode-ext.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "polymode-ext" '("poly-")))
 
 ;;;***
 
@@ -839,7 +1142,15 @@ look for `inlayHintProvider'." t nil)
 (autoload 'python-ext-kill-venv-buffers "python-ext" nil t nil)
 
 (autoload 'python-ext-docstring "python-ext" "\
-Open a temporary buffer to write a docstring." t nil)
+Open a temporary buffer to write a docstring.
+
+The major mode of the buffer is controlled by the user option
+`user-ext-python-docstring-major-mode'.  A list of minor
+modes are enabled according to the user option
+`user-ext-python-docstring-minor-modes'.
+
+The initial fill column is controlled by the user option
+`user-ext-python-docstring-fill-column'." t nil)
 
 (autoload 'python--extra-hook "python-ext" "\
 Hook for `python-mode' for this extension." nil nil)
@@ -899,6 +1210,13 @@ Hook for `rustic-mode' extension." nil nil)
 
 ;;;***
 
+;;;### (autoloads nil "search-ext" "search-ext.el" (0 0 0 0))
+;;; Generated autoloads from search-ext.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "search-ext" '("python-regexp-to-emacs" "search-ext-")))
+
+;;;***
+
 ;;;### (autoloads nil "sh-ext" "sh-ext.el" (0 0 0 0))
 ;;; Generated autoloads from sh-ext.el
 
@@ -913,7 +1231,37 @@ Hook for `rustic-mode' extension." nil nil)
 ;;;### (autoloads nil "syntax-ext" "syntax-ext.el.gz" (0 0 0 0))
 ;;; Generated autoloads from syntax-ext.el.gz
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "syntax-ext" '("make-ppss-easy")))
+(autoload 'ppss-open-paren-depth "syntax-ext" "\
+Get the N'th innermost depth of CL-X's open parentheses.
+CL-X is a `ppss' type, and N is the optional depth.  If N is
+omitted or nil, then get the innermost depth.
+
+See the info node `(elisp)Parser State', and look at element
+9 for more information.
+
+\(fn CL-X &optional N)" nil nil)
+
+(function-put 'ppss-open-paren-depth 'side-effect-free 't)
+
+(function-put 'ppss-open-paren-depth 'pure 't)
+
+(defsubst make-ppss-easy (ppss) "\
+Constructor of type `ppss' from PPSS." (make-ppss :depth (nth 0 ppss) :innermost-start (nth 1 ppss) :last-complete-sexp-start (nth 2 ppss) :string-terminator (nth 3 ppss) :comment-depth (nth 4 ppss) :quoted-p (nth 5 ppss) :min-depth (nth 6 ppss) :comment-style (nth 7 ppss) :comment-or-string-start (nth 8 ppss) :open-parens (nth 9 ppss) :two-character-syntax (nth 10 ppss)))
+
+;;;***
+
+;;;### (autoloads nil "table-ext" "table-ext.el" (0 0 0 0))
+;;; Generated autoloads from table-ext.el
+
+(autoload 'table-mode "table-ext" "\
+Minor mode for tables created via `table-insert'.
+
+If called interactively, enable Table mode if ARG is positive,
+and disable it if ARG is zero or negative.  If called from Lisp,
+also enable the mode if ARG is omitted or nil, and toggle it if
+ARG is `toggle'; disable the mode otherwise.
+
+\(fn &optional ARG)" t nil)
 
 ;;;***
 
@@ -927,11 +1275,25 @@ Extra hook for `tcl mode'." nil nil)
 
 ;;;***
 
+;;;### (autoloads nil "temp" "temp.el" (0 0 0 0))
+;;; Generated autoloads from temp.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "temp" '("plantuml-ext-" "user-ext-plantuml-submode")))
+
+;;;***
+
 ;;;### (autoloads nil "text-ext" "text-ext.el.gz" (0 0 0 0))
 ;;; Generated autoloads from text-ext.el.gz
 
 (autoload 'text-ext-highlight-even-lines "text-ext" "\
 Highlight every even-numbered line in the current buffer." t nil)
+
+;;;***
+
+;;;### (autoloads nil "thingatpt-ext" "thingatpt-ext.el" (0 0 0 0))
+;;; Generated autoloads from thingatpt-ext.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "thingatpt-ext" '("copy-thing-at-point" "define-" "kill-thing-at-point" "thing-at-point-ext-" "user-ext-thingatpt-valid-things" "valid-thing")))
 
 ;;;***
 
@@ -944,6 +1306,13 @@ Extra hook for `toml-mode'." nil nil)
 (add-hook 'toml-mode-hook #'toml-mode--extra-hook)
 
 (if (fboundp 'register-definition-prefixes) (register-definition-prefixes "toml-ext" '("toml-ext-indent")))
+
+;;;***
+
+;;;### (autoloads nil "types-ext" "types-ext.el" (0 0 0 0))
+;;; Generated autoloads from types-ext.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "types-ext" '("alist-")))
 
 ;;;***
 
@@ -962,16 +1331,17 @@ Extra hook for `toml-mode'." nil nil)
 
 ;;;***
 
-;;;### (autoloads nil nil ("code-outline-bootstrap.el" "faces-ext.el"
-;;;;;;  "help-ext.el" "jdesktop-bootstrap.el" "liquidsoap-bootstrap.el.gz"
-;;;;;;  "packages/documentation-ext.el") (0 0 0 0))
+;;;### (autoloads nil nil ("code-outline-bootstrap.el" "commit.el"
+;;;;;;  "compat-29-ext.el" "faces-ext.el" "git-ext.el" "jdesktop-bootstrap.el"
+;;;;;;  "jinja2-bootstrap.el" "liquidsoap-bootstrap.el.gz" "packages/documentation-ext.el"
+;;;;;;  "polymode-bootstrap.el") (0 0 0 0))
 
 ;;;***
 
 ;;;### (autoloads nil "abbrev-ext" "abbrev-ext.el" (0 0 0 0))
 ;;; Generated autoloads from abbrev-ext.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "abbrev-ext" '("abbrev-ext-insert-hook" "global-abbrev-table" "user-ext-abbrev-insert-char-regex")))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "abbrev-ext" '("abbrev-ext-" "global-abbrev-table" "user-ext-abbrev-")))
 
 ;;;***
 
