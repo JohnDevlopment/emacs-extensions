@@ -160,6 +160,32 @@ Group 2 matches the name of the function.")
       (save-buffer)
       (kill-buffer))))
 
+(defun python-ext-revert-all-python-buffers ()
+  "Revert all Python buffers."
+  (interactive)
+  (unless user-ext-python--reverted
+    (cl-loop
+     with bl = (buffer-list)
+     with bfn = nil
+     for buf in bl
+     do
+     (setq bfn (buffer-file-name))
+     (with-current-buffer buf
+       (when (and bfn (file-exists-p bfn)
+		  (not (buffer-modified-p))
+		  (eq major-mode 'python-mode))
+	 (revert-buffer t t)
+	 (setq user-ext-python--reverted t))))))
+
+(defun python-ext-shift-return ()
+  "Called when the user presses <S-return>."
+  (interactive)
+  (py-newline-and-indent)
+  (py-newline-and-indent)
+  (py-electric-backspace)
+  (forward-line -1)
+  (py-indent-or-complete))
+
 (defsubst python-ext--regexp-match (subexp end)
   (cond
    ((and subexp end)
@@ -612,34 +638,7 @@ The initial fill column is controlled by the user option
 	       "Python Docstring: Type \\[python-ext--write-docstring] to apply changes")))
     (setq header-line-format nil)))
 
-
-(defun python-ext-revert-all-python-buffers ()
-  "Revert all Python buffers."
-  (interactive)
-  (unless user-ext-python--reverted
-    (cl-loop
-     with bl = (buffer-list)
-     with bfn = nil
-     for buf in bl
-     do
-     (setq bfn (buffer-file-name))
-     (with-current-buffer buf
-       (when (and bfn (file-exists-p bfn)
-		  (not (buffer-modified-p))
-		  (eq major-mode 'python-mode))
-	 (revert-buffer t t)
-	 (setq user-ext-python--reverted t))))))
-
-(defun python-ext-shift-return ()
-  "Called when the user presses <S-return>."
-  (interactive)
-  (py-newline-and-indent)
-  (py-newline-and-indent)
-  (py-electric-backspace)
-  (forward-line -1)
-  (py-indent-or-complete))
-
-;; Key bindings
+;; ### Key bindings
 
 (define-prefix-command 'python-ext-command-prefix)
 
