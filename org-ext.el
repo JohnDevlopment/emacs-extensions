@@ -162,7 +162,19 @@ Otherwise, call `org-return'."
 				  (org-list-prevs-alist struct)
 				  checkbox)
 	    (org-end-of-line)
-	    (org-ctrl-c-ctrl-c))))
+	    (org-ctrl-c-ctrl-c))
+	   ((eq list-type 'descriptive)
+	    (let ((def (read-string "Definition: ")))
+	      ;; Definition list
+	      (cl-ext-when (not (string-empty-p def))
+		  (org-list-insert-item (point) struct
+					(org-list-prevs-alist struct)
+					nil (format "%s :: " def))
+		(org-end-of-line))))
+	   (t
+	    ;; Unknown
+	    (--print-expr var context)
+	    (error "Unknown list type: %s" list-type))))
       (org-return))))
 
 (defun org-ext-list-headlines ()
