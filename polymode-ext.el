@@ -4,23 +4,26 @@
 
 ;; ### Host modes
 
-(define-hostmode poly-markdown-hostmode
+(define-hostmode poly-markdown-hostmode nil
+  "Host mode: Markdown."
   :mode #'markdown-mode)
 
-(define-hostmode poly-org-hostmode
+(define-hostmode poly-org-hostmode nil
+  "Host mode: Org."
   :mode #'org-mode
   :protect-font-lock t)
 
-(define-hostmode poly-plantuml-hostmode
+(define-hostmode poly-plantuml-hostmode nil
+  "Host mode: Plantuml."
   :mode #'plantuml-mode)
 
-(define-hostmode poly-shell-script-hostmode
+(define-hostmode poly-shell-script-hostmode nil
+  "Host mode: Script."
   :mode #'shell-script-mode)
 
 ;; ### Inner modes
 
-(define-innermode poly-generic-eval-innermode
-  nil
+(define-innermode poly-generic-eval-innermode nil
   "Innermode for file variables."
   :head-matcher "^\\s<+ eval: "
   :tail-matcher "$"
@@ -29,8 +32,7 @@
 
 ;; --- HTML
 
-(define-innermode poly-html-css-innermode
-  nil
+(define-innermode poly-html-css-innermode nil
   "Innermode for CSS <style> tags in HTML."
   :head-matcher "<style>\\s-*"
   :head-mode 'host
@@ -41,8 +43,7 @@
 
 ;; --- Markdown
 
-(define-auto-innermode poly-markdown-fenced-code-innermode
-  nil
+(define-auto-innermode poly-markdown-fenced-code-innermode nil
   "Mode for fenced code blocks."
   :head-matcher (cons "^[ \t]*\\(```[[:alpha:]].*$\\)" 1)
   :tail-matcher (cons "^[ \t]*\\(```\\)[ \t]*$" 1)
@@ -74,16 +75,14 @@
 
 ;; --- Org
 
-(define-innermode poly-org-eval-innermode
-  nil
+(define-innermode poly-org-eval-innermode nil
   "Innermode for file variables."
   :head-matcher "^# eval: "
   :tail-matcher "$"
   :mode #'emacs-lisp-mode
   :allow-nested nil)
 
-(define-innermode poly-org-macro-eval-innermode
-  nil
+(define-innermode poly-org-macro-eval-innermode nil
   "Innermode for Emacs Lisp code in macro replacements."
   :head-matcher "^#\\+macro: .*?(eval"
   :head-mode 'host
@@ -92,15 +91,15 @@
   :mode #'emacs-lisp-mode
   :allow-nested nil)
 
-(define-auto-innermode poly-org-inline-source-innermode
+(define-auto-innermode poly-org-inline-source-innermode nil
+  "Innermode for inline source spans."
   :head-matcher "\\bsrc_[a-z][a-z0-9_-]*\\(?:\\[.*?\\]\\)?{"
   :head-mode 'host
   :tail-matcher (cons "{.*}\\($\\)" 1)
   :tail-mode 'host
   :mode-matcher (cons "src_\\([a-z][a-z0-9_-]*\\)" 1))
 
-(define-innermode poly-org-html-innermode
-  nil
+(define-innermode poly-org-html-innermode nil
   "Innermode for HTML snippets."
   :head-matcher "^#\\+\\(?:HTML_HEAD\\|html_head\\):[ \t]+"
   :head-mode 'host
@@ -112,7 +111,7 @@
 ;; --- Shell Script
 
 (define-innermode poly-shell-script-here-doc-innermode nil
-  "Here documents."
+  "Innermode for here documents."
   :head-matcher (cons "<<-?[ \t]*\\(EOF\\)$" 1)
   :tail-matcher "^EOF$"
   :tail-mode 'host
@@ -122,24 +121,27 @@
 
 ;; ### Poly modes
 
-(define-polymode poly-emacs-lisp-file-variables-mode
-  nil
+;;;###autoload (autoload 'poly-emacs-lisp-file-variables-mode "polymode-ext" "A variation of `emacs-lisp-mode' for Polymode." t)
+(define-polymode poly-emacs-lisp-file-variables-mode nil
   "A variation of `emacs-lisp-mode' for Polymode."
   :hostmode 'poly-emacs-lisp-hostmode
   :innermodes '(poly-generic-eval-innermode))
 
+;;;###autoload (autoload 'poly-html-mode "polymode-ext" "A variation of `html-mode' for Poly mode." t)
 (define-polymode poly-html-mode
   poly-html-root-polymode
   "A variation of `html-mode' for Poly mode."
   :hostmode 'poly-html-hostmode
   :innermodes '(poly-html-css-innermode))
 
-(define-polymode poly-markdown-mode
+;;;###autoload (autoload 'poly-markdown-mode "polymode-ext" "A variation of `markdown-mode' for Poly mode." t)
+(define-polymode poly-markdown-mode nil
+  "A variation of `markdown-mode' for Poly mode."
   :hostmode 'poly-markdown-hostmode
   :innermodes '(poly-markdown-fenced-code-innermode))
 
-(define-polymode poly-org-mode
-  nil
+;;;###autoload (autoload 'poly-org-mode "polymode-ext" "A variation of `org-mode' for Poly mode." t)
+(define-polymode poly-org-mode nil
   "A variation of `org-mode' for Poly mode."
   :hostmode 'poly-org-hostmode
   :innermodes '(poly-org-eval-innermode
@@ -147,20 +149,22 @@
 		poly-org-html-innermode
 		poly-org-macro-eval-innermode))
 
+;;;###autoload (autoload 'nil "polymode-ext" "A variation of `plantuml-mode' for Poly mode." t)
 (define-polymode poly-plantuml-mode nil
-  "PlantUML poly mode."
+  "A variation of `plantuml-mode' for Poly mode."
   :hostmode 'poly-plantuml-hostmode
   :innermodes '(poly-plantuml-json-innermode
 		poly-plantuml-wbs-innermode))
 
-(define-polymode poly-shell-script-mode
-  nil
+;;;###autoload (autoload 'poly-shell-script-mode "polymode-ext" "A variation of `shell-script-mode' for Poly mode." t)
+(define-polymode poly-shell-script-mode nil
   "A variation of `shell-script-mode' for Poly mode."
   :hostmode 'poly-shell-script-hostmode
   :innermodes '(poly-shell-script-here-doc-innermode))
 
 ;; ### Advice
 
+;;;###autoload
 (advice-add 'hack-local-variables :around #'polymode-inhibit-in-indirect-buffers)
 
 (provide 'polymode-ext)
