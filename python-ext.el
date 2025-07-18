@@ -739,9 +739,13 @@ The initial fill column is controlled by the user option
 	      '((< '(backward-delete-char-untabify (min python-indent-offset
                                                  (current-column))))
 		(^ '(- (1+ (current-indentation))))))
-  (origami-mode -1)
-  (outline-minor-mode -1)
-  (add-hook 'lsp-after-open-hook #'python--lsp-hook nil t))
+  (setq comment-start "# ")
+  (local-set-key (kbd "<") #'self-insert-command)
+  (origami-mode 0)
+  (outline-minor-mode 0)
+  (add-hook 'lsp-after-open-hook #'python--lsp-hook nil t)
+  (remove-hook 'completion-at-point-functions #'py-fast-complete)
+  (add-hook 'completion-at-point-functions #'py-fast-complete nil t))
 
 ;;;###autoload
 (defun python--lsp-hook ()
