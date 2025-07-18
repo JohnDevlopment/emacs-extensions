@@ -92,8 +92,23 @@
   :mode #'emacs-lisp-mode
   :allow-nested nil)
 
+(define-auto-innermode poly-org-inline-source-innermode
+  :head-matcher "\\bsrc_[a-z][a-z0-9_-]*\\(?:\\[.*?\\]\\)?{"
+  :head-mode 'host
+  :tail-matcher (cons "{.*}\\($\\)" 1)
+  :tail-mode 'host
+  :mode-matcher (cons "src_\\([a-z][a-z0-9_-]*\\)" 1))
 
+(define-innermode poly-org-html-innermode
   nil
+  "Innermode for HTML snippets."
+  :head-matcher "^#\\+\\(?:HTML_HEAD\\|html_head\\):[ \t]+"
+  :head-mode 'host
+  :tail-matcher "$"
+  :tail-mode 'host
+  :mode #'html-mode
+  :allow-nested nil)
+
 ;; --- Shell Script
 
 (define-innermode poly-shell-script-here-doc-innermode nil
@@ -127,7 +142,10 @@
   nil
   "A variation of `org-mode' for Poly mode."
   :hostmode 'poly-org-hostmode
-  :innermodes '(poly-org-eval-innermode))
+  :innermodes '(poly-org-eval-innermode
+		poly-org-inline-source-innermode
+		poly-org-html-innermode
+		poly-org-macro-eval-innermode))
 
 (define-polymode poly-plantuml-mode nil
   "PlantUML poly mode."
