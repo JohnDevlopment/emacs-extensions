@@ -307,7 +307,33 @@ Match %s" form rx-form (if (or (not subexp) (= subexp 0))
 ;;;###autoload (autoload 'python-ext-backward-class "python-ext" nil t)
 (python-ext-define-backward-form class :alias t)
 
-;; ---Python hs integration
+;; --- Motion/Syntax Functions
+
+(fext-replace-function py-backward-def "python-ext" ()
+  "Go to beginning of ‘def’.
+
+If already at beginning, go one ‘def’ backward.
+Return position if successful, nil otherwise"
+  (interactive)
+  (let ((indent (py--calculate-indent-backwards
+		 (current-indentation) py-indent-offset))
+	pos)
+    (save-excursion
+      (setq pos
+	    (cl-loop with pos
+		     with regex = user-ext-python-def-regexp
+		     until (bobp)
+		     do
+		     (setq pos (re-search-backward regex nil t))
+		     (cl-ext-unless pos
+			 (cl-return))
+		     (cl-ext-when (<= (current-indentation) indent)
+			 (cl-return pos)))))
+    (cl-ext-when pos
+	(prog1 pos
+	  (goto-char pos)))))
+
+;; --- Python hs integration
 
 ;;;###autoload (autoload 'py-hide-base "python-ext")
 (fext-replace-function py-hide-base "python-ext" (form &optional beg end)
