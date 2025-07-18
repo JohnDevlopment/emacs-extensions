@@ -269,6 +269,12 @@ is non-nil."
 	   ("P" . add-file-local-variable-prop-line)
 	   ("M-P" . add-file-local-variable))
 
+;; --- Space
+(bind-keys ("M-\\" . delete-horizontal-space)
+	   ("M-^" . delete-indentation)
+	   ("M-SPC" . just-one-space)
+	   ("C-x C-o" . delete-blank-lines))
+
 ;; --- Extension-related commands
 (bind-keys :prefix-map extension-map
 	   :prefix "C-c e"
