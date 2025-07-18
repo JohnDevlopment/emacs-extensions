@@ -711,6 +711,7 @@ The initial fill column is controlled by the user option
 (define-key python-ext-hide-show-command (kbd "C-d") #'python-ext-hide-all-functions)
 (define-key python-ext-hide-show-command (kbd "e") #'py-hide-else-block)
 (define-key python-ext-hide-show-command (kbd "f") #'py-hide-for-block)
+(define-key python-ext-hide-show-command (kbd "<tab>") #'py-hide-indent)
 (define-key python-ext-hide-show-command (kbd "i") #'py-hide-if-block)
 (define-key python-ext-hide-show-command (kbd "s") #'python-ext-show)
 (define-key python-ext-hide-show-command (kbd "x") #'py-hide-expression)
@@ -759,3 +760,8 @@ The initial fill column is controlled by the user option
 (provide 'python-ext)
 
 ;;; python-ext ends here
+
+;; Local Variables:
+;; eval: (local-lambda-define-self-insert-command vprefix "user-ext-python-")
+;; eval: (local-lambda-define-self-insert-command fprefix "python-ext-")
+;; End:
