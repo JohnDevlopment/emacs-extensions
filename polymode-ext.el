@@ -4,6 +4,9 @@
 
 ;; ### Host modes
 
+(define-hostmode poly-markdown-hostmode
+  :mode #'markdown-mode)
+
 (define-hostmode poly-org-hostmode
   :mode #'org-mode
   :protect-font-lock t)
@@ -19,6 +22,17 @@
   :tail-matcher "$"
   :mode #'emacs-lisp-mode
   :allow-nested nil)
+
+;; --- Markdown
+
+(define-auto-innermode poly-markdown-fenced-code-innermode
+  nil
+  "Mode for fenced code blocks."
+  :head-matcher (cons "^[ \t]*\\(```[[:alpha:]].*$\\)" 1)
+  :tail-matcher (cons "^[ \t]*\\(```\\)[ \t]*$" 1)
+  :mode-matcher (cons "```[ \t]*\\([[:alpha:]][^ \t\n;=,]\\)" 1)
+  :head-mode 'host
+  :tail-mode 'host)
 
 ;; --- Org
 
@@ -49,6 +63,10 @@
   "A variation of `emacs-lisp-mode' for Polymode."
   :hostmode 'poly-emacs-lisp-hostmode
   :innermodes '(poly-generic-eval-innermode))
+
+(define-polymode poly-markdown-mode
+  :hostmode 'poly-markdown-hostmode
+  :innermodes '(poly-markdown-fenced-code-innermode))
 
 (define-polymode poly-org-mode
   nil
