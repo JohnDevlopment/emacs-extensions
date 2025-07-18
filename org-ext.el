@@ -1,33 +1,35 @@
-;;; org-ext --- Org mode extension.  -*- lexical-binding: t; -*-
+;; -*- lexical-binding: t; -*-
 
 (require 'org)
 (require 'org-element)
 (require 'org-table)
+(require 'yasnippet)
 
 (eval-when-compile
   (declare-function org-ext-custom-command "org-ext")
   (defvar org-ext-custom-command)
   (declare-function org-ext-insert-command "org-ext")
   (defvar org-ext-insert-command)
-  (require 'cl-lib))
 
-(require 'yasnippet)
-
-;; (declare-function yas-ext-org-very-safe-expand "yasnippets-ext")
-;; (load-extension "yasnippets-ext")
 
 (define-prefix-command 'org-ext-custom-command)
 (define-prefix-command 'org-ext-insert-command)
 (make-variable-buffer-local 'yas-trigger-key)
 
-;;; Variables
+;; ### Customization
 
-(defcustom user-ext-browse-url-brave-arguments nil
-  "A list of strings to pass to Brave as arguments."
-  :type '(repeat (string :tag "Argument"))
+(defgroup org-ext nil
+  "Org Mode Extension."
   :group 'user-extensions)
 
-;;; Functions
+(defcustom user-ext-org-browse-url-brave-arguments nil
+  "Arguments to pass to Brave."
+  :type '(repeat (string :tag "Argument"))
+  :group 'org-ext)
+
+;; ### Variables
+
+;; ### Functions
 
 (defun org-ext-open-url-at-point (&optional arg)
   "Open link, timestamp, footnote or tags at point.
@@ -81,7 +83,7 @@ _NEW-WINDOW is ignored."
 	   (concat "brave " url) nil
 	   "brave-browser"
 	   url
-	   user-ext-browse-url-brave-arguments)))
+	   user-ext-org-browse-url-brave-arguments)))
 
 (defconst org-ext-list-num-bullet-regexp
   "^\\([ \\t]*\\)\\([1-9][0-9]*\\)\\."
@@ -123,8 +125,6 @@ Otherwise, call `org-return'."
 	    ;; Ordered list
 	    (setq bullet (nth 2 element)
 		  checkbox (nth 4 element))
-	    (message "bullet: %S\nelement: %S" bullet element)
-	    (message "checkbox: %S" checkbox)
 	    (save-match-data
 	      (if (and (stringp bullet)
 		       (string-match
@@ -220,7 +220,7 @@ ARG is passed to the function."
 
 (define-key orgtbl-mode-map (kbd "C-c TAB") #'org-table-toggle-column-width)
 
-;; Hooks
+;; ### Hooks
 
 ;;;###autoload
 (defun org--extra-hook ()
@@ -232,5 +232,8 @@ ARG is passed to the function."
 (add-hook 'org-mode-hook #'org--extra-hook)
 
 (provide 'org-ext)
-
 ;;; org-ext ends here
+
+;; Local Variables:
+;; eval: (local-lambda-define-self-insert-command vprefix "user-ext-org-")
+;; End:
