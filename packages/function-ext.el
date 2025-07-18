@@ -142,15 +142,18 @@ The following keywords are supported:
     (setq fname (intern (format "advice-ext--%S-%S" class fname)) ; advice function name
 	  aname (intern (format "advice-%S-%S" class function))	  ; advice name
 	  class (intern-soft (format ":%S" class)))		  ; CLASS (e.g., ":after")
+    (cl-assert (not (null class)))
     (if remove
-	(cl-ext-progn
-	  `(advice-remove (function ,function) (quote ,aname)))
-      (cl-assert (not (null class)))
+	`(progn
+	   (advice-remove #',function ',aname)
+	   (fmakunbound #',fname))
       `(progn
-	 (defun ,fname ,arglist ,@body)
-	 (unless (advice-member-p (quote ,aname) (quote ,function))
-	   (advice-add (quote ,function) ,class (quote ,fname)
-		       (alist-ext-define 'name (quote ,aname))))))))
+	 (if (fboundp ',fname)
+	     (fset ',fname (lambda ,arglist ,@body))
+	   (defun ,fname ,arglist ,@body))
+	 (unless (advice-member-p ',aname ',function)
+	   (advice-add ',function ,class ',fname
+		       (alist-ext-define 'name ',aname)))))))
 
 (provide 'function-ext)
 
