@@ -160,6 +160,18 @@ Group 2 matches the name of the function.")
       (save-buffer)
       (kill-buffer))))
 
+(defun python-ext-convert-rx (regex &optional type)
+  (cl-check-type regex string)
+  (cl-check-type type (or character null))
+  (cl-ecase (or type ?e)
+    (?e
+     (cl-loop with new-regex = regex
+	      while (string-match (rx "\\" (group (any "(){}|"))) new-regex)
+	      do
+	      (setq new-regex (replace-match "\\1" nil nil new-regex))
+	      finally return
+	      new-regex))))
+
 (defun python-ext-revert-all-python-buffers ()
   "Revert all Python buffers."
   (interactive)
