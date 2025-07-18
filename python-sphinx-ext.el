@@ -250,7 +250,7 @@ prompts the user for the content of the role."
 (defun sphinx-ext-insert-docstring--returns (type)
   "Insert :returns: with the given TYPE.
 If TYPE is provided, an additional :rtype: is added."
-  (assert (stringp type) (format "TYPE is not string (%s)." type))
+  (cl-check-type type string)
   (newline 2)
   (insert ":returns: ...")
   (when (not (string-empty-p type))
@@ -261,10 +261,11 @@ If TYPE is provided, an additional :rtype: is added."
   "Insert \":TAG:\" with NAME and TYPE.
 
 TAG, NAME and TYPE must be strings."
-  (assert (stringp tag) (format "TAG is not string (%s)." tag))
-  (assert (stringp name) (format "NAME is not string (%s)." name))
-  (assert (stringp type) (format "TYPE is not string (%s)." type))
-  (assert (not (string-empty-p name)))
+  (cl-check-type tag string)
+  (cl-check-type name string)
+  (cl-check-type type string)
+  (cl-ext-when (string-empty-p name)
+      (user-error "Arg 2 cannot be empty"))
   (newline 2)
   (cond
    ((string-empty-p type)
@@ -306,7 +307,7 @@ user can press q to finish the docstring."
 	   (setq tag (alist-get c tags)
 		 str (read-string "Name: ")
 		 v1 (read-string "Type: "))
-	   (assert (not (null tag)))
+	   (cl-assert (not (null tag)))
 	   (sphinx-ext-insert-docstring--tag tag str v1))
 	  (?r
 	   (setq str (read-string "Type: "))
