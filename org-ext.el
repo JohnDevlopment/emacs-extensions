@@ -284,6 +284,77 @@ ARG is passed to the function."
       (_ t))
     ask))
 
+;; --- Custom special blocks
+
+(--ignore
+ (autoload 'org-defblock "org-special-block-extras" nil nil t)
+ (fmakunbound 'org--create-defmethod-of-defblock)
+ (require 'org-special-block-extras)
+ (org-defblock
+  admonition (type nil title nil) nil
+  "Enclose text in a box denoting an admonition.
+
+== HTML ==
+
+In HTML, this creates a \\=`section' element with the class
+admonition-TYPE, where TYPE is the main arg. Under it is a
+\\=`h3'--TYPE and TITLE are included (the latter only if it
+is specified).
+
+By default, no styling is applied; it has to be done
+manually.  This can be done with a stylesheet applying a
+style to the right class.
+
+\(fn TYPE [:title TITLE]\)"
+  (pcase backend
+    ('html
+     (let* ((prefix (capitalize (or type "note")))
+	    (title (if title (format "%s: %s" prefix title)
+		     prefix)))
+       (format "<section class=\"admonition-%s\"><h3>%s</h3>%s</section>"
+	       type title contents)))))
+ t)
+
+(--ignore
+ (defun org-ext--special-block (block-type str contents header)
+   (let* ((raw-heading (plist-get header :heading))
+	  (heading (if raw-heading (concat "<h3>" (org-strip-quotes raw-heading) "</h3>\n")
+		     "")))
+     (format "<%s%s>\n%s%s\n</%s>" block-type str heading contents block-type)))
+
+ (fext-replace-function org-html-special-block "org-ext" (special-block contents info)
+   "Transcode a SPECIAL-BLOCK element from Org to HTML.
+CONTENTS holds the contents of the block.  INFO is a plist
+holding contextual information."
+   :remove
+   (let* ((block-type (org-element-property :type special-block))
+          (html5-fancy (and (org-html--html5-fancy-p info)
+                            (member block-type org-html-html5-elements)))
+          (attributes (org-export-read-attribute :attr_html special-block)))
+     (unless html5-fancy
+       (let ((class (plist-get attributes :class)))
+         (setq attributes (plist-put attributes :class
+                                     (if class (concat class " " block-type)
+                                       block-type)))))
+     (let* ((contents (or contents ""))
+	    (name (org-element-property :name special-block))
+	    (a (org-html--make-attribute-string
+		(if (or (not name) (plist-member attributes :id))
+		    attributes
+		  (plist-put attributes :id name))))
+	    (str (if (org-string-nw-p a) (concat " " a) "")))
+       (if html5-fancy
+	   (cl-ext-progn
+	     (pcase block-type
+	       ((or "aside" "section")
+		(org-ext--special-block
+		 block-type str contents
+		 (org-export-read-attribute :header special-block)))
+	       (_
+		(format "<%s%s>\n%s</%s>" block-type str contents block-type))))
+	 (format "<div%s>\n%s\n</div>" str contents)))))
+ t)
+
 (local-set-key (kbd "M-e") #'yas-expand)
 
 (define-key org-mode-map (kbd "C-c M-c") #'org-ext-custom-command)
