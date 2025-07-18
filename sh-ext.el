@@ -185,7 +185,16 @@ the check."
 	  (goto-char pos))
       (goto-char pos))))
 
-;; ---
+;; --- Other functions
+
+(defun sh-ext-help-shell-builtin-command (command)
+  "Show the help message for a bultin COMMAND."
+  (interactive "sCommand: ")
+  (cl-check-type command string)
+  (let ((buffer (get-buffer-create "*sh builtin command help*")))
+    (with-help-window buffer
+      (call-process-shell-command
+       (format "help %s" command) nil buffer))))
 
 (defun sh-ext-mark-function ()
   "Mark the surrounding function."
