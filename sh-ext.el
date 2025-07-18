@@ -7,7 +7,7 @@
   (require 'cl-lib)
   (require 'cl-ext))
 
-;; Variables
+;; ### Variables
 
 (defmacro sh-ext--rx (&rest body)
   `(rx-let ((identifier (seq (any "A-Za-z0-9" ?_ ?-))))
@@ -45,7 +45,7 @@ Group 2 matches the name of the function.")
     (reset . "00"))
   "Color/property names mapped to their equivalent Bash escape code.")
 
-;; Functions
+;; ### Functions
 
 (cl-defstruct (sh-ext-function
 	       (:copier nil))
@@ -267,7 +267,7 @@ it is non-nil, \"1;\" is prepended to the color code."
   (insert "\\[\\]")
   (left-char 2))
 
-;; Skeletons
+;; ### Skeletons
 
 (defmacro sh-ext-define-skeleton (name docstring &rest skeleton)
   "Define a Sh mode skeleton called sh-ext-skeleton-NAME.
@@ -330,7 +330,7 @@ The arguments are exactly the same as those for
      (when (and v2 (search-backward-regexp "echo \".+\"$" nil v1))
        (replace-match (format "echo \"%s\"" v2) t))))
 
-;; Hook
+;; ### Hook
 
 ;;;###autoload
 (defun sh--extra-hook ()
@@ -343,7 +343,8 @@ The arguments are exactly the same as those for
 ;;;###autoload
 (add-hook 'sh-mode-hook #'sh--extra-hook)
 
-;; Key bindings and abbrevs
+;; ### Key bindings and abbrevs
+
 (define-abbrev sh-mode-abbrev-table "cmds" "" #'sh-ext-skeleton-src-command-list)
 (define-key sh-mode-map (kbd "C-c \\") #'sh-ext-color-escape)
 (define-key sh-mode-map (kbd "C-c [") #'sh-ext-insert-non-printing-escape)
