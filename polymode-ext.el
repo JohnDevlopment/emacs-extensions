@@ -11,6 +11,8 @@
   :mode #'org-mode
   :protect-font-lock t)
 
+(define-hostmode poly-plantuml-hostmode
+  :mode #'plantuml-mode)
 
 
 ;; ### Inner modes
@@ -33,6 +35,28 @@
   :mode-matcher (cons "```[ \t]*\\([[:alpha:]][^ \t\n;=,]\\)" 1)
   :head-mode 'host
   :tail-mode 'host)
+
+;; --- PlantUML
+
+(define-innermode poly-plantuml-wbs-innermode nil
+  "Innermode for WBS."
+  :head-matcher "^@startwbs$"
+  :head-mode 'host
+  :tail-matcher "^@endwbs$"
+  :tail-mode 'host
+  :mode #'outline-mode
+  :allow-nested nil)
+
+(define-innermode poly-plantuml-json-innermode nil
+  "Innermode for JSON."
+  :head-matcher (cons (rx (group bol "@startjson\n" (*? anything))
+			  bol "{" eol)
+		      1)
+  :head-mode 'host
+  :tail-matcher "^@endjson$"
+  :tail-mode 'host
+  :mode #'json-mode
+  :allow-nested nil)
 
 ;; --- Org
 
@@ -73,6 +97,12 @@
   "A variation of `org-mode' for Poly mode."
   :hostmode 'poly-org-hostmode
   :innermodes '(poly-org-eval-innermode))
+
+(define-polymode poly-plantuml-mode nil
+  "PlantUML poly mode."
+  :hostmode 'poly-plantuml-hostmode
+  :innermodes '(poly-plantuml-json-innermode
+		poly-plantuml-wbs-innermode))
 
 ;; ### Advice
 
