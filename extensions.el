@@ -221,11 +221,11 @@ evaluated."
 
 ;; ### Bootstraps for external packages
 
-(load-extension-safe "jinja2-bootstrap")
-(load-extension-safe "code-outline-bootstrap")
+(load-extension-safe "jinja2-bootstrap" 1)
+(load-extension-safe "code-outline-bootstrap" 1)
 (load-extension-safe "jdesktop-bootstrap")
-(load-extension-safe "liquidsoap-bootstrap")
-(load-extension-safe "polymode-bootstrap")
+(load-extension-safe "liquidsoap-bootstrap" 1)
+(load-extension-safe "polymode-bootstrap" 1)
 
 (load-extension-safe "abbrev-ext")
 (load-extension-safe "codeium-ext")
