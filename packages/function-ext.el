@@ -15,9 +15,8 @@
     filter-return)
   "List of valid CLASS symbols for `fext-defadvice'.")
 
-(eval-when-compile
-  (require 'cl-lib)
-  (require 'cl-ext))
+(require 'cl-lib)
+(require 'cl-ext)
 
 ;;;###autoload
 (defmacro fext-defalias (symbol definition &optional docstring)
