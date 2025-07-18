@@ -33,9 +33,9 @@ PRINTCHARFUN is the output stream in which to print the
 result (see `princ').
 
 This macro emits a warning when it is byte compiled."
-  (declare (debug ([&or "var" "sexp"] form &optional form)))
+  (declare (debug ([&or "var" "sexp"] sexp &optional form)))
   (cl-ext-when (macroexp--compiling-p)
-    (--show-compiler-warning --print-expr))
+      (--show-compiler-warning --print-expr))
   (pcase type
     ('var
      (cl-check-type form symbol)
@@ -56,7 +56,7 @@ This is just a macro wrapper around `message'.  The only
 difference is that compiling this macro will emit a warning,
 like the other macros in this library."
   (cl-ext-when (macroexp--compiling-p)
-    (--show-compiler-warning --message))
+      (--show-compiler-warning --message))
   (declare (debug (stringp &rest form)))
   `(message ,format-string ,@args))
 
