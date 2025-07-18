@@ -4,10 +4,12 @@
   (require 'abbrev)
   (require 'cl-ext))
 
+;; Documentation
 (eval-and-compile
   (embed-doc-document-symbol abbrev-ext
     "Extension to the abbrev system."
     :commands
+    abbrev-ext-add-global-abbrev
     abbrev-ext-add-local-abbrev
     abbrev-ext-install-local-abbrev-functions
     abbrev-ext-inverse-add-local-abbrev
@@ -38,30 +40,6 @@
 (advice-add 'add-global-abbrev :after #'deactivate-mark)
 
 ;; ### Functions
-
-;; (defun abbrev-ext-add-temp-mode-abbrev (arg)
-;;   "Define temp mode-specific abbrev for last word(s) before point.
-;; ARG is how many words before point form the expansion; or
-;; zero to use the region.
-
-;; Do not use this in Lisp; use `define-abbrev' instead.  To
-;; get the same effect:
-;;    (define-abbrev local-abbrev-table NAME EXP
-;;      #'abbrev-ext-insert-hook :system t)"
-;;   (interactive "p")
-;;   (let ((exp (and (>= arg 0)
-;; 		  (buffer-substring-no-properties
-;; 		   (point)
-;; 		   (if (= arg 0) (mark)
-;; 		     (save-excursion (forward-word (- arg))
-;; 				     (point))))))
-;; 	name)
-;;     (setq name (read-string (format "Mode abbrev for \"%s\": "
-;; 				    exp)))
-;;     (set-text-properties 0 (length name) nil name)
-;;     (define-abbrev (or local-abbrev-table
-;; 		       (error "No per-mode abbrev table"))
-;;       name exp #'abbrev-ext-insert-hook :system t)))
 
 (defsubst abbrev-ext--check-local-table ()
   (cl-ext-unless user-ext-abbrev-local-table
@@ -106,6 +84,30 @@ argument means to undefine the specified abbrev."
 				       name (abbrev-expansion name table))))
 	(define-abbrev table (downcase name) exp insert-hook :system t)))
   (deactivate-mark))
+
+(defun abbrev-ext-add-global-abbrev (arg)
+  "Define global abbrev for last word(s) before point.
+Argument is how many words before point form the expansion;
+or zero means the region is the expansion.  A negative
+argument means to undefine the specified abbrev."
+  (interactive "p")
+  (let* ((insert-hook #'abbrev-ext-insert-hook)
+	 (table global-abbrev-table)
+	 (exp (cl-ext-when (>= arg 0)
+		  (buffer-substring-no-properties
+		   (point)
+		   (if (= arg 0)
+		       (mark)
+		     (save-excursion (forward-word (- arg)) (point))))))
+	 (name (read-string (if exp (format "Local abbrev for \"%s\": " exp)
+			      "Undefine abbrev: "))))
+    (set-text-properties 0 (length name) nil name)
+    (cl-ext-when (or (null exp)
+		     (not (abbrev-expansion name table))
+		     (y-or-n-p (format "%s expands to \"%s\"; redefine? "
+				       name (abbrev-expansion name table))))
+	(define-abbrev table (downcase name) exp insert-hook :system t))
+    (deactivate-mark)))
 
 (defun abbrev-ext-inverse-add-local-abbrev (arg)
   "Define buffer-local abbrev."
@@ -158,7 +160,8 @@ current buffer."
 
 (bind-keys ("C-x a L" . abbrev-ext-add-local-abbrev)
 	   ("C-x a I" . abbrev-ext-install-local-abbrev-functions)
-	   ("C-x a i L" . abbrev-ext-inverse-add-local-abbrev))
+	   ("C-x a i L" . abbrev-ext-inverse-add-local-abbrev)
+	   ("C-x a G" . abbrev-ext-add-global-abbrev))
 
 ;; ### System Abbrevs
 
