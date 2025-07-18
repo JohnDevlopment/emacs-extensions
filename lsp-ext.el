@@ -78,25 +78,6 @@ This is supposed to be called after `lsp--before-save'."
 			 (message "`lsp-ext-fix-flycheck-face-errors' is no longer valid"))))
 (put 'lsp-ext-fix-flycheck-face-errors 'disabled t)
 
-(defun lsp-ext--start-hook ()
-  (let (failed)
-    (message "Adding missing error levels...")
-    (add-hook 'lsp-configure-hook #'lsp-ext--start-hook)
-    (condition-case err
-	(progn
-	  (lsp-ext-define-error-level 'info '(unnecessary) t)
-	  (lsp-ext-define-error-level 'warning '(unnecessary) t))
-      ((debug error)
-       (message "lsp-ext--start-hook: %S" err)
-       (setq failed t)))
-    (if failed
-	(cl-ext-progn
-	  (message "Adding missing error levels...failed")
-	  nil)
-      (remove-hook 'lsp-configure-hook #'lsp-ext--start-hook)
-      (message "Adding missing error levels...done")
-      t)))
-
 (defun lsp-ext-define-error-level (flycheck-level tags &optional force)
   (let ((name (format "lsp-flycheck-%s-%s"
                       flycheck-level
@@ -263,6 +244,26 @@ temporary folders from the workspace."
 (define-key lsp-mode-map (kbd "C-c l T I") #'lsp-ui-imenu)
 
 ;; ### Hooks
+
+;;;###autoload
+(defun lsp-ext--start-hook ()
+  (let (failed)
+    (message "Adding missing error levels...")
+    (add-hook 'lsp-configure-hook #'lsp-ext--start-hook)
+    (condition-case err
+	(progn
+	  (lsp-ext-define-error-level 'info '(unnecessary) t)
+	  (lsp-ext-define-error-level 'warning '(unnecessary) t))
+      ((debug error)
+       (message "lsp-ext--start-hook: %S" err)
+       (setq failed t)))
+    (if failed
+	(cl-ext-progn
+	  (message "Adding missing error levels...failed")
+	  nil)
+      (remove-hook 'lsp-configure-hook #'lsp-ext--start-hook)
+      (message "Adding missing error levels...done")
+      t)))
 
 ;;;###autoload
 (add-hook 'kill-emacs-hook #'lsp-ext--delete-temp-workspace-folders)
