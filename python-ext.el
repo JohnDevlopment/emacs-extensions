@@ -81,8 +81,19 @@ coding-cookie		Coding system declarations, which are
 (defcustom user-ext-python-docstring-major-mode 'markdown-mode
   "Major mode for editing Python docstring."
   :type 'symbol
-  :group 'python-ext
-  :safe 'symbolp)
+  :safe #'symbolp
+  :group 'python-ext)
+
+(defcustom user-ext-python-docstring-minor-modes
+  '(abbrev-mode
+    auto-fill-mode
+    display-fill-column-indicator-mode
+    sphinx-doc-mode)
+  "Minor modes enabled when editing docstrings."
+  :type '(repeat (symbol :tag "Function"))
+  :safe #'listp
+  :group 'python-ext)
+
 
 (defconst user-ext-python--register ?p
   "The register for `python-ext-docstring'.
@@ -122,6 +133,9 @@ Group 2 matches the name of the function.")
 
 (defvar user-ext-python--orig-position nil
   "Position in the original buffer when editing Python docstring.")
+
+(defvar user-ext-python--orig-buffer nil
+  "Original buffer when editing Python docstring.")
 
 (defvar user-ext-python--docstring-buffer nil
   "Buffer for Python docstring.")
@@ -413,9 +427,11 @@ look for \`inlayHintProvider'."
   (kill-buffers "\\.pyi$" (lambda (buf)
 			    (string-match-p "/\\.venv/.+$" (buffer-file-name buf)))))
 
+;; --- Docstrings
+
 (defun python-ext--extract-docstring ()
   "Extract the docstring at point if inside one.
-Returns a list of the form (CONTENT START END), which
+Return a list of the form (CONTENT START END), which
 indicates the docstring and where it was found in relation
 to the current buffer.
 
@@ -436,14 +452,20 @@ quotes), and CONTENT is the text between START and END."
 		       (+ start 3) (- end 3))))
 	(list content (+ start 3) (- end 3))))))
 
+(defsubst python-ext-docstring--clear-vars ()
+  (setq user-ext-python--orig-position nil
+	user-ext-python--orig-position nil))
+
 (defun python-ext--write-docstring ()
   "Exit the Python docstring buffer and apply the docstring."
   (interactive)
   (let (num-lines prefix buffer-string)
     (deactivate-mark)
     (untabify (point-min) (point-max))
-    (setq num-lines (count-lines (point-min) (point-max))) ; count number of lines
-    (setq buffer-string (buffer-string))
+    (setq num-lines (count-lines (point-min) (point-max)) ; count number of lines
+	  buffer-string (let ((s (buffer-string)))
+			  (set-text-properties 0 (length s) nil s)
+			  s))
     (when (string-blank-p buffer-string)
       ;; string is empty; exit
       (kill-buffer)
@@ -452,9 +474,8 @@ quotes), and CONTENT is the text between START and END."
       (error "Docstring is empty"))
     (kill-buffer)
     (jump-to-register user-ext-python--register)
-    (setq user-ext-python--orig-position (point))
     (insert buffer-string)
-    (cl-check-type user-ext-python--orig-position integer-or-marker)
+    (cl-ext-check-type user-ext-python--orig-position integer-or-marker)
     (goto-char user-ext-python--orig-position) ; go back to original position
     (save-excursion
       ;; get leading spaces
@@ -471,7 +492,10 @@ quotes), and CONTENT is the text between START and END."
 	  (move-beginning-of-line 2)	; if blank, go to next line
 	(insert prefix)			; otherwise, insert prefix
 	(move-beginning-of-line 2)))
-    (setq user-ext-python--orig-position nil)))
+    (python-ext-docstring--clear-vars)))
+
+(defun python-ext--cancel-docstring ()
+  (interactive))
 
 (defmacro python-ext--push-mode (mode place)
   `(progn
@@ -483,11 +507,13 @@ quotes), and CONTENT is the text between START and END."
   (let* ((lines (split-string string "\n"))
 	 (common-indent
 	  (cl-loop
-	   for line in (seq-filter (lambda (line) (not (string-empty-p line))) lines)
+	   for line in (seq-filter (lambda (line) ; return list of non-empty lines
+				     (not (string-empty-p line))) ;
+				   lines)			  ;
 	   with indent = most-positive-fixnum
 	   do
-	   (setq indent
-		 (min indent (progn
+	   (setq indent (min indent
+			     (progn
 			       (string-match "^[ \t]*" line)
 			       (match-end 0))))
 	   finally return indent)))
@@ -498,55 +524,79 @@ quotes), and CONTENT is the text between START and END."
 	       lines
 	       "\n")))
 
+(defsubst python-ext-docstring--init-vars ()
+  (setq user-ext-python--orig-position (point-marker)
+	user-ext-python--orig-buffer (current-buffer)))
+
 ;;;###autoload
 (defun python-ext-docstring ()
-  "Open a temporary buffer to write a docstring."
+  "Open a temporary buffer to write a docstring.
+
+The major mode of the buffer is controlled by the user option
+`user-ext-python-docstring-major-mode'.  A list of minor
+modes are enabled according to the user option
+`user-ext-python-docstring-minor-modes'.
+
+The initial fill column is controlled by the user option
+`user-ext-python-docstring-fill-column'."
   (interactive)
-  (let ((mode user-ext-python-docstring-major-mode)
-	modes
-	docstring-data
+  (let (docstring-data
 	start end content)
-    (python-ext--push-mode abbrev-mode modes)
-    (python-ext--push-mode sphinx-doc-mode modes)
-    (setq user-ext-python--orig-position (point-marker))
-    ;; get docstring
+    (python-ext-docstring--init-vars)
     (setq docstring-data (python-ext--extract-docstring))
-    (unless docstring-data
-      (error "Not inside a docstring"))
+    (cl-ext-unless docstring-data	     ; Not inside a docstring, so reset
+	(python-ext-docstring--clear-vars)   ; vars
+      (user-error "Not inside a docstring")) ;
     (setq content (string-trim (python-ext--dedent-string (car docstring-data)))
 	  start (nth 1 docstring-data)
 	  end (nth 2 docstring-data))
     (window-configuration-to-register user-ext-python--register)
-    (setq user-ext-python--docstring-buffer (tmpbuf "python-docstring")) ; temp buffer
-    (cl-assert (not (null user-ext-python--docstring-buffer)))		 ;
-    (with-current-buffer user-ext-python--docstring-buffer
-      (unless (string-blank-p content)
+    (python-ext--docstring-buffer content)
+    (cl-assert user-ext-python--docstring-buffer)
+    (with-current-buffer user-ext-python--orig-buffer
+      (cl-ext-unless (string-blank-p content)
+	  ;; docstring was not empty
+	  (goto-char start)
+	(delete-region start end)
+	(py-newline-and-indent)
+	(py-newline-and-indent)
+	(forward-line -1)
+	(py-indent-line)
+	(window-configuration-to-register user-ext-python--register)
+	(setq user-ext-python--orig-position (point-marker))))))
+
+(define-scratch-buffer-function python-ext--docstring-buffer "python-docstring"
+				(content)
+  "Python docstring buffer."
+  nil
+  (let ((mode user-ext-python-docstring-major-mode))
+    (setq user-ext-python--docstring-buffer (current-buffer))
+    (cl-ext-unless (string-blank-p content)
 	;; docstring is not empty
 	(insert (string-trim content))
-	(goto-char (point-min)))
-      (funcall mode)
-      (dolist (mode modes)
-	(princ `(funcall ,mode 1))
-	(funcall mode 1))
-      ;; set fill column and enable auto-fill
-      (set-fill-column user-ext-python-docstring-fill-column)
-      (auto-fill-mode 1)
-      ;; set C-c C-c key to exit
-      (local-set-key (kbd "C-c C-c") #'python-ext--write-docstring)
-      (setq header-line-format "Python Docstring: Type C-c C-c to apply changes")
-      (message "Type C-c C-c to save changes."))
-    (unless (string-blank-p content)
-      ;; docstring was not empty
-      (goto-char start)
-      (delete-region start end)
-      (py-newline-and-indent)
-      (py-newline-and-indent)
-      (forward-line -1)
-      (py-indent-line)
-      (window-configuration-to-register user-ext-python--register)
-      (setq user-ext-python--orig-position (point-marker)))
-    (split-window-sensibly)
-    (switch-to-buffer user-ext-python--docstring-buffer)))
+      (goto-char (point-min)))
+    (funcall mode)
+    (dolist (mode user-ext-python-docstring-minor-modes)
+      (message "%S" `(funcall ,mode 1))
+      (funcall mode 1))
+    (python-ext-docstring-mode 1)
+    (set-fill-column user-ext-python-docstring-fill-column)))
+
+(define-minor-mode python-ext-docstring-mode
+  "Minor mode for editing docstrings.
+
+\\{python-ext-docstring-mode-map}"
+  :lighter " Py-Docstring"
+  :keymap (alist-ext-define (kbd "C-c C-c") #'python-ext--write-docstring
+			    (kbd "C-c C-k") #'python-ext--cancel-docstring)
+  (if python-ext-docstring-mode
+      (setq header-line-format
+	    (cl-ext-progn
+	      (message "Type C-c C-c to save changes.")
+	      (substitute-command-keys
+	       "Python Docstring: Type \\[python-ext--write-docstring] to apply changes")))
+    (setq header-line-format nil)))
+
 
 (defun python-ext-revert-all-python-buffers ()
   "Revert all Python buffers."
@@ -573,8 +623,6 @@ quotes), and CONTENT is the text between START and END."
   (py-electric-backspace)
   (forward-line -1)
   (py-indent-or-complete))
-
-
 
 ;; Key bindings
 
