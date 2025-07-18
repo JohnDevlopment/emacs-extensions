@@ -1111,7 +1111,7 @@ The following keywords are supported:
  (autoload 'poly-html-mode "polymode-ext" "A variation of `html-mode' for Poly mode." t)
  (autoload 'poly-markdown-mode "polymode-ext" "A variation of `markdown-mode' for Poly mode." t)
  (autoload 'poly-org-mode "polymode-ext" "A variation of `org-mode' for Poly mode." t)
- (autoload 'nil "polymode-ext" "A variation of `plantuml-mode' for Poly mode." t)
+ (autoload 'poly-plantuml-mode "polymode-ext" "A variation of `plantuml-mode' for Poly mode." t)
  (autoload 'poly-shell-script-mode "polymode-ext" "A variation of `shell-script-mode' for Poly mode." t)
 
 (advice-add 'hack-local-variables :around #'polymode-inhibit-in-indirect-buffers)

@@ -149,7 +149,7 @@
 		poly-org-html-innermode
 		poly-org-macro-eval-innermode))
 
-;;;###autoload (autoload 'nil "polymode-ext" "A variation of `plantuml-mode' for Poly mode." t)
+;;;###autoload (autoload 'poly-plantuml-mode "polymode-ext" "A variation of `plantuml-mode' for Poly mode." t)
 (define-polymode poly-plantuml-mode nil
   "A variation of `plantuml-mode' for Poly mode."
   :hostmode 'poly-plantuml-hostmode
