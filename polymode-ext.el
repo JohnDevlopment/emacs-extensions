@@ -14,6 +14,8 @@
 (define-hostmode poly-plantuml-hostmode
   :mode #'plantuml-mode)
 
+(define-hostmode poly-shell-script-hostmode
+  :mode #'shell-script-mode)
 
 ;; ### Inner modes
 
@@ -80,6 +82,17 @@
 
 
   nil
+;; --- Shell Script
+
+(define-innermode poly-shell-script-here-doc-innermode nil
+  "Here documents."
+  :head-matcher (cons "<<-?[ \t]*\\(EOF\\)$" 1)
+  :tail-matcher "^EOF$"
+  :tail-mode 'host
+  :head-mode 'host
+  :mode #'shell-script-mode
+  :allow-nested nil)
+
 ;; ### Poly modes
 
 (define-polymode poly-emacs-lisp-file-variables-mode
@@ -103,6 +116,12 @@
   :hostmode 'poly-plantuml-hostmode
   :innermodes '(poly-plantuml-json-innermode
 		poly-plantuml-wbs-innermode))
+
+(define-polymode poly-shell-script-mode
+  nil
+  "A variation of `shell-script-mode' for Poly mode."
+  :hostmode 'poly-shell-script-hostmode
+  :innermodes '(poly-shell-script-here-doc-innermode))
 
 ;; ### Advice
 
