@@ -27,6 +27,18 @@
   :mode #'emacs-lisp-mode
   :allow-nested nil)
 
+;; --- HTML
+
+(define-innermode poly-html-css-innermode
+  nil
+  "Innermode for CSS <style> tags in HTML."
+  :head-matcher "<style>\\s-*"
+  :head-mode 'host
+  :tail-matcher "\\s-*</style>"
+  :tail-mode 'host
+  :mode #'css-mode
+  :allow-nested nil)
+
 ;; --- Markdown
 
 (define-auto-innermode poly-markdown-fenced-code-innermode
@@ -100,6 +112,12 @@
   "A variation of `emacs-lisp-mode' for Polymode."
   :hostmode 'poly-emacs-lisp-hostmode
   :innermodes '(poly-generic-eval-innermode))
+
+(define-polymode poly-html-mode
+  poly-html-root-polymode
+  "A variation of `html-mode' for Poly mode."
+  :hostmode 'poly-html-hostmode
+  :innermodes '(poly-html-css-innermode))
 
 (define-polymode poly-markdown-mode
   :hostmode 'poly-markdown-hostmode
