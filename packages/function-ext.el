@@ -43,6 +43,10 @@ The new definition is
 (lambda SYMBOL ARGLIST [DOCSTRING] BODY...).  The arguments
 are the same as `defun', which see.
 
+If the first element of BODY is the keyword :remove, SYMBOL
+is reverted to its original state, with its original function
+definition.
+
 This function has two side effects: on the first invocation
 of this macro for SYMBOL, its original definition is saved
 to SYMBOL--old.  Second, SYMBOL is declared as a function
@@ -58,13 +62,19 @@ compiler.
   (cl-check-type arglist (or list null))
   (let* ((backup-symbol (intern (concat (prin1-to-string symbol) "--old")))
 	 (code (symbol-function symbol)))
-    (declare-function ,backup-symbol ,file ,arglist)
-    `(progn
-       (unless (fboundp ',backup-symbol)
-	 (defalias ',backup-symbol ,(if (listp code)
-					`',code
-				      code)))
-       (defun ,symbol ,arglist ,docstring ,@body))))
+    (if (eq (car body) :remove)
+	(let ((code (symbol-function backup-symbol)))
+	  `(progn
+	     (when (fboundp #',backup-symbol)
+	       (defalias ',symbol ,(if (listp code) `',code code))
+	       (fmakunbound #',backup-symbol))))
+      (declare-function ,backup-symbol ,file ,arglist)
+      `(progn
+	 (unless (fboundp ',backup-symbol)
+	   (defalias ',backup-symbol ,(if (listp code)
+					  `',code
+					code)))
+	 (defun ,symbol ,arglist ,docstring ,@body)))))
 
 ;;;###autoload
 (defmacro fext-defadvice (function args &rest body)
