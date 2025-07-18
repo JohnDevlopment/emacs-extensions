@@ -58,6 +58,8 @@ the block in the HTML output."
   "If non-nil, do not query user before evaluating block.")
 (put 'user-ext-org-babel-safe-eval 'safe-local-variable #'booleanp)
 
+(defvar-local user-ext-org--format-hooks nil)
+
 ;; ### Functions
 
 (defun org-ext-open-url-at-point (&optional arg)
@@ -180,6 +182,36 @@ Otherwise, call `org-return'."
 	    (--print-expr var context)
 	    (error "Unknown list type: %s" list-type))))
       (org-return))))
+
+(defun org-ext--complete-save-command ()
+  (let* ((choices '("html" "pdf"))
+	 (format (completing-read "Format: " choices )))
+    (pcase format
+      ("html"
+       (list #'org-html-export-to-html (upcase format)))
+      ("pdf"
+       (list #'org-latex-export-to-pdf (upcase format)))
+      (_
+       (user-error "Invalid choice %S" format)))))
+
+(defun org-ext-enable-export-on-save (command format)
+  "Enable exporting the document on save."
+  (interactive (org-ext--complete-save-command))
+  (cl-check-type command symbol)
+  (cl-check-type format string)
+  (cl-ext-unless (eq major-mode #'org-mode)
+      (user-error "Must be in Org mode"))
+  (cl-ext-unless (cl-member format user-ext-org--format-hooks :test #'string=)
+      (add-hook 'after-save-hook
+		(lambda ()
+		  (cl-ext-when (y-or-n-p (format "Export to %s?" format))
+		      (funcall command)))
+		nil 'local)
+    (cl-pushnew format user-ext-org--format-hooks))
+  (run-with-idle-timer 1 nil
+		       #'message
+		       "Auto-export %s file after save"
+		       format))
 
 (defun org-ext-list-headlines ()
   "List headlines in current buffer."
