@@ -47,7 +47,8 @@
   - For ~polymode-ext~ in particular, the "subscope" can is the name of a polymode
     - e.g., ~polymode/sh~ for Shell script mode
 
-If the subject line would be empty, it may be replaced with the scope, like so: ~[REFACTOR] General~
+If the subject line would be empty, it may be replaced with the scope, like so:
+~[REFACTOR] General~
 
 ** Actions Within A Single Bootstrap
 
