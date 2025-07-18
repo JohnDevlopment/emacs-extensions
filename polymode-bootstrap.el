@@ -1,8 +1,7 @@
 ;; -*- lexical-binding: t; -*-
 
 (use-package polymode-base
-  :defer nil
-  :config (load-extension-safe "polymode-ext"))
+  :config (load-extension-safe "polymode-ext" 1))
 
 (provide 'polymode-bootstrap)
 ;;; polymode-bootstrap.el ends here
