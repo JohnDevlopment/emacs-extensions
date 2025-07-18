@@ -54,6 +54,10 @@ the block in the HTML output."
 
 ;; ### Variables
 
+(defvar-local user-ext-org-babel-safe-eval nil
+  "If non-nil, do not query user before evaluating block.")
+(put 'user-ext-org-babel-safe-eval 'safe-local-variable #'booleanp)
+
 ;; ### Functions
 
 (defun org-ext-open-url-at-point (&optional arg)
@@ -233,6 +237,20 @@ to the result.  It is expected to contain a currency symbol."
 ARG is passed to the function."
   (interactive "P")
   (orgtbl-mode (or arg 'toggle)))
+
+;; --- Babel
+
+(defun org-ext-babel-confirm-evaluate (lang body)
+  (let ((ask t))
+    (pcase lang
+      ((or "emacs-lisp" "elisp")
+       (with-temp-buffer
+	 (emacs-lisp-mode)
+	 (princ body (current-buffer))
+	 (hack-local-variables 'nomode)
+	 (setq ask (not user-ext-org-babel-safe-eval))))
+      (_ t))
+    ask))
 
 (local-set-key (kbd "M-e") #'yas-expand)
 
