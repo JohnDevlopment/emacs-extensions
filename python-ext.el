@@ -146,6 +146,20 @@ Group 2 matches the name of the function.")
 
 ;; ### Functions
 
+(defun python-ext-initialize-package (name &optional main)
+  "Initialize package NAME."
+  (interactive "sPackage Name: \nP")
+  (cl-ext-when (y-or-n-p (format "Creating package %s in %s. Continue? "
+				 name default-directory))
+      (make-directory name)
+    (find-file (f-join name "__init__.py"))
+    (save-buffer)
+    (kill-buffer)
+    (cl-ext-when main
+	(find-file (f-join name "__main__.py"))
+      (save-buffer)
+      (kill-buffer))))
+
 (defsubst python-ext--regexp-match (subexp end)
   (cond
    ((and subexp end)
