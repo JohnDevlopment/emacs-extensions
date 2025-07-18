@@ -62,7 +62,7 @@ coding-cookie		Coding system declarations, which are
        (seq (? "async" (+ space)) "def")
        symbol-end))
 
-;; Variables
+;; ### Customization
 
 (defgroup python-ext nil
   "A group for Python extension."
@@ -94,6 +94,7 @@ coding-cookie		Coding system declarations, which are
   :safe #'listp
   :group 'python-ext)
 
+;; ### Variables
 
 (defconst user-ext-python--register ?p
   "The register for `python-ext-docstring'.
@@ -143,7 +144,7 @@ Group 2 matches the name of the function.")
 (defvar user-ext-python--reverted nil
   "t if `python-ext-revert-all-python-buffers' is called.")
 
-;; Functions
+;; ### Functions
 
 (defsubst python-ext--regexp-match (subexp end)
   (cond
