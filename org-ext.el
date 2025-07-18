@@ -10,7 +10,32 @@
   (defvar org-ext-custom-command)
   (declare-function org-ext-insert-command "org-ext")
   (defvar org-ext-insert-command)
+  (require 'cl-lib)
+  (require 'cl-ext)
+  (require 'debug-ext)
 
+  (embed-doc-document-symbol org-ext
+    "An extension to Org mode.
+
+In addition to the exported commands, there are some changes
+to the core Org mode functionality.
+
+Firstly, with the addition of package `org-special-block-extras',
+new special blocks have been added.  Among them, a block created by
+me was added: admonition.
+
+In order to insert it,
+do \\[org-insert-structure-template] and press TAB, then
+type the name of the block you want, e.g., \"aside\".  The
+block supports the :header keyword, to specify a header for
+the block in the HTML output."
+    :commands
+    browse-url-brave
+    org-ext-enable-export-on-save
+    org-ext-list-headlines
+    org-ext-list-shift-return
+    org-ext-open-url-at-point
+    org-ext-tbl-minor-mode))
 
 (define-prefix-command 'org-ext-custom-command)
 (define-prefix-command 'org-ext-insert-command)
