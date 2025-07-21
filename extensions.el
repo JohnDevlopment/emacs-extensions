@@ -13,6 +13,25 @@
   (require 'cl-ext)
   (require 'subr-x))
 
+;; ### Initialization
+
+(eval-and-compile
+  (require 'embed-doc)
+  (embed-doc-document-symbol extensions
+    "Main loader for extensions."
+    :functions
+    eval-after-require
+    load-extension-safe
+    :variables
+    user-ext-extension-directory
+    :commands
+    find-extension
+    find-extension-at-point
+    get-extension-documentation
+    load-extension))
+
+;; --- `use-package' for autoloads
+
 (use-package python-mode
   :defer t
   :autoload
@@ -39,6 +58,8 @@
   embed-doc-document-symbol
   embed-doc-get-documentation)
 
+;; --- Configurations (i.e., variables, function properties, etc.)
+
 (setq read-process-output-max 10485760
       frame-title-format (concat (and multiple-frames ()) " %b "
 				 invocation-name "@"
@@ -54,7 +75,7 @@
 
 ;; ### Functions
 
-;; ---Loading/finding extensions
+;; --- Loading/finding extensions
 
 (defun --list-extensions (&optional suffix completion)
   (let* ((regex (rx string-start
@@ -183,8 +204,6 @@ point."
 				    extension)
 			      (called-interactively-p 'interactive)))))))
 
-;; ---
-
 (defmacro eval-after-require (feature &rest body)
   "Attempt to load FEATURE and eval BODY if it succeeds.
 If the file provuding FEATURE cannot be found, an error
@@ -197,28 +216,13 @@ evaluated."
 	   ,@body)
        (file-missing (message "Failed to load %S: %S" (quote ,feature) err)))))
 
-(eval-and-compile
-  (eval-after-require embed-doc
-    (embed-doc-document-symbol extensions
-      "Main loader for extensions."
-      :functions
-      eval-after-require
-      load-extension-safe
-      :variables
-      user-ext-extension-directory
-      :commands
-      find-extension
-      find-extension-at-point
-      get-extension-documentation
-      load-extension)))
+;; --- Autoloads
 
-;; Autoloads
 (load-extension-safe "loaddefs-ext")
 
-;; ### Initialization
+;; ### Loading extensions
 
 (load-extension "types-ext")
-;; (load-extension "syntax-ext")
 (load-extension "errors")
 (load-extension "general")
 (load-extension "macro-ext")
@@ -239,7 +243,6 @@ evaluated."
 (load-extension "custom-ext")
 (load-extension "help-ext")
 
-;; (load-extension-safe "lsp-ext" 1)
 (load-extension-safe "desktop-ext" 1)
 (load-extension "dired-ext" nil 1)
 (load-extension-safe "imenu-ext" 2)
