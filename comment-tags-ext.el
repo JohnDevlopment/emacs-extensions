@@ -5,7 +5,7 @@
 (eval-when-compile
   (require 'cl-ext))
 
-;; Advice
+;; ### Advice
 
 (fext-defadvice comment-tags-list-tags-buffer (after list-comment-tags-buffer)
   "Enable View mode and bind `kill-and-quit' to k."
@@ -13,7 +13,7 @@
     (activate-view-mode)
     (local-set-key (kbd "k") #'kill-and-quit)))
 
-;; Variables
+;; ### Variables
 
 (defgroup comment-tags-ext nil
   "Comment tags extension."
@@ -40,7 +40,7 @@ negated if it starts with `not'."
   "Regular expression for matching TODO-ish comments.
 This is set once the global minor mode is enabled.")
 
-;; Functions
+;; ### Functions
 
 ;;;###autoload
 (defun comment-tags-mode-turn-on ()
