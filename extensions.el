@@ -48,6 +48,10 @@
 
 (function-put #'narrow-to-region 'disabled nil)
 
+;; ### Variables
+
+(defvar extension-history nil "HIstory variable for extension functions.")
+
 ;; ### Functions
 
 ;; ---Loading/finding extensions
@@ -76,7 +80,8 @@
   (let* ((args (list (completing-read
 		      prompt
 		      (--list-extensions t t)
-		      nil nil initial-input)))
+		      nil nil initial-input
+		      'extension-history)))
 	 completion-ignored-extensions)
     (when current-prefix-arg
       (push (y-or-n-p "Load safely? ") args)
