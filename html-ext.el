@@ -47,8 +47,7 @@
     (insert entity)))
 
 ;;;###autoload
-(defun mhtml--extra-hook ()
-  t)
+(defun mhtml--extra-hook () t)
 
 ;;;###autoload
 (add-hook 'mhtml-mode-hook #'mhtml--extra-hook)
