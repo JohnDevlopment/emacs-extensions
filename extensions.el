@@ -245,7 +245,6 @@ evaluated."
 
 (load-extension-safe "desktop-ext" 1)
 (load-extension "dired-ext" nil 1)
-(load-extension-safe "imenu-ext" 2)
 
 (load-extension "keymaps-ext")
 (load-extension-safe "yasnippets-ext")
