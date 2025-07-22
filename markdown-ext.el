@@ -19,7 +19,10 @@
 (defmacro markdown-skeleton-define (name doc &rest skel)
   "Define a `markdown-mode' skeleton using NAME, DOC, and SKEL.
 The skeleton will be bound to markdown-skeleton-NAME."
-  (declare (indent 2))
+  (declare (indent 1) (doc-string 2)
+	   (debug (&define name [&or stringp "nil"] skeleton-edebug-spec)))
+  (cl-ext-when (eq name 'define)
+      (signal-invalid-argument name "Symbol `define' is not allowed"))
   (let* ((name (symbol-name name))
 	 (funcname (intern (concat "markdown-skeleton-" name))))
     `(progn
