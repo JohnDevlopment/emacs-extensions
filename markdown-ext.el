@@ -33,6 +33,21 @@ The skeleton will be bound to markdown-skeleton-NAME."
   "<a id=\"" str "\"></a>" \n
   _ \n)
 
+;;;###autoload (autoload 'markdown-skeleton-org-table "markdown-ext" "docstring" t)
+(markdown-skeleton-define send-receive
+  "Insert a Org table that gets converted to a Markdown table."
+  "Table name: "
+  '(orgtbl-mode 1)
+  comment-start \n
+  "#ORGTBL: SEND " str " "
+  (completing-read "Function (default: orgtbl-to-markdown): "
+		   obarray nil t nil nil
+		   "orgtbl-to-markdown")
+  \n _ \n
+  comment-end \n
+  "<!-- BEGIN RECEIVE ORGTBL " str " -->" \n
+  "<!-- END RECEIVE ORGTBL " str " -->" \n)
+
 ;; ### Functions
 
 (defun markdown-ext--cell-to-list (cell)
@@ -113,7 +128,8 @@ The skeleton will be bound to markdown-skeleton-NAME."
   "Markdown extension map."
   '("Markdown Extension"
     ["Insert Footnote" markdown-ext-insert-footnote]
-    ["Insert Image" markdown-ext-insert-image]))
+    ["Insert Image" markdown-ext-insert-image]
+    ["Insert Org Table Send-Receive" markdown-skeleton-send-receive]))
 
 ;;;###autoload (autoload 'markdown-ext-scratch "markdown-ext" "Open a scratch buffer to edit markdown." t)
 (define-scratch-buffer-function markdown-ext-scratch
