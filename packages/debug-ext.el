@@ -30,6 +30,11 @@ which see.")
 			   ", ")))))))
 (add-variable-watcher 'user-ext-debug-level #'debug-ext--valid-debug-level)
 
+(defconst user-ext-debug-struct-function-re
+  (rx bos (or "${base}-p" "copy-${base}" "make-${base}"
+	      (seq "${base}-" (+? nonl)))
+      (opt "--cmacro") eos))
+
 (defmacro --show-compiler-warning (function)
   (cl-check-type function symbol)
   `(byte-compile-warn ,(format "Function %S is used here" function)))
