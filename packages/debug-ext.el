@@ -1,9 +1,34 @@
 ;; -*- lexical-binding: t; -*-
 
 (require 'cl-lib)
+(require 'alist-ext)
+(require 'llama)
 
 (eval-when-compile
   (require 'cl-ext))
+
+(defconst user-ext-debug-level-name-mapping
+  (alist-ext-define 1 "LOW" 2 "MEDIUM" 3 "HIGH")
+  "Mapping of level numbers to level names.")
+
+(defvar-local user-ext-debug-level 3
+  "The default debug level for functions like `debug-ext-message'.
+Valid values are in `user-ext-debug-level-name-mapping',
+which see.")
+(defun debug-ext--valid-debug-level (symbol newval op _where)
+  (cl-assert (eq symbol 'user-ext-debug-level) t)
+  (pcase op
+    ((or 'set 'let)
+     (if-let ((val (assoc newval user-ext-debug-level-name-mapping)))
+	 (cl-ext-progn
+	   (set symbol newval))
+       (set symbol (default-value symbol))
+       (error "Invalid debug level %S, can one of %s" newval
+	      (eval-when-compile
+		(mapconcat (##int-to-string %1)
+			   (alist-ext-keys user-ext-debug-level-name-mapping)
+			   ", ")))))))
+(add-variable-watcher 'user-ext-debug-level #'debug-ext--valid-debug-level)
 
 (defmacro --show-compiler-warning (function)
   (cl-check-type function symbol)
@@ -84,15 +109,30 @@ This macro emits a warning when it is byte compiled."
     (_ (error "Unknown type %S" type))))
 (define-obsolete-function-alias 'print-expr #'--print-expr "2025-03-10")
 
-(defmacro --message (format-string &rest args)
-  "Display a message at the bottom of the screen.
-This is just a macro wrapper around `message'.  The only
-difference is that compiling this macro will emit a warning,
-like the other macros in this library."
-  (cl-ext-when (macroexp--compiling-p)
-      (--show-compiler-warning --message))
-  (declare (debug (stringp &rest form)))
-  `(message ,format-string ,@args))
+;;;###autoload
+(defmacro --message (fmt &rest args)
+  "Display a message when the buffer's level matches LEVEL.
+This uses `message' to display a message.
+
+The first argument is a format control string, and those
+after LEVEL are data to be formatted according to the
+string.  See `format-message' for details on how this works.
+
+The optional second argument LEVEL is an integer denoting
+the level at which the message should be displayed.
+If `user-ext-debug-level' is greater than or equal to LEVEL,
+then the message is displayed.
+
+\(fn FORMAT-STRING [LEVEL] ARGS...)"
+  (let* ((level (if (cl-member (car-safe args) '(1 2 3))
+		    (pop args) user-ext-debug-level))
+	 level-name)
+    (cl-ext-when (macroexp--compiling-p)
+	(--show-compiler-warning --message))
+    (cl-ext-when (>= user-ext-debug-level level)
+	(setq level-name (alist-ext-rget level user-ext-debug-level-name-mapping))
+      (cl-assert level-name)
+      `(message ,fmt ,@args))))
 
 (defun debug-ext-get-function-body (symbol)
   "Get the function definition of SYMBOL."
