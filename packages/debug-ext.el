@@ -35,12 +35,14 @@ which see.")
 	      (seq "${base}-" (+? nonl)))
       (opt "--cmacro") eos))
 
+;;;###autoload
 (defmacro --show-compiler-warning (function)
   (cl-check-type function symbol)
   `(byte-compile-warn ,(format "Function %S is used here" function)))
 
 (define-obsolete-function-alias 'assert #'cl-assert "2024-12-24")
 
+;;;###autoload
 (defun --symbol-plist (symbol &rest props)
   (cl-ext-unless (cl-evenp (length props))
       (error "PROPS requires an even number of elements"))
@@ -89,6 +91,7 @@ actually destroyed, and neither is SYMBOL."
 	   (cl-ext-when destroy
 	       (setplist base nil))))
 
+;;;###autoload
 (defmacro --print-expr (type form &optional printcharfun)
   "Print the result of FORM.
 TYPE is used to indicate how FORM should be handled.

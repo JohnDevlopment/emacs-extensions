@@ -157,14 +157,18 @@ the string found at PLACE and SEQUENCES are combined via
 ;;;###autoload
 (defmacro cl-ext-save-point (&rest body)
   "Execute BODY and restore point to its original position.
+During the evaluation of BODY, the saved point is lexically
+bound to `user-ext-cl--point'.
 Any errors are caught and printed as simple messages.
 
 \(fn BODY...)"
   (declare (indent 0) (debug (&rest form)))
-  `(let ((user-ext-cl--point (point-marker))
-	 (user-ext-cl--result
-	  (with-demoted-errors "Error caught from `cl-save-point': %S"
-	    ,@body)))
+  (cl-ext-unless lexical-binding
+      (error "Lexical binding must be enabled"))
+  `(let* ((user-ext-cl--point (point-marker))
+	  (user-ext-cl--result
+	   (with-demoted-errors "Error caught from `cl-save-point': %S"
+	     ,@body)))
      (goto-char user-ext-cl--point)
      user-ext-cl--result))
 (define-obsolete-function-alias 'cl-save-point #'cl-ext-save-point "2025.02.02")
