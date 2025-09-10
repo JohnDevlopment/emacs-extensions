@@ -25,6 +25,40 @@
      (list 'setplist symbol nil))
     (_ form)))
 
+;;;###autoload
+(defun --destroy-function (symbol)
+  "Destroy the function held by SYMBOL."
+  (cl-check-type symbol symbol)
+  (ignore-errors (fmakunbound symbol))
+  (setplist symbol nil))
+
+;;;###autoload
+(defun --destroy-variable (symbol)
+  "Destroy the variable SYMBOL."
+  (cl-check-type symbol symbol)
+  (makunbound symbol)
+  (setplist symbol nil))
+
+;;;###autoload
+(defun --destroy-struct (symbol &optional destroy)
+  "Destroy the type SYMBOL and its functions.
+SYMBOL must be a struct defined by `cl-defstruct'.
+Unless DESTROY is non-nil, any matched symbol is not
+actually destroyed, and neither is SYMBOL."
+  (cl-check-type symbol symbol)
+  (cl-loop with base = symbol
+	   with regex = (s-format user-ext-debug-struct-function-re
+				  'aget `(("base" . ,(format "%S" base))))
+	   for symbol being the symbols
+	   when (string-match-p regex (symbol-name symbol))
+	   do
+	   (--print-expr var symbol)
+	   (cl-ext-when destroy
+	       (--destroy-function symbol))
+	   finally do
+	   (cl-ext-when destroy
+	       (setplist base nil))))
+
 (defmacro --print-expr (type form &optional printcharfun)
   "Print the result of FORM.
 TYPE is used to indicate how FORM should be handled.
