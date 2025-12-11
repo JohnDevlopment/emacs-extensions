@@ -91,6 +91,12 @@ Here is an example of such a commit:
 | Subject: | Extensions    |
 | Body:    | /action list/ |
 
+#+begin_example
+  [UPDATE] Main: Extensions
+
+  ,* Remove: imenu
+#+end_example
+
 ** Moving Code Into A New Extension
 
 |          | <40>                                   |

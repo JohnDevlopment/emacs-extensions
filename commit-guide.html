@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-07-18 Fri 08:03 -->
+<!-- 2025-07-21 Mon 21:47 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Commit Guide</title>
@@ -246,34 +246,34 @@ for the JavaScript code in this tag.
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#org8c32805">1. Anatomy of a Commit</a></li>
-<li><a href="#org2fc8d82">2. Commit Formats</a>
+<li><a href="#org160af02">1. Anatomy of a Commit</a></li>
+<li><a href="#orgc303e02">2. Commit Formats</a>
 <ul>
-<li><a href="#org2e09acc">2.1. Refactoring A Single Extension</a></li>
-<li><a href="#org05890b6">2.2. Actions Within A Single Extension</a>
+<li><a href="#orga4ca0c0">2.1. Refactoring A Single Extension</a></li>
+<li><a href="#org35a654d">2.2. Actions Within A Single Extension</a>
 <ul>
-<li><a href="#orgd6b035c">2.2.1. Scope</a></li>
+<li><a href="#orgdfbc720">2.2.1. Scope</a></li>
 </ul>
 </li>
-<li><a href="#org37b419c">2.3. Actions Within A Single Bootstrap</a>
+<li><a href="#orgec6489f">2.3. Actions Within A Single Bootstrap</a>
 <ul>
-<li><a href="#org3f509ba">2.3.1. Scope</a></li>
+<li><a href="#org7753fa5">2.3.1. Scope</a></li>
 </ul>
 </li>
-<li><a href="#org4e1dd47">2.4. Add/Remove/Modify Bootstraps</a></li>
-<li><a href="#org9b67439">2.5. Add/Remove/Modify Extensions</a></li>
-<li><a href="#org9e7d116">2.6. Moving Code Into A New Extension</a></li>
-<li><a href="#orge1734d2">2.7. A Single Action Within Multiple Extensions</a></li>
-<li><a href="#orga913ee6">2.8. Refactoring Multiple Extensions</a></li>
-<li><a href="#org1c5e084">2.9. A single action within a so-called package</a></li>
+<li><a href="#org66df1ef">2.4. Add/Remove/Modify Bootstraps</a></li>
+<li><a href="#org12c0d5c">2.5. Add/Remove/Modify Extensions</a></li>
+<li><a href="#orgf8d3b70">2.6. Moving Code Into A New Extension</a></li>
+<li><a href="#org5de4661">2.7. A Single Action Within Multiple Extensions</a></li>
+<li><a href="#org2132322">2.8. Refactoring Multiple Extensions</a></li>
+<li><a href="#orgf3a9f45">2.9. A single action within a so-called package</a></li>
 </ul>
 </li>
 </ul>
 </div>
 </nav>
 
-<div id="outline-container-org8c32805" class="outline-2">
-<h2 id="org8c32805"><span class="section-number-2">1</span> Anatomy of a Commit</h2>
+<div id="outline-container-org160af02" class="outline-2">
+<h2 id="org160af02"><span class="section-number-2">1</span> Anatomy of a Commit</h2>
 <div class="outline-text-2" id="text-1">
 <pre class="example">
 [TAG] SCOPE: MESSAGE
@@ -287,12 +287,12 @@ BODY
 </div>
 </div>
 
-<div id="outline-container-org2fc8d82" class="outline-2">
-<h2 id="org2fc8d82"><span class="section-number-2">2</span> Commit Formats</h2>
+<div id="outline-container-orgc303e02" class="outline-2">
+<h2 id="orgc303e02"><span class="section-number-2">2</span> Commit Formats</h2>
 <div class="outline-text-2" id="text-2">
 </div>
-<div id="outline-container-org2e09acc" class="outline-3">
-<h3 id="org2e09acc"><span class="section-number-3">2.1</span> Refactoring A Single Extension</h3>
+<div id="outline-container-orga4ca0c0" class="outline-3">
+<h3 id="orga4ca0c0"><span class="section-number-3">2.1</span> Refactoring A Single Extension</h3>
 <div class="outline-text-3" id="text-2-1">
 <pre class="example">
 [REFACTOR] Elisp-ext
@@ -309,12 +309,12 @@ BODY
 </div>
 </div>
 
-<div id="outline-container-org05890b6" class="outline-3">
-<h3 id="org05890b6"><span class="section-number-3">2.2</span> Actions Within A Single Extension</h3>
+<div id="outline-container-org35a654d" class="outline-3">
+<h3 id="org35a654d"><span class="section-number-3">2.2</span> Actions Within A Single Extension</h3>
 <div class="outline-text-3" id="text-2-2">
 </div>
-<div id="outline-container-orgd6b035c" class="outline-4">
-<h4 id="orgd6b035c"><span class="section-number-4">2.2.1</span> Scope</h4>
+<div id="outline-container-orgdfbc720" class="outline-4">
+<h4 id="orgdfbc720"><span class="section-number-4">2.2.1</span> Scope</h4>
 <div class="outline-text-4" id="text-2-2-1">
 <ul class="org-ul">
 <li>The name of the extension without the <code>-ext</code> (e.g., <code>sh</code>)
@@ -344,18 +344,19 @@ append a <code>/X</code>, with <code>X</code> being one of the following:
 </ul>
 
 <p>
-If the subject line would be empty, it may be replaced with the scope, like so: <code>[REFACTOR] General</code>
+If the subject line would be empty, it may be replaced with the scope, like so:
+<code>[REFACTOR] General</code>
 </p>
 </div>
 </div>
 </div>
 
-<div id="outline-container-org37b419c" class="outline-3">
-<h3 id="org37b419c"><span class="section-number-3">2.3</span> Actions Within A Single Bootstrap</h3>
+<div id="outline-container-orgec6489f" class="outline-3">
+<h3 id="orgec6489f"><span class="section-number-3">2.3</span> Actions Within A Single Bootstrap</h3>
 <div class="outline-text-3" id="text-2-3">
 </div>
-<div id="outline-container-org3f509ba" class="outline-4">
-<h4 id="org3f509ba"><span class="section-number-4">2.3.1</span> Scope</h4>
+<div id="outline-container-org7753fa5" class="outline-4">
+<h4 id="org7753fa5"><span class="section-number-4">2.3.1</span> Scope</h4>
 <div class="outline-text-4" id="text-2-3-1">
 <ul class="org-ul">
 <li>The name of any extension ending in "-bootstrap" (e.g., "jdesktop-bootstrap")</li>
@@ -370,8 +371,8 @@ If the subject line would be empty, it may be replaced with the scope, like so: 
 </div>
 </div>
 
-<div id="outline-container-org4e1dd47" class="outline-3">
-<h3 id="org4e1dd47"><span class="section-number-3">2.4</span> Add/Remove/Modify Bootstraps</h3>
+<div id="outline-container-org66df1ef" class="outline-3">
+<h3 id="org66df1ef"><span class="section-number-3">2.4</span> Add/Remove/Modify Bootstraps</h3>
 <div class="outline-text-3" id="text-2-4">
 <table>
 
@@ -425,8 +426,8 @@ Here is an example of such a commit:
 </div>
 </div>
 
-<div id="outline-container-org9b67439" class="outline-3">
-<h3 id="org9b67439"><span class="section-number-3">2.5</span> Add/Remove/Modify Extensions</h3>
+<div id="outline-container-org12c0d5c" class="outline-3">
+<h3 id="org12c0d5c"><span class="section-number-3">2.5</span> Add/Remove/Modify Extensions</h3>
 <div class="outline-text-3" id="text-2-5">
 <table>
 
@@ -458,11 +459,17 @@ Here is an example of such a commit:
 </tr>
 </tbody>
 </table>
+
+<pre class="example">
+[UPDATE] Main: Extensions
+
+* Remove: imenu
+</pre>
 </div>
 </div>
 
-<div id="outline-container-org9e7d116" class="outline-3">
-<h3 id="org9e7d116"><span class="section-number-3">2.6</span> Moving Code Into A New Extension</h3>
+<div id="outline-container-orgf8d3b70" class="outline-3">
+<h3 id="orgf8d3b70"><span class="section-number-3">2.6</span> Moving Code Into A New Extension</h3>
 <div class="outline-text-3" id="text-2-6">
 <table>
 
@@ -501,8 +508,8 @@ Here is an example of such a commit:
 </div>
 </div>
 
-<div id="outline-container-orge1734d2" class="outline-3">
-<h3 id="orge1734d2"><span class="section-number-3">2.7</span> A Single Action Within Multiple Extensions</h3>
+<div id="outline-container-org5de4661" class="outline-3">
+<h3 id="org5de4661"><span class="section-number-3">2.7</span> A Single Action Within Multiple Extensions</h3>
 <div class="outline-text-3" id="text-2-7">
 <table>
 
@@ -553,8 +560,8 @@ Here is an example of such a commit:
 </div>
 </div>
 
-<div id="outline-container-orga913ee6" class="outline-3">
-<h3 id="orga913ee6"><span class="section-number-3">2.8</span> Refactoring Multiple Extensions</h3>
+<div id="outline-container-org2132322" class="outline-3">
+<h3 id="org2132322"><span class="section-number-3">2.8</span> Refactoring Multiple Extensions</h3>
 <div class="outline-text-3" id="text-2-8">
 <pre class="example">
 [REFACTOR] Multiple
@@ -562,8 +569,8 @@ Here is an example of such a commit:
 </div>
 </div>
 
-<div id="outline-container-org1c5e084" class="outline-3">
-<h3 id="org1c5e084"><span class="section-number-3">2.9</span> A single action within a so-called package</h3>
+<div id="outline-container-orgf3a9f45" class="outline-3">
+<h3 id="orgf3a9f45"><span class="section-number-3">2.9</span> A single action within a so-called package</h3>
 <div class="outline-text-3" id="text-2-9">
 <p>
 This applies to extensions under <code>packages/</code>.
@@ -620,7 +627,7 @@ If the message is empty, the scope may replace it, resulting in this:
 </div>
 <footer id="postamble" class="status">
 <p class="author">Author: JohnDevlopment</p>
-<p class="date">Created: 2025-07-18 Fri 08:03</p>
+<p class="date">Created: 2025-07-21 Mon 21:47</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </footer>
 </body>
