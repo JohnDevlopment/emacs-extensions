@@ -14,6 +14,35 @@
 (declare-function 'markdown-ext-scratch "markdown-ext.el" nil)
 (declare-function 'markdown-footnote-counter-inc "markdown-mode.el" nil)
 
+
+;; ### Variables
+
+(defmacro markdown-ext-rx (&rest regexps)
+  "Markdown specialized rx macro.
+This variant of `rx' supports common Markdown named REGEXPS.
+
+This adds the following named REGEXPS:
+- indent -- Indentation; either 4 spaces or tab
+- block-end -- End of a block
+- numeral -- Numeric list item (e.g., \"1.\", \"#.\")
+- bullet -- List item bullet (*, +, :, -)
+- list-marker -- List marker, i.e., numeral or bullet
+- heading -- ATX heading; two groups capture the '#'s and the text
+- checkbox -- Checkbox"
+  `(rx-let ((newline "\n")
+            ;; Note: #405 not consider markdown-list-indent-width however this is never used
+            (indent (or (= 4 " ") ?\t))
+            (block-end (and (or (one-or-more (zero-or-more blank) "\n") line-end)))
+            (numeral (and (one-or-more (any "0-9#")) "."))
+            (bullet (any "*+:-"))
+            (list-marker (or (and (one-or-more (any "0-9#")) ".")
+                             (any "*+:-")))
+	    (heading (seq bol (* blank) (group (** 1 6 ?#))
+			  (* blank) (group (+ nonl))))
+            (checkbox (seq "[" (any " xX") "]")))
+     (rx ,@regexps)))
+
+
 ;; ### Skeletons
 
 (defmacro markdown-skeleton-define (name doc &rest skel)
@@ -51,6 +80,32 @@ The skeleton will be bound to markdown-skeleton-NAME."
   "<!-- BEGIN RECEIVE ORGTBL " str " -->" \n
   "<!-- END RECEIVE ORGTBL " str " -->" \n)
 
+
+;; ### Templates
+
+(defmacro markdown-ext-tempo-define-template (name doc elements)
+  "Define a template NAME which inserts ELEMENTS.
+The template will be called tempo-template-markdown-ext-NAME.
+DOCSTRING is the documentation string for the command.
+ELEMENTS is a list of elements recognized by
+`tempo-define-template', which see.
+
+The Markdown extension adds `tempo-ext-tempo-handler' to
+`tempo-user-elements', so additional elements are available.
+\(See the documentation for `tempo-ext-tempo-handler'.)
+
+\(fn NAME DOCSTRING ELEMENTS)"
+  (declare (indent defun) (doc-string 2)
+	   (debug (&define name stringp sexp)))
+  (cl-check-type name string)
+  (cl-check-type doc string)
+  (cl-check-type elements list)
+  (let* ((name (format "markdown-ext-%s" name))
+	 (fname (format "tempo-template-%s" name)))
+    `(prog1 ',(intern fname)
+       (tempo-define-template ,name ',elements nil ,doc))))
+
+
 ;; ### Functions
 
 (defun markdown-ext--cell-to-list (cell)
@@ -127,6 +182,27 @@ The skeleton will be bound to markdown-skeleton-NAME."
 	 (text (format "![%s](%s%s)" alt file title)))
     (insert text)))
 
+
+;; --- Syntax
+
+(cl-defun markdown-ext-parse-subtree (&optional pos)
+  "Parse header subtree starting from the header at or before POS."
+  (let (level heading-text)
+    (cl-ext-save-point
+      (cl-ext-cond
+	  ((looking-at (markdown-ext-rx heading))
+	   (setq level (length (match-string-no-properties 1))
+		 heading-text (match-string-no-properties 2)))
+	((re-search-backward (markdown-ext-rx heading) nil t)
+	 (setq level (length (match-string-no-properties 1))
+	       heading-text (match-string-no-properties 2)))))))
+
+
+;; --- Hs minor mode
+
+
+;; ### Menu
+
 (easy-menu-define user-ext-markdown-ext-menu-map markdown-mode-map
   "Markdown extension map."
   '("Markdown Extension"
@@ -134,12 +210,8 @@ The skeleton will be bound to markdown-skeleton-NAME."
     ["Insert Image" markdown-ext-insert-image]
     ["Insert Org Table Send-Receive" markdown-skeleton-send-receive]))
 
-;;;###autoload (autoload 'markdown-ext-scratch "markdown-ext" "Open a scratch buffer to edit markdown." t)
-(define-scratch-buffer-function markdown-ext-scratch
-				"markdown scratch" nil
-  "Open a scratch buffer to edit markdown."
-  nil
-  (markdown-mode))
+
+;; ### Keymaps
 
 (define-key markdown-mode-style-map (kbd "I") #'markdown-skeleton-id)
 (define-key markdown-mode-style-map (kbd "f") #'markdown-ext-insert-footnote)
@@ -152,11 +224,25 @@ The skeleton will be bound to markdown-skeleton-NAME."
 	   ("C-c C-t x" . markdown-toc-follow-link-at-point)
 	   ("C-c C-t r" . markdown-toc-refresh-toc))
 
+
+;; ### Minor mode
+
+;;;###autoload (autoload 'markdown-ext-scratch "markdown-ext" "Open a scratch buffer to edit markdown." t)
+(define-scratch-buffer-function markdown-ext-scratch
+				"markdown scratch" nil
+  "Open a scratch buffer to edit markdown."
+  nil
+  (markdown-mode))
+
+
 ;; ### Hook
 
 ;;;###autoload
 (defun markdown--extra-hook ()
   "Hook for `markdown-mode' extension."
+  (setq-local tempo-interactive t
+	      tempo-user-elements (cons #'tempo-ext-tempo-handler
+					tempo-user-elements))
   (if (boundp 'electric-pair-text-pairs)
       (setq-local electric-pair-pairs
                   (append '((?\` . ?\`) (?‘ . ?’))
