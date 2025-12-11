@@ -1,11 +1,13 @@
 ;; -*- lexical-binding: t; -*-
 
 (require 'dired)
+(require 'dired-x)
 
 (eval-when-compile
   (require 'function-ext))
 
-;; Functions
+
+;; ### Functions
 
 (defun dired-ext-quit-kill-window ()
   "Kill the current buffer and quit the window."
@@ -49,7 +51,22 @@ directory entries for."
 		 (mapcar (lambda (str) (f-join dirname str)) '("*/" ".*/")) "-adl")))
     (pop-to-buffer-same-window newbuf)))
 
-;; Keybinds
+
+;; ### Dired Omit Mode
+
+(defun dired-ext-require-omit-mode (&rest _r)
+  "Display an error if `dired-omit-mode' is not enabled."
+  (unless (bound-and-true-p dired-omit-mode)
+    (user-error "Enable `dired-omit-mode'")))
+
+(--ignore
+ (advice-add #'dired-omit-expunge :before #'dired-ext-require-omit-mode)
+ (advice-remove #'dired-omit-expunge #'dired-ext-require-omit-mode)
+ t)
+(define-key dired-mode-map (kbd "M-k") #'dired-omit-expunge)
+
+
+;; ### Keybinds
 
 ;; Enable `dired-find-alternate-file'
 (put #'dired-find-alternate-file 'disabled nil)
@@ -60,7 +77,8 @@ directory entries for."
 ;; Bind C-x C-M-d to `dired-dirs'
 (global-set-key (kbd "C-x C-M-d") #'dired-dirs)
 
-;; Hook
+
+;; ### Hook
 
 (define-key dired-mode-map "^" #'dired-ext-find-alternate-updir)
 (define-key dired-mode-map "k" #'dired-ext-quit-kill-window)
@@ -71,5 +89,10 @@ directory entries for."
 (add-hook 'dired-mode-hook #'dired-mode--extra-hook)
 
 (provide 'dired-ext)
-
 ;;; dired-ext ends here
+
+;; Local Variables:
+;; eval: (abbrev-ext-install-local-abbrev-functions)
+;; eval: (abbrev-ext-define-local-abbrev "dx" "dired-ext")
+;; eval: (abbrev-ext-define-local-abbrev "ux" "user-ext-dired")
+;; End:
