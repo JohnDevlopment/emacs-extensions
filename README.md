@@ -26,35 +26,46 @@ Copy all the lisp files and `packages/` into the destination directory.
 
 ## Extensions
 
+### Autoloaded Extensions
+
 <!--
-#+ORGTBL: SEND test orgtbl-to-markdown
-| Extension | File           | External Packages | Autoload |
-|-----------+----------------+-------------------+----------|
-|           | <15>           | <30>              | &#9746;  |
-| Buffers   | buffers-ext.el |                   | &#9746;  |
-| Codeium   | codeium-ext.el | codeium           | &#9746;  |
-| C         | c-ext.el       |                   | &#9745;  |
-| Imenu     | imenu-ext.el   |                   | &#9746;  |
-| Keymaps   | keymaps-ext.el | move-text         | &#9746;  |
-| LSP       | lsp-ext.el     | lsp-mode          | &#9746;  |
-| Rust      | rust-ext.el    | rust-mode, rustic | &#9745;  |
-| HTML      | html-ext.el    |                   | &#9745;  |
-|           |                |                   | &#9746;  |
-|           |                |                   | &#9746;  |
+#+ORGTBL: SEND extensions orgtbl-to-markdown
+| Extension | File            | External Packages               |
+|-----------+-----------------+---------------------------------|
+| Basic     | basic-ext.el    | basic-mode                      |
+| C         | c-ext.el        |                                 |
+| HTML      | html-ext.el     |                                 |
+| Markdown  | markdown-ext.el | markdown-toc                    |
+| Rust      | rust-ext.el     | company-capf, rust-mode, rustic |
 -->
 
-<!-- BEGIN RECEIVE ORGTBL test -->
-| Extension | File | External Packages | Autoload |
-|--:|--:|--:|--:|
-|  | <15> | <30> | &#9746; |
-| Buffers | buffers-ext.el |  | &#9746; |
-| Codeium | codeium-ext.el | codeium | &#9746; |
-| C | c-ext.el |  | &#9745; |
-| Imenu | imenu-ext.el |  | &#9746; |
-| Keymaps | keymaps-ext.el | move-text | &#9746; |
-| LSP | lsp-ext.el | lsp-mode | &#9746; |
-| Rust | rust-ext.el | rust-mode, rustic | &#9745; |
-| HTML | html-ext.el |  | &#9745; |
-|  |  |  | &#9746; |
-|  |  |  | &#9746; |
-<!-- END RECEIVE ORGTBL test -->
+<!-- BEGIN RECEIVE ORGTBL extensions -->
+| Extension | File | External Packages |
+|--:|--:|--:|
+| Basic | basic-ext.el | basic-mode |
+| C | c-ext.el |  |
+| HTML | html-ext.el |  |
+| Markdown | markdown-ext.el | markdown-toc |
+| Rust | rust-ext.el | company-capf, rust-mode, rustic |
+<!-- END RECEIVE ORGTBL extensions -->
+
+### Other Extensions
+
+<!--
+#+ORGTBL: SEND other orgtbl-to-markdown
+| Extension | File           | External Packages |
+|-----------+----------------+-------------------|
+| Buffers   | buffers-ext.el |                   |
+| Codeium   | codeium-ext.el | codeium           |
+| Imenu     | imenu-ext.el   |                   |
+| Keymaps   | keymaps-ext.el | move-text         |
+-->
+
+<!-- BEGIN RECEIVE ORGTBL other -->
+| Extension | File | External Packages |
+|--:|--:|--:|
+| Buffers | buffers-ext.el |  |
+| Codeium | codeium-ext.el | codeium |
+| Imenu | imenu-ext.el |  |
+| Keymaps | keymaps-ext.el | move-text |
+<!-- END RECEIVE ORGTBL other -->
