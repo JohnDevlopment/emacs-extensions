@@ -1,7 +1,6 @@
 ;; *- lexical-binding: t; -*-
 
-(eval-when-compile
-  (require 'use-package))
+(require 'use-package)
 
 (use-package jdesktop
   :load-path "~/github/desktop-plus/"
