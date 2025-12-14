@@ -252,6 +252,39 @@ but it is up to the user to make it so."
     (make-go-ext-identifier :string string :start beg :end end)))
 
 
+;; --- Parameter list
+
+(cl-defstruct go-ext-parameter-list
+  "Representation of a \"parameter list\"."
+  (parameters nil :documentation "List of parameters")
+  (start nil :type integer-or-marker)
+  (end nil :type integer-or-marker)
+  (node nil :type tsc-node :documentation "The original syntax tree node."))
+
+(go-ext-make-node-from-x-function go-ext-parameter-list
+  (tree-sitter-ext-with-region node
+      ((fn-by-type
+	(alist-ext-define 'parameter_list #'make-go-ext-type-from-node))
+       (parameters
+	(cl-loop with count = (tsc-count-named-children node)
+		 with child
+		 for i below count
+		 collect
+		 (cl-ext-progn
+		   (setq child (tsc-get-nth-named-child node i))
+		   (tree-sitter-ext-assert-node-type child parameter_declaration)
+		   (let ((child (tsc-get-first-named-child child)))
+		     (funcall
+		      (alist-get
+		       (--print-expr sexp (tsc-node-type child))
+		       fn-by-type)
+		      child))))))
+    (make-go-ext-parameter-list :parameters parameters :start beg :end end)))
+
+(cl-defgeneric make-go-ext-parameter-list--parameter-type (node type)
+  "XXX")
+
+
 ;; --- Type
 
 (cl-defstruct go-ext-type
