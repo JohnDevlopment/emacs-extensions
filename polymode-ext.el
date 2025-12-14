@@ -4,6 +4,10 @@
 
 ;; ### Host modes
 
+(define-hostmode poly-adoc-hostmode nil
+  "Host mode: Ascii doc."
+  :mode #'adoc-mode)
+
 (define-hostmode poly-markdown-hostmode nil
   "Host mode: Markdown."
   :mode #'markdown-mode)
@@ -29,6 +33,16 @@
   :tail-matcher "$"
   :mode #'emacs-lisp-mode
   :allow-nested nil)
+
+;; --- Ascii doc
+
+(define-auto-innermode poly-adoc-source-block-innermode nil
+  "Innermode for source blocks."
+  :head-matcher "^\\[source,.+\\]\n-\\{8\\}$"
+  :head-mode 'host
+  :tail-matcher "^-\\{10\\}$"
+  :tail-mode 'host
+  :mode-matcher (cons "^\\[source,\\(.+?\\)\\]" 1))
 
 ;; --- HTML
 
@@ -120,6 +134,11 @@
   :allow-nested nil)
 
 ;; ### Poly modes
+
+(define-polymode poly-adoc-mode nil
+  "A variation of `adoc-mode' for Polymode."
+  :hostmode 'poly-adoc-hostmode
+  :innermodes '(poly-adoc-source-block-innermode))
 
 ;;;###autoload (autoload 'poly-emacs-lisp-file-variables-mode "polymode-ext" "A variation of `emacs-lisp-mode' for Polymode." t)
 (define-polymode poly-emacs-lisp-file-variables-mode nil
