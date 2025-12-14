@@ -398,6 +398,7 @@ Variadic parameters in functions are represented by the
   (body-start nil :type integer-or-marker)
   (end nil :type integer-or-marker)
   (body-end nil :type integer-or-marker)
+  (result nil :documentation "The return type.")
   (node nil :type tsc-node
 	:documentation "Original node this was made from."))
 
@@ -414,6 +415,10 @@ Variadic parameters in functions are represented by the
 	:body-start (car body-region)
 	:end end
 	:body-end (cdr body-region)
+	:result (when-let ((result (tsc-get-child-by-field node :result)))
+		  (if (tree-sitter-ext-type-p result 'parameter_list)
+		      (make-go-ext-parameter-list-from-node result)
+		    (make-go-ext-type-from-node result)))
 	:node node)))
     ('func_literal
      (tree-sitter-ext-with-region node
@@ -423,7 +428,17 @@ Variadic parameters in functions are represented by the
 	:body-start (car body-region)
 	:end end
 	:body-end (cdr body-region)
+	:result (when-let ((result (tsc-get-child-by-field node :result)))
+		  (if (tree-sitter-ext-type-p result 'parameter_list)
+		      (make-go-ext-parameter-list-from-node result)
+		    (make-go-ext-type-from-node result)))
 	:node node)))))
+
+(defsubst make-go-ext-function-from-node--result (node)
+  "Construct something from NODE.
+NODE is assumed to be the :result node from its parent."
+  (declare (side-effect-free t))
+  )
 
 
 ;; --- Method
