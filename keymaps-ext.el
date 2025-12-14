@@ -29,6 +29,14 @@
 
 ;; ### Functions
 
+(cl-define-compiler-macro kbd (&whole form keys)
+  (cl-ext-cond
+    ((and (stringp keys)
+	  (string-match-p "^[A-za-z0-9]$" keys))
+     ;; Assumed to be a letter or digit
+     keys)
+    (t form)))
+
 (defun --contextual-key-func-warning (function value)
   (cl-typecase value
     (string
