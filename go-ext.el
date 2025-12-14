@@ -302,25 +302,25 @@ Variadic parameters in functions are represented by the
  symbol `variadic_parameter_declaration'."))
 
 (go-ext-make-node-from-x-function go-ext-type
-  (tree-sitter-ext-assert-node-type node type_declaration)
-  ;; (-let* ((parent (tsc-get-parent node))
-  ;; 	  ((beg . end) (tree-sitter-ext-region-from-node parent)))
-  ;;   (make-go-ext-type :string (tsc-node-text node) :start beg
-  ;; 		      :node parent :end end :subtype (tsc-node-type parent)))
-  (when-let ((bounds (tree-sitter-ext-region-from-node node))
-	     (q (tsc-make-query tree-sitter-language
-				[(type_declaration
-				  (type_spec
-				   name: (type_identifier) @name
-				   type: (_) @type))]))
-	     (captures
-	      (tsc-query-captures q node #'tsc--buffer-substring-no-properties)))
-    (cl-assert (eql (length captures) 2) t)
-    (pcase-let ((`(,beg . ,end) bounds)
-		(`[(name . ,name-node) (type . ,type-node)] captures))
-      (make-go-ext-type :name (make-go-ext-identifier-from-node name-node)
-			:start beg :end end :node node
-			:subtype type-node))))
+  (tree-sitter-ext-assert-node-type
+   node type_declaration pointer_type slice_type type_identifier)
+  (cl-block result
+    (tree-sitter-ext-with-region node nil
+      (pcase (tsc-node-type node)
+	('type_identifier
+	 (make-go-ext-type
+	  :name (make-go-ext-identifier-from-node node)
+	  :start beg :end end :node node))
+	('pointer_type
+	 (make-go-ext-type
+	  :name (make-go-ext-identifier-from-node node)
+	  :subtype 'pointer
+	  :start beg :end end :node node))
+	('slice_type
+	 (make-go-ext-type
+	  :name (make-go-ext-identifier-from-node node)
+	  :subtype 'slice
+	  :start beg :end end :node node))))))
 
 
 ;; --- Block
