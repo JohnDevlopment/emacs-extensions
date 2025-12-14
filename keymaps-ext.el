@@ -6,6 +6,7 @@
 (eval-when-compile
   (require 'subr-x))
 
+
 ;; ### Customization
 
 (defgroup keymaps-ext nil
@@ -15,11 +16,13 @@
 (defvar user-ext-keymaps--key-translation-table nil
   "Translation table used for `--contextual-key-func-warning'.")
 
+
 ;; ### Code
 
 (eval-after-require move-text
   (move-text-default-bindings))
 
+
 ;; ### Prefix Commands
 
 (define-prefix-command 'command-map)
@@ -27,6 +30,7 @@
 (define-prefix-command 'quick-mode-map)
 (global-set-key (kbd "C-c m") #'quick-mode-map)
 
+
 ;; ### Functions
 
 (cl-define-compiler-macro kbd (&whole form keys)
@@ -36,6 +40,9 @@
      ;; Assumed to be a letter or digit
      keys)
     (t form)))
+
+
+;; --- Define Contextual Keys
 
 (defun --contextual-key-func-warning (function value)
   (cl-typecase value
@@ -66,7 +73,7 @@ Modifier  Translates to
 C         control
 M         meta
 S         shift"
-  (cl-ext-unless user-ext-keymaps--key-translation-table
+  (unless user-ext-keymaps--key-translation-table
     (setq user-ext-keymaps--key-translation-table
 	  (let ((tbl (make-hash-table)))
 	    (puthash ?C "control" tbl)
@@ -78,36 +85,40 @@ S         shift"
 		   (opt (group (opt "C-") (opt "M-") (opt "S-")))
 		   (group (any (?a . ?z)))
 		   string-end)))
-    (cl-ext-unless (string-match regex key)
-      (signal-invalid-argument key (eval-when-compile
-				     (concat "check docstring of `--contextual-key-string'"
-					     " for allowed values"))))
+    (or (string-match regex key)
+	(signal-invalid-argument key (eval-when-compile
+				       (concat "check docstring of `--contextual-key-string'"
+					       " for allowed values"))))
     (let ((mods (match-string 1 key))
 	  (key (match-string 2 key)))
-      (cl-ext-when mods
-	  (setq mods
-		(thread-last
-		    (cl-loop with repl
-			     with tbl = user-ext-keymaps--key-translation-table
-			     for c across mods
-			     collect (cl-ext-progn
-				       (setq repl (gethash c tbl))
-				       (if repl repl (char-to-string c))))
-		  (apply #'concat))))
+      (when mods
+	(setq mods
+	      (thread-last
+		  (cl-loop with repl
+			   with tbl = user-ext-keymaps--key-translation-table
+			   for c across mods
+			   collect (cl-ext-progn
+				     (setq repl (gethash c tbl))
+				     (if repl repl (char-to-string c))))
+		(apply #'concat))))
       (concat mods key))))
 
 (defun --contextual-key-completion (cname)
-  (let ((choices (eval cname)))
-    (cl-case (length choices)
-      (0 (error "`%S' is empty" cname))
-      (1 choices)
-      (t
-       (thread-last
-	   (ido-completing-read
-	    "Function: " (mapcar (lambda (s) (symbol-name s)) choices)
-	    nil t)
-	 (intern)
-	 (list))))))
+  (let* ((choices (eval cname))
+	 (arg current-prefix-arg))
+    (pcase choices
+      ((pred null)
+       (error "%S does not have any elements" cname))
+      (`(,choice)
+       (list choice arg))
+      (`(,_choice1 . ,_choices)
+       (->
+	(ido-completing-read
+	 "Function: " (mapcar (lambda (s) (symbol-name s)) choices)
+	 nil t)
+	(intern)
+	(list arg)))
+      (_ (error "Unreachable code reached")))))
 
 (defmacro define-contextual-key-func (key &rest symbols)
   "Define a so-called contextual key function for key KEY.
@@ -187,9 +198,15 @@ zero elements."))
 
 (define-contextual-key-func "h" hs-minor-mode)
 
+(define-contextual-key-func "j"
+  jinja2-mode
+  jit-lock-debug-mode)
+
 (define-contextual-key-func "l"
   local-lambda-mode
   lsp-mode)
+
+(define-contextual-key-func "m" map-revert-buffer)
 
 (define-contextual-key-func "o"
   org-ext-tbl-minor-mode
@@ -200,11 +217,6 @@ zero elements."))
 
 (define-contextual-key-func "s" shell-script-mode)
 
-(define-contextual-key-func "j"
-  jinja2-mode
-  jit-lock-debug-mode)
-
-(define-contextual-key-func "m" map-revert-buffer)
 
 (define-contextual-key-func "v" activate-view-mode)
 
@@ -242,9 +254,12 @@ is non-nil."
   (message "Mapped %s `revert-buffer'"
 	   (lookup-function 'revert-buffer nil t)))
 
+
 ;; ### Key bindings
 
+
 ;; --- Global commands
+
 (bind-keys ("C-c d" . bookmark-delete)
 	   ("C-<tab>" . tab-next)		; tab commands
 	   ("C-S-<iso-lefttab>" . tab-previous) ;
@@ -260,7 +275,9 @@ is non-nil."
 	   ("C-c M-q" . kill-and-quit)	;
 	   )
 
+
 ;; --- Prefix command for misc commands
+
 (bind-keys :prefix-map command-map
 	   :prefix "C-c c"
 	   ("%" . nonincremental-re-search-forward)
@@ -277,13 +294,17 @@ is non-nil."
 	   ("P" . add-file-local-variable-prop-line)
 	   ("M-P" . add-file-local-variable))
 
+
 ;; --- Space
+
 (bind-keys ("M-\\" . delete-horizontal-space)
 	   ("M-^" . delete-indentation)
 	   ("M-SPC" . just-one-space)
 	   ("C-x C-o" . delete-blank-lines))
 
+
 ;; --- Extension-related commands
+
 (bind-keys :prefix-map extension-map
 	   :prefix "C-c e"
 	   ("l" . load-extension)
