@@ -407,10 +407,10 @@ Variadic parameters in functions are represented by the
   (pcase (tsc-node-type node)
     ('function_declaration
      (tree-sitter-ext-with-region node
-	 ((ident-node (tsc-get-child-by-field node :name))
-	  (body-region (go-ext-tree-sitter-body-region node)))
+	 ((body-region (go-ext-tree-sitter-body-region node)))
        (make-go-ext-function
-	:name (make-go-ext-identifier-from-node ident-node)
+	:name (make-go-ext-identifier-from-node
+	       (tsc-get-child-by-field node :name))
 	:start beg
 	:body-start (car body-region)
 	:end end
