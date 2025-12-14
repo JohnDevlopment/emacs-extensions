@@ -161,3 +161,6 @@ If the message is empty, the scope may replace it, resulting in this:
   [REFACTOR] Pkg:cl
 #+end_example
 
+# Local Variables:
+# eval: (org-ext-enable-export-on-save 'org-html-export-to-html "HTML")
+# End:
