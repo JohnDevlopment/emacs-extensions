@@ -182,6 +182,11 @@ Group 2 matches the name of the function.")
 (defvar user-ext-python--reverted nil
   "t if `python-ext-revert-all-python-buffers' is called.")
 
+(defvar user-ext-python--first-buffer-loaded nil
+  "Indicates whether the first Python buffer was loaded.
+This is non-nil if the first Python buffer was loaded, nil
+otherwise.")
+
 (defconst user-ext-python-ruff-lint-help-buffer
   "*ruff-lint errors*"
   "The help buffer that shows Ruff lint errors.")
@@ -1210,6 +1215,16 @@ The initial fill column is controlled by the user option
 ;;;###autoload
 (defun python--extra-hook ()
   "Hook for `python-mode' for this extension."
+  (unless user-ext-python--first-buffer-loaded
+    (let ((buffer (current-buffer)))
+      (run-with-idle-timer
+       1
+       nil
+       (lambda ()
+	 (with-current-buffer buffer
+	   (and (y-or-n-p "This is the first Python buffer? Revert? ")
+		(revert-buffer nil t))))))
+    (setq user-ext-python--first-buffer-loaded t))
   (setq-local beginning-of-defun-function #'py-backward-def-or-class)
   (setq-local skeleton-further-elements
 	      '((< '(backward-delete-char-untabify (min python-indent-offset
