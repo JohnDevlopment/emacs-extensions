@@ -1181,7 +1181,23 @@ The initial fill column is controlled by the user option
 
 (define-key python-mode-map (kbd "C-c M-r") #'python-ext-revert-all-python-buffers)
 
-;; Abbrevs
+(define-key python-mode-map (kbd "<") #'self-insert-command)
+
+(eval-and-compile
+  (easy-menu-define user-ext-python-menu python-mode-map
+    "Python extension."
+    '("Python Extension"
+      ("Project"
+       ["Find File" project-find-file]
+       ["Rename Buffer" python-ext-project-rename-buffer])
+      ("Ruff"
+       ["Lint Buffer" python-ext-lint-buffer]
+       ["Lint This Buffer" python-ext-lint-current-buffer]
+       ["Format Buffer" python-ext-format-buffer]
+       ["Format This Buffer" python-ext-format-current-buffer]))))
+
+
+;; ### Abbrevs
 
 (define-abbrev python-mode-abbrev-table "rnone" "-> None" #'abbrev-ext-insert-hook :system t)
 (define-abbrev python-mode-abbrev-table "rbool" "-> bool" #'abbrev-ext-insert-hook :system t)
