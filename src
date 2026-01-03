@@ -54,6 +54,15 @@ elif [ "$tag" = "watch" ]; then
 	echo "Try again"
     done
 
+    declare -r ROOTDIR="$PWD"
+
+    history -c
+    HISTFILE="$ROOTDIR/.bash_run_history"
+    HISTSIZE=500
+    HISTFILESIZE=500
+    export HISTFILE HISTSIZE HISTFILESIZE
+    history -r
+
     ## usage: run [-q]
     function run {
 	local Q OPT
@@ -75,11 +84,13 @@ elif [ "$tag" = "watch" ]; then
 	python watch.py || return
 	test $Q -ne 0 && exit
     }
+    echo "Fetching extensions..."
+    ./get-extensions.sh > /dev/null
     echo "Command: run [-q]"
     return
 fi
 
-declare -r ROOTDIR=$(dirname $(realpath "$0"))
+declare -r ROOTDIR="$PWD"
 
 ## usage: __cleanup
 function __cleanup {
