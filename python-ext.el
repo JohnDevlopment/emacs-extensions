@@ -356,6 +356,11 @@ Return nil if FILE is not a descendant of ROOT."
 
 ;; ### Functions
 
+(fext-defadvice py-electric-backspace-mode
+    (around py-electric-backspace-mode (oldfun &rest r))
+  (with-demoted-errors "py-electric-backspace-mode: %S"
+    (apply oldfun r)))
+
 (defun python-ext-compute-indentation (oldfun &rest args)
   "Compute Python indentation."
   (if-let ((cl-x (python-ext--string-at-pos))
