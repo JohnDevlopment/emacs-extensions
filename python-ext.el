@@ -361,6 +361,9 @@ Return nil if FILE is not a descendant of ROOT."
   (with-demoted-errors "py-electric-backspace-mode: %S"
     (apply oldfun r)))
 
+(advice-add #'py-shift-right :after #'deactivate-mark)
+(advice-add #'py-shift-left :after #'deactivate-mark)
+
 (defun python-ext-compute-indentation (oldfun &rest args)
   "Compute Python indentation."
   (if-let ((cl-x (python-ext--string-at-pos))
