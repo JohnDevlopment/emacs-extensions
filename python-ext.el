@@ -828,19 +828,11 @@ to the current buffer.
 START is the beginning of the docstring (after the triple
 quotes), END is the end of the docstring (before the triple
 quotes), and CONTENT is the text between START and END."
-  (cl-destructuring-bind (_ _ _ string-delim _ _ _ _ string-beg _ _) (syntax-ppss)
-    (when (and string-delim
-	       (save-excursion
-		 (goto-char string-beg)
-		 (looking-at-p "\"\\{3\\}")))
-      (let* ((start string-beg)
-	     (end (save-excursion
-		    (goto-char start)
-		    (forward-sexp)
-		    (point)))
-	     (content (buffer-substring-no-properties
-		       (+ start 3) (- end 3))))
-	(list content (+ start 3) (- end 3))))))
+  (when-let ((cl-x (python-ext--string-at-pos))
+	     (beg (python-ext--docstring-content-start cl-x))
+	     (end (python-ext--docstring-content-end cl-x))
+	     (content (buffer-substring-no-properties beg end)))
+    (list content beg end)))
 
 (defsubst python-ext-docstring--clear-vars ()
   (setq user-ext-python--orig-position nil
