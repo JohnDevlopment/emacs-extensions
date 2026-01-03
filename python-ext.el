@@ -94,6 +94,43 @@ coding-cookie		Coding system declarations, which are
   :safe #'listp
   :group 'python-ext)
 
+(defcustom user-ext-python-ruff-format-command
+  '("ruff" "format")
+  "Commandline to format a file with Ruff.
+The first element is the program to run, and the succeeding
+elements are arguments to the program."
+  :type '(repeat string)
+  :group 'python-ext)
+
+(defcustom user-ext-python-ruff-lint-command
+  '("ruff" "check")
+  "Commandline to lint a file with Ruff.
+The first element is the program to run, and the succeeding
+elements are arguments to the program."
+  :type '(repeat string)
+  :group 'python-ext)
+
+(defcustom user-ext-python-ruff-lint-extra-rules
+  nil
+  "Extra rules to add to the Ruff command."
+  :type '(repeat string)
+  :group 'python-ext)
+
+(defface user-ext-python-lint-keyword-face
+  '((t . (:inherit font-lock-keyword-face)))
+  "Face used for keywords, such as rule codes."
+  :group 'python-ext)
+
+(defface user-ext-python-lint-constant-face
+  '((t . (:inherit font-lock-constant-face)))
+  "Face used for so-called constants."
+  :group 'python-ext)
+
+(defface user-ext-python-lint-summary-face
+  '((t . (:inherit bold)))
+  "Face used for the summary line of every lint error."
+  :group 'python-ext)
+
 
 ;; ### Variables
 
@@ -144,6 +181,10 @@ Group 2 matches the name of the function.")
 
 (defvar user-ext-python--reverted nil
   "t if `python-ext-revert-all-python-buffers' is called.")
+
+(defconst user-ext-python-ruff-lint-help-buffer
+  "*ruff-lint errors*"
+  "The help buffer that shows Ruff lint errors.")
 
 
 ;; ### Project
@@ -670,6 +711,259 @@ look for \`inlayHintProvider'."
   (kill-buffers "\\.pyi$" (lambda (buf)
 			    (string-match-p "/\\.venv/.+$" (buffer-file-name buf)))))
 
+
+;; --- Lint and format buffers
+
+(eval-after-require lsp-ruff
+  (defun python-ext-hack-ruff-args ()
+    "Modify `lsp-ruff-ruff-args' to include a project-specific config file.
+The following modifications are made:
+- Add `--config $PROJECTDIR/$CONFIG` if not already present.
+- Ensures Ruff uses the correct configuration file for the current project.
+
+This function is intended to be called interactively or via hook to dynamically
+adjust Ruff's behavior based on project layout."
+    (interactive)
+    (let* ((args lsp-ruff-ruff-args)
+	   (root (project-root (python-ext-project-current)))
+           (config-path
+	    (cl-ext-progn
+	      (cl-assert root)
+	      (cl-loop for file in '("pyproject.toml" "ruff.toml")
+		       when (f-exists-p (f-join root file))
+		       do
+		       (cl-return (f-join root file))
+		       finally do
+		       (error "No config file found")))))
+      (unless (-some (lambda (arg) (equal arg "--config")) args)
+	(setopt lsp-ruff-ruff-args (append args
+					   (list "--config"
+						 config-path))))
+      (message "Ruff args updated: %s" lsp-ruff-ruff-args))))
+(--ignore
+  (prog1 nil
+    (with-current-buffer (get-buffer-create "*output*")
+      (emacs-lisp-mode)
+      (cl-prettyprint (symbol-function #'python-ext--lint-format-buffer))
+      (run-with-idle-timer 0.2 nil #'activate-view-mode 1)
+      (set-buffer-modified-p nil))
+    (pop-to-buffer "*output*" t)
+    (call-interactively #'menu-bar--toggle-truncate-long-lines))
+  t)
+
+(cl-defun python-ext--lint-format-buffer
+    (buffer-or-name command process-name final-message &optional after)
+  ;; TODO: documentation string
+  (cl-check-type buffer-or-name (or buffer string))
+  (cl-check-type process-name string)
+  (cl-check-type final-message string)
+  (cl-check-type command list)
+  (let ((buffer (get-buffer buffer-or-name))
+	(stdout-buffer (get-buffer-create (format "*%s::stdout*" process-name)))
+	(stderr-buffer (get-buffer-create (format "*%s::stderr*" process-name))))
+    (save-current-buffer
+      (set-buffer stdout-buffer)
+      (erase-buffer)
+      (set-buffer stderr-buffer)
+      (erase-buffer))
+    (unless (and buffer (buffer-live-p buffer))
+      (error "Buffer %S is dead or nonexistent" buffer))
+    (save-current-buffer
+      (set-buffer buffer)
+      (and (buffer-modified-p buffer)		   ; raise an error either
+	   (error "Buffer %S is modified" buffer)) ; because buffer is modified
+      (or (derived-mode-p 'python-mode)		   ; or because it is not in Python mode
+	  (error "Not in a Python buffer."))	   ;
+      (let* ((infile
+	      (let ((it (buffer-file-name buffer)))
+		;; Input buffer must be associated with a file
+		(prog1 it
+		  (or (file-exists-p it)
+		      (error "Buffer %s is not associated with a file" buffer)))))
+	     (-auto-revert-mode auto-revert-mode)
+	     (cmd `(,@command
+		    "--output-format"
+		    "json"
+		    "--exit-zero"
+		    ,@(let ((config (python-ext-lint-config)))
+			(and config (list "--config" config)))
+		    ,infile))
+	     (proc
+	      (make-process
+	       :name process-name
+	       :command cmd
+	       :noquery t
+	       :buffer stdout-buffer
+	       :stderr stderr-buffer
+	       :sentinel
+	       (lambda (process event)
+		 (when (string-match-p "^\\(exited abnormally\\|failed\\|finished\\)" event)
+		   ;; Reenable auto revert mode if it was previously active,
+		   ;; display the buffer in the event of an error, then revert
+		   ;; the current buffer
+		   (with-current-buffer buffer
+		     (revert-buffer 'ignore-auto t t))
+		   (run-with-timer 1 nil #'auto-revert-mode -auto-revert-mode)
+		   (if (= (process-exit-status process) 0)
+		       (cl-ext-progn
+			 (message final-message buffer)
+			 (and after (funcall after)))
+		     (message "Process %s reported an error, see %s for details"
+			      process-name
+			      stderr-buffer)))))))
+	(auto-revert-mode 0)))))
+
+(defun python-ext--lint-format-show-help-buffer (json-string buffer help-buffer)
+  ;; TODO: documentation string
+  (cl-check-type buffer buffer)
+  (cl-check-type help-buffer string)
+  (let ((root (python-ext-project-get-root))
+	(data (json-parse-string json-string))
+	lines)
+    (cl-flet* ((gethashr
+		(hash &rest keys)
+		(cl-loop with value = hash
+			 for key in keys
+			 do
+			 (if (hash-table-p value)
+			     (setq value (gethash key value))
+			   (cl-return value))
+			 finally return value))
+	       (format-line
+		(hash)
+		(format "%s %s
+  %s %s:%d:%d"
+			(propertize (gethash "code" hash)
+				    'face 'user-ext-python-lint-keyword-face)
+			(propertize (gethash "message" hash)
+				    'face 'user-ext-python-lint-summary-face)
+			(propertize "-->" 'face 'user-ext-python-lint-constant-face)
+			(f-relative (gethash "filename" hash) root)
+			(gethashr hash "location" "row")
+			(gethashr hash "location" "column"))))
+      (with-current-buffer buffer
+	(setq lines
+	      (cl-loop with str
+		       for h across data
+		       collect
+		       (format-line h))))
+      (with-help-window help-buffer
+	(with-current-buffer help-buffer
+	  (insert (format "Lint results for %s
+Root directory: %s\n\n"
+			  (abbreviate-file-name (buffer-file-name buffer))
+			  root))
+	  (insert (s-join "\n\n" lines)))))))
+(--ignore
+  (prog1 nil
+    (with-current-buffer (get-buffer-create "*output*")
+      (emacs-lisp-mode)
+      (cl-prettyexpand '(with-help-window help-buffer
+			  (erase-buffer)
+			  (insert (s-join "\n\n" lines))))
+      (run-with-idle-timer 0.2 nil #'activate-view-mode 1)
+      (set-buffer-modified-p nil))
+    (pop-to-buffer "*output*" t))
+
+  (let ((str "[
+  {
+    \"cell\": null,
+    \"code\": \"PLC0415\",
+    \"end_location\": {
+      \"column\": 18,
+      \"row\": 86
+    },
+    \"filename\": \"/home/john/github/tmux-macros/utils.py\",
+    \"fix\": null,
+    \"location\": {
+      \"column\": 5,
+      \"row\": 86
+    },
+    \"message\": \"`import` should be at the top-level of a file\",
+    \"noqa_row\": 86,
+    \"url\": \"https://docs.astral.sh/ruff/rules/import-outside-top-level\"
+  }
+]")
+	(default-directory "~/github/tmux-macros"))
+    (python-ext--lint-format-show-help-buffer
+     str
+     (get-buffer "utils.py")
+     user-ext-python-ruff-lint-help-buffer))
+  t)
+
+(defun python-ext-lint-config ()
+  "Return the path of a Ruff config file."
+  (cl-loop with file
+	   with root = (python-ext-project-get-root)
+	   with default-directory = root
+	   for base in '("ruff.toml" ".ruff.toml" "pyproject.toml")
+	   do
+	   (setq file (f-join root base))
+	   (when (f-exists-p file)
+	     (cl-return file))
+	   finally return nil))
+
+(defun python-ext-lint-buffer (&optional buffer-or-name)
+  "Lint a buffer BUFFER-OR-NAME using Ruff.
+BUFFER-OR-NAME may be a buffer, a string (buffer name), or
+nil for the current buffer.  If BUFFER-OR-NAME refers to a
+dead buffer, or one whose major mode does not derived from
+`python-mode', then an error is raised.
+
+When called interactively, the user is prompted for a buffer
+name from a list of the currently live (i.e., active) buffers."
+  (interactive "bLint Buffer: ")
+  (cl-check-type buffer-or-name (or buffer string null))
+  (let ((buffer (cl-etypecase buffer-or-name
+		  (string (get-buffer buffer-or-name))
+		  (buffer buffer-or-name)
+		  (null (current-buffer))))
+	(default-directory (project-root (python-ext-project-current))))
+    (python-ext--lint-format-buffer
+     buffer
+     user-ext-python-ruff-lint-command
+     "ruff-lint"
+     "Linted buffer %S"
+     (lambda (stdout-buffer)
+       (python-ext--lint-format-show-help-buffer
+	(with-current-buffer stdout-buffer
+	  (buffer-string-no-properties))
+	buffer
+	user-ext-python-ruff-lint-help-buffer)))))
+
+(defun python-ext-lint-current-buffer ()
+  "Lint the current buffer.
+This calls `python-ext-lint-buffer' with a nil argument."
+  (interactive)
+  (python-ext-lint-buffer))
+
+(defun python-ext-format-buffer (&optional buffer-or-name)
+  "Format a buffer BUFFER-OR-NAME using Ruff.
+BUFFER-OR-NAME may be a buffer, a string (buffer name), or
+nil for the current buffer.  If BUFFER-OR-NAME refers to a
+dead buffer, or one whose major mode does not derive from
+`python-mode', then an error is raised.
+
+When called interactively, the user is prompted for a buffer
+name from a list of the currently live (i.e., active) buffers."
+  (interactive "*bFormat Buffer: ")
+  (defvar auto-revert-mode)
+  (cl-check-type buffer-or-name (or buffer string null))
+  (let ((buffer (cl-etypecase buffer-or-name
+		  (string (get-buffer buffer-or-name))
+		  (buffer buffer-or-name)
+		  (null (current-buffer))))
+	(default-directory (project-root (python-ext-project-current))))
+    ;; TODO: call `python-ext--lint-format-buffer'
+    (error "Not implemented")))
+
+(defun python-ext-format-current-buffer ()
+  "Format the current buffer.
+This calls `python-ext-format-buffer' with a nil argument."
+  (interactive)
+  (python-ext-format-buffer))
+
+
 ;; --- Docstrings
 
 (defun python-ext--extract-docstring ()
