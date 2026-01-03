@@ -356,6 +356,18 @@ Return nil if FILE is not a descendant of ROOT."
 
 ;; ### Functions
 
+(defun python-ext-compute-indentation (oldfun &rest args)
+  "Compute Python indentation."
+  (if-let ((cl-x (python-ext--string-at-pos))
+	   (indent (save-excursion
+		     (goto-char (python-ext--docstring-start cl-x))
+		     (skip-syntax-backward "\"")
+		     (current-column))))
+      (cl-ext-progn
+	indent)
+    (apply oldfun args)))
+(advice-add #'py-compute-indentation :around #'python-ext-compute-indentation)
+
 (defun python-ext-initialize-package (name &optional main)
   "Initialize package NAME."
   (interactive "sPackage Name: \nP")
