@@ -373,6 +373,10 @@ Return nil if FILE is not a descendant of ROOT."
     (apply oldfun args)))
 (advice-add #'py-compute-indentation :around #'python-ext-compute-indentation)
 
+(defun python-ext--before-save ()
+  (save-excursion
+    (delete-trailing-whitespace)))
+
 (defun python-ext-initialize-package (name &optional main)
   "Initialize package NAME."
   (interactive "sPackage Name: \nP")
@@ -1265,7 +1269,8 @@ The initial fill column is controlled by the user option
   (outline-minor-mode 0)
   (add-hook 'lsp-after-open-hook #'python--lsp-hook nil t)
   (remove-hook 'completion-at-point-functions #'py-fast-complete)
-  (add-hook 'completion-at-point-functions #'py-fast-complete nil t))
+  (add-hook 'completion-at-point-functions #'py-fast-complete nil t)
+  (add-hook 'before-save-hook #'python-ext--before-save nil t))
 
 ;;;###autoload
 (defun python--lsp-hook ()
