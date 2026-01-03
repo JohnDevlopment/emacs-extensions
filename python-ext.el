@@ -5,6 +5,9 @@
 (require 'python)
 (require 'lsp)
 (require 'function-ext)
+(require 'compat-29)
+
+(load-extension "compat-29-ext")
 
 (eval-when-compile
   (declare-function python-ext-command-prefix "python-ext")
@@ -979,6 +982,83 @@ The initial fill column is controlled by the user option
 	       "Python Docstring: Type \\[python-ext--write-docstring] to apply changes")))
     (setq header-line-format nil)))
 
+
+;; ### Process buffer
+
+(defconst python-ext-python-process-mode-map
+  (let ((map (make-sparse-keymap)))
+    (set-keymap-parent map comint-mode-map)
+    (define-key map [remap self-insert-command] #'python-ext-process-no-edit)
+    (define-key map (kbd "q") #'quit-window)
+    (define-key map (kbd "k") #'python-ext-process-kill-buffer)
+    map))
+
+(defun python-ext-process-no-edit ()
+  "Prohibit the user from editing the buffer."
+  (interactive)
+  (user-error "Cannot to edit this buffer"))
+
+(defun python-ext-process-kill-buffer ()
+  "Kill the process associated with the current buffer.
+
+Internally, this sends a SIGINT signal to the subprocess via
+`comint-interrupt-subjob', then kills the buffer and quits.
+
+This only works when the curent buffer's major mode is
+`python-ext-python-process-mode'."
+  (interactive)
+  (let ((buffer (current-buffer)))
+    (when (eq major-mode 'python-ext-python-process-mode)
+      (with-demoted-errors "Kill buffer error: %S"
+	(comint-interrupt-subjob))
+      (while (comint-check-proc buffer)
+	(sleep-for 0.1 100)))
+    (kill-and-quit)))
+
+(define-derived-mode python-ext-python-process-mode comint-mode
+  "Python Process"
+  "Major mode for Python processes.
+
+\\{python-ext-python-process-mode-map}"
+  (setq-local comint-process-echoes nil
+	      ansi-color-for-comint-mode 'filter))
+
+(cl-defun python-ext-python-process-run-command
+    (command buffer-name &key working-directory query-on-exit)
+  "Run COMMAND in a process buffer called BUFFER-NAME.
+COMMAND is a list of the form (PROGRAM ARG...), where
+PROGRAM is a string denoting an executable program, and each
+ARG is an argument to PROGRAM.  If WORKING-DIRECTORY is
+non-nil, set it as the working directory for the process,
+otherwise use `default-directory'.
+
+BUFFER-NAME and its process are killed intially before
+creating a new one."
+  (when-let ((buffer (get-buffer-create buffer-name))
+	     (process (get-buffer-process buffer)))
+    ;; Kill any process that's still alive in this buffer
+    (and (buffer-live-p process)
+	 (delete-process process)))
+  (-let* ((buffer (get-buffer-create buffer-name))
+	  ((program . args) command)
+	  (program-name (f-filename program))
+	  (wd (or working-directory default-directory)))
+    (with-current-buffer buffer
+      (unless (derived-mode-p 'python-ext-python-process-mode)
+	(python-ext-python-process-mode)
+	(setq header-line-format (format "Status: %%s | Working directory: %s"
+					 default-directory)))
+      (erase-buffer)
+      (setq default-directory (file-name-as-directory wd)))
+    (comint-exec buffer program-name program nil args)
+    (run-with-idle-timer 0.1 nil
+			 (lambda ()
+			   (when-let ((process (get-buffer-process buffer)))
+			     (cl-ext-progn
+			       (set-process-query-on-exit-flag process query-on-exit)))))
+    buffer))
+
+
 ;; ### Key bindings
 
 (define-prefix-command 'python-ext-command-prefix)
