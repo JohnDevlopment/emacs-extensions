@@ -1087,10 +1087,12 @@ The initial fill column is controlled by the user option
 (add-hook 'python-mode-hook #'python--extra-hook)
 
 (provide 'python-ext)
-
 ;;; python-ext ends here
 
 ;; Local Variables:
-;; eval: (local-lambda-define-self-insert-command vprefix "user-ext-python-")
-;; eval: (local-lambda-define-self-insert-command fprefix "python-ext-")
+;; eval: (abbrev-ext-install-local-abbrev-functions)
+;; eval: (abbrev-ext-define-local-abbrev "ux" "user-ext-python")
+;; eval: (abbrev-ext-define-local-abbrev "uxp" "user-ext-python-project")
+;; eval: (abbrev-ext-define-local-abbrev "px" "python-ext")
+;; eval: (abbrev-ext-define-local-abbrev "pxp" "python-ext-project")
 ;; End:
