@@ -7,8 +7,6 @@
 (require 'function-ext)
 
 (eval-when-compile
-  (declare-function python-ext-hide-show-command "python-ext")
-  (defvar python-ext-hide-show-command)
   (declare-function python-ext-command-prefix "python-ext")
   (defvar python-ext-command-prefix)
   (require 'dash)
@@ -62,6 +60,7 @@ coding-cookie		Coding system declarations, which are
        (seq (? "async" (+ space)) "def")
        symbol-end))
 
+
 ;; ### Customization
 
 (defgroup python-ext nil
@@ -383,14 +382,14 @@ Return nil if FILE is not a descendant of ROOT."
 (defun python-ext-initialize-package (name &optional main)
   "Initialize package NAME."
   (interactive "sPackage Name: \nP")
-  (cl-ext-when (y-or-n-p (format "Creating package %s in %s. Continue? "
-				 name default-directory))
-      (make-directory name)
+  (when (y-or-n-p (format "Creating package %s in %s. Continue? "
+			  name default-directory))
+    (make-directory name)
     (find-file (f-join name "__init__.py"))
     (save-buffer)
     (kill-buffer)
-    (cl-ext-when main
-	(find-file (f-join name "__main__.py"))
+    (when main
+      (find-file (f-join name "__main__.py"))
       (save-buffer)
       (kill-buffer))))
 
@@ -450,8 +449,7 @@ END is non-nil, move point to the end of the match."
   (when (cl-ext-save-point (re-search-forward regexp nil t))
     (let ((pos (python-ext--regexp-match subexp end)))
       (prog1 pos
-	(cl-ext-when pos
-	  (goto-char pos))))))
+	(and pos (goto-char pos))))))
 
 (defun python-ext-backward-regexp (regexp &optional subexp limit end)
   "Search backward from point for regular expression REGEXP.
@@ -466,181 +464,7 @@ match has to be after it; it is a buffer position."
 	     (cl-ext-save-point (re-search-backward regexp limit t)))
     (let ((pos (python-ext--regexp-match subexp end)))
       (prog1 pos
-	(cl-ext-when pos
-	  (goto-char pos))))))
-
-;; ---Motion and syntax functions
-
-(defun python-ext--beginning-of-def-p (&optional ppss)
-  "If point is at the beginning of a function, return point, else nil."
-  (let ((ppss (or ppss (make-ppss-easy (syntax-ppss)))))
-    (when (and (not (or (ppss-comment-or-string-start ppss) ; not inside comment or string
-			(ppss-innermost-start ppss)))	    ; not inside parenthesis
-	       (looking-at-p user-ext-python-def-start-regexp)
-	       (looking-back "[^ \t]*" (line-beginning-position))
-	       (eq (current-column) (current-indentation)))
-      (point))))
-
-;; (defun python-ext--inside-def-p ()
-;;   (cl-ext-save-point
-;;     (py-backward-def)
-;;     ))
-
-(cl-defmacro python-ext-define-forward-form (form &key subexp alias)
-  (cl-check-type form symbol)
-  (cl-check-type subexp integer-or-null)
-  (declare (debug (&define name
-			   [&optional ":subexp" integerp]
-			   [&optional ":alias" "t"])))
-  (let* ((fname (intern (format "python-ext-forward-%S" form)))
-	 (bof-f (intern-soft (format "python-ext--beginning-of-%S-p" form)))
-	 (rx-form (intern-soft (format "user-ext-python-%S-regexp" form))))
-    (if alias
-	(let ((ofname (intern-soft (format "py-forward-%S" form))))
-	  `(progn
-	     (defalias (quote ,fname) (function ,ofname))))
-      (cl-assert bof-f)
-      `(progn
-	 (defun ,fname ()
-	   ,(format "Go to the beginning of the next `%S'.
-Return point if successful, nil otherwise.
-
-Match regular expression `%S'.
-Match %s" form rx-form (if (or (not subexp) (= subexp 0))
-			   "the whole expression."
-			 (s-lex-format "group ${subexp}.")))
-	   (if (,bof-f)
-	       (point)
-	     (python-ext-forward-regexp ,rx-form ,subexp)))))))
-
-;;;###autoload (autoload 'python-ext-forward-def "python-ext" nil t)
-(python-ext-define-forward-form def :alias t)
-
-;;;###autoload (autoload 'python-ext-forward-class "python-ext" nil t)
-(python-ext-define-forward-form class :alias t)
-
-(cl-defmacro python-ext-define-backward-form (form &key subexp alias)
-  (cl-check-type form symbol)
-  (cl-check-type subexp integer-or-null)
-  (declare (debug (&define name
-			   [&optional ":subexp" integerp]
-			   [&optional ":alias" "t"])))
-  (let* ((fname (intern (format "python-ext-backward-%S" form)))
-	 (bof-f (intern-soft (format "python-ext--beginning-of-%S-p" form)))
-	 (rx-form (intern-soft (format "user-ext-python-%S-regexp" form))))
-    (if alias
-	(let ((ofname (intern-soft (format "py-backward-%S" form))))
-	  `(progn
-	     (defalias (quote ,fname) (function ,ofname))))
-      (cl-assert bof-f)
-      `(progn
-	 (defun ,fname ()
-	   ,(format "Go to the beginning of a `%S'.
-Return point if successful, nil otherwise.
-
-Match regular expression `%S'.
-Match %s" form rx-form (if (or (not subexp) (= subexp 0))
-			   "the whole expression."
-			 (s-lex-format "group ${subexp}.")))
-	   (interactive)
-	   (if (,bof-f)
-	       (point)
-	     (python-ext-backward-regexp ,rx-form ,subexp)))))))
-
-;;;###autoload (autoload 'python-ext-backward-def "python-ext" nil t)
-(python-ext-define-backward-form def :subexp 1)
-
-;;;###autoload (autoload 'python-ext-backward-class "python-ext" nil t)
-(python-ext-define-backward-form class :alias t)
-
-;; --- Motion/Syntax Functions
-
-(fext-replace-function py-backward-def "python-ext" ()
-  "Go to beginning of ‘def’.
-
-If already at beginning, go one ‘def’ backward.
-Return position if successful, nil otherwise"
-  (interactive)
-  (let ((indent (py--calculate-indent-backwards
-		 (current-indentation) py-indent-offset))
-	pos)
-    (save-excursion
-      (setq pos
-	    (cl-loop with pos
-		     with regex = user-ext-python-def-regexp
-		     until (bobp)
-		     do
-		     (setq pos (re-search-backward regex nil t))
-		     (cl-ext-unless pos
-			 (cl-return))
-		     (cl-ext-when (<= (current-indentation) indent)
-			 (cl-return pos)))))
-    (cl-ext-when pos
-	(prog1 pos
-	  (goto-char pos)))))
-
-;; --- Python hs integration
-
-;;;###autoload (autoload 'py-hide-base "python-ext")
-(fext-replace-function py-hide-base "python-ext" (form &optional beg end)
-  "Hide form at point."
-  (hs-minor-mode 1)
-  (save-excursion
-    (let* ((form (prin1-to-string form))
-           (beg (or beg (or (funcall (intern-soft (concat "py--beginning-of-" form "-p")))
-                            (funcall (intern-soft (concat "py-backward-" form))))))
-           (end (or end (funcall (intern-soft (concat "py-forward-" form)))))
-           (modified (buffer-modified-p))
-           (inhibit-read-only t))
-      (if (and beg end)
-          (progn
-	    (setq beg (progn
-			(goto-char beg)
-			(pcase form
-			  ("def"
-			   (cl-ext-when (looking-at user-ext-python-def-regexp)
-			     (goto-char (match-end 0))
-			     (point)))
-			  (_ (py-forward-statement)))))
-            (hs-make-overlay beg end 'code)
-            (set-buffer-modified-p modified))
-        (error (concat "No " (format "%s" form) " at point"))))))
-
-;;;###autoload
-(defun python-ext-show ()
-  "Toggle visibility of existing forms at point."
-  (interactive)
-  (hs-minor-mode 1)
-  (save-excursion
-    (let* ((ov (hs-overlay-at (point)))
-	   (beg (and ov (overlay-start ov)))
-	   (end (and ov (overlay-end ov)))
-	   (modified (buffer-modified-p))
-           (inhibit-read-only t))
-      (when (and ov beg end)
-	(hs-discard-overlays beg end))
-      (set-buffer-modified-p modified))))
-
-(defun python-ext-hide-all-functions ()
-  "Hide all `def' forms in buffer, starting from the beginning."
-  (interactive)
-  (hs-minor-mode 1)
-  (let ((inhibit-read-only t)
-	(pos (point))
-	beg end)
-    (save-excursion
-      (goto-char (point-min))
-      (while (python-ext-forward-regexp user-ext-python-def-regexp 0 t)
-	(setq beg (point) end (py-forward-def))
-	(goto-char beg)
-	(cl-ext-when (and (>= pos beg)
-			  (<= pos end))
-	  (setq pos beg))
-	(hs-make-overlay beg end 'code)))
-    (cl-ext-when pos
-      (goto-char pos))))
-
-;; ---
+	(and pos (goto-char pos))))))
 
 (defun python-ext--pydoc (what)
   (cl-assert (stringp what) t "what = %s" what)
@@ -1110,8 +934,8 @@ The initial fill column is controlled by the user option
 	start end content)
     (python-ext-docstring--init-vars)
     (setq docstring-data (python-ext--extract-docstring))
-    (cl-ext-unless docstring-data	     ; Not inside a docstring, so reset
-	(python-ext-docstring--clear-vars)   ; vars
+    (unless docstring-data		     ; Not inside a docstring, so reset
+      (python-ext-docstring--clear-vars)     ; vars
       (user-error "Not inside a docstring")) ;
     (setq content (string-trim (python-ext--dedent-string (car docstring-data)))
 	  start (nth 1 docstring-data)
@@ -1120,9 +944,9 @@ The initial fill column is controlled by the user option
     (python-ext--docstring-buffer content)
     (cl-assert user-ext-python--docstring-buffer)
     (with-current-buffer user-ext-python--orig-buffer
-      (cl-ext-unless (string-blank-p content)
-	  ;; docstring was not empty
-	  (goto-char start)
+      (unless (string-blank-p content)
+	;; docstring was not empty
+	(goto-char start)
 	(delete-region start end)
 	(py-newline-and-indent)
 	(py-newline-and-indent)
@@ -1137,9 +961,9 @@ The initial fill column is controlled by the user option
   nil
   (let ((mode user-ext-python-docstring-major-mode))
     (setq user-ext-python--docstring-buffer (current-buffer))
-    (cl-ext-unless (string-blank-p content)
-	;; docstring is not empty
-	(insert (string-trim content))
+    (unless (string-blank-p content)
+      ;; docstring is not empty
+      (insert (string-trim content))
       (goto-char (point-min)))
     (funcall mode)
     (dolist (mode user-ext-python-docstring-minor-modes)
@@ -1182,26 +1006,6 @@ The initial fill column is controlled by the user option
 (define-key python-mode-map (kbd "M-e")        #'yas-expand)
 (define-key python-mode-map (kbd "C-c C-j")    #'imenu)
 
-(define-prefix-command 'python-ext-hide-show-command)
-(define-key python-mode-map (kbd "C-c f") #'python-ext-hide-show-command)
-
-(define-key python-ext-hide-show-command (kbd "#") #'py-hide-comment)
-(define-key python-ext-hide-show-command (kbd "B") #'py-hide-block-or-clause)
-(define-key python-ext-hide-show-command (kbd "C") #'py-hide-clause)
-(define-key python-ext-hide-show-command (kbd "D") #'py-hide-def-or-class)
-(define-key python-ext-hide-show-command (kbd "E") #'py-hide-elif-block)
-(define-key python-ext-hide-show-command (kbd "E") #'py-hide-except-block)
-(define-key python-ext-hide-show-command (kbd "S") #'py-hide-statement)
-(define-key python-ext-hide-show-command (kbd "b") #'py-hide-block)
-(define-key python-ext-hide-show-command (kbd "c") #'py-hide-class)
-(define-key python-ext-hide-show-command (kbd "d") #'py-hide-def)
-(define-key python-ext-hide-show-command (kbd "C-d") #'python-ext-hide-all-functions)
-(define-key python-ext-hide-show-command (kbd "e") #'py-hide-else-block)
-(define-key python-ext-hide-show-command (kbd "f") #'py-hide-for-block)
-(define-key python-ext-hide-show-command (kbd "<tab>") #'py-hide-indent)
-(define-key python-ext-hide-show-command (kbd "i") #'py-hide-if-block)
-(define-key python-ext-hide-show-command (kbd "s") #'python-ext-show)
-(define-key python-ext-hide-show-command (kbd "x") #'py-hide-expression)
 (define-key python-mode-map (kbd "C-x p r") #'python-ext-project-rename-buffer)
 
 ;; company-capf
@@ -1247,6 +1051,8 @@ The initial fill column is controlled by the user option
 
 
 ;; ### Hooks
+
+(load-extension "_python-ext-syntax")
 
 ;;;###autoload
 (defun python--extra-hook ()
