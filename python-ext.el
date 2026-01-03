@@ -1210,7 +1210,19 @@ The initial fill column is controlled by the user option
 (define-abbrev python-mode-abbrev-table "false" "False"   #'abbrev-ext-insert-hook :system t)
 (define-abbrev python-mode-abbrev-table "true" "True"     #'abbrev-ext-insert-hook :system t)
 
-;; Hooks
+
+;; ### Python Shell Mode
+
+(define-key py-shell-mode-map (kbd "<tab>") #'completion-at-point)
+
+;;;###autoload
+(defun py-shell--extra-hook () t)
+
+;;;###autoload
+(add-hook 'py-shell-mode-hook #'py-shell--extra-hook)
+
+
+;; ### Hooks
 
 ;;;###autoload
 (defun python--extra-hook ()
