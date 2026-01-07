@@ -396,6 +396,7 @@ evaluated.
 (load-extension "compat-28-ext")
 (load-extension "compat-29-ext")
 (load-extension "buffers-ext")
+(load-extension "syntax-ext")
 
 ;; (load-extension "thingatpt-ext" nil 2)
 ;; (load-extension-safe "macro-ext" 2)
