@@ -35,6 +35,9 @@
 			 (x (error "Invalid form %S: must be symbol, function or lambda" x)))
      ,docstring))
 
+;; (defmacro fext-rename-function (symbol new-symbol)
+;;   )
+
 ;;;###autoload
 (defmacro fext-replace-function (symbol file arglist &optional docstring &rest body)
   "Replace the function definition of SYMBOL.
@@ -55,25 +58,45 @@ compiler.
 \(fn SYMBOL FILE ARGLIST [DOCSTRING] [DECL] BODY...)"
   (declare (indent 3) (doc-string 4)
 	   (debug (&define name stringp (&rest arg)
-			   [&optional stringp] def-body)))
+			   [&optional stringp]
+			   [&or ":remove" [":definition" symbolp]
+				def-body])))
   (cl-check-type file string-or-null)
   (cl-check-type symbol symbol)
   (cl-check-type arglist (or list null))
   (let* ((backup-symbol (intern (concat (prin1-to-string symbol) "--old")))
 	 (code (symbol-function symbol)))
-    (if (eq (car body) :remove)
-	(let ((code (symbol-function backup-symbol)))
-	  `(progn
-	     (when (fboundp #',backup-symbol)
-	       (defalias ',symbol ,(if (listp code) `',code code))
-	       (fmakunbound #',backup-symbol))))
-      (declare-function ,backup-symbol ,file ,arglist)
-      `(progn
-	 (unless (fboundp ',backup-symbol)
-	   (defalias ',backup-symbol ,(if (listp code)
-					  `',code
-					code)))
-	 (defun ,symbol ,arglist ,docstring ,@body)))))
+    (cl-ext-cond
+	((eq (car body) :remove)
+	 (let ((code (symbol-function backup-symbol)))
+	   `(progn
+	      (when (fboundp #',backup-symbol)
+		(defalias ',symbol ,(if (listp code) `',code code))
+		(fmakunbound #',backup-symbol)))))
+      ((eq (car body) :definition)
+       ;; (let ((def (cadr body)))
+       ;; 	 (setq docstring (documentation
+       ;; 			  (pcase def
+       ;; 			    (`(function ,d)
+       ;; 			     d)
+       ;; 			    (_ def))
+       ;; 			  t))
+       ;; 	 (declare-function ,backup-symbol ,file ,arglist)
+       ;; 	 `(progn
+       ;; 	    (unless (fboundp ',backup-symbol)
+       ;; 	      (defalias ',backup-symbol ,(if (listp code)
+       ;; 					     (list 'quote code)
+       ;; 					   code))
+       ;; 	      (defalias ',symbol ,def ,docstring))))
+       ;; FIXME: First time calling this works, subsequent compiles lead to free variable error
+       (error "Not allowed at the moment"))
+      (t (declare-function ,backup-symbol ,file ,arglist)
+	 `(progn
+	    (unless (fboundp ',backup-symbol)
+	      (defalias ',backup-symbol ,(if (listp code)
+					     `',code
+					   code)))
+	    (defun ,symbol ,arglist ,docstring ,@body))))))
 
 ;;;###autoload
 (defmacro fext-defadvice (function args &rest body)
@@ -110,18 +133,19 @@ The following keywords are supported:
                 removed.
 
 \(fn FUNCTION (CLASS NAME [ARGLIST]) BODY...)"
-  (declare (indent 2) (debug (&define name
-				      ([&or "before" "before-while"
-					    "before-until" "around" "after"
-					    "after-while" "after-until"
-					    "activation" "deactivation"
-					    "override"]
-				       name
-				       [&optional listp])
-				      [&optional ":remove" form]
-				      [&optional stringp]
-				      [&optional ("interactive" interactive)]
-				      def-body)))
+  (declare (indent 2)
+	   (debug (&define name
+			   ([&or "before" "before-while"
+				 "before-until" "around" "after"
+				 "after-while" "after-until"
+				 "activation" "deactivation"
+				 "override"]
+			    name
+			    [&optional listp])
+			   [&optional ":remove" form]
+			   [&optional stringp]
+			   [&optional ("interactive" interactive)]
+			   def-body)))
   (let ((arglist '(&rest _args))
 	(remove (cl-ext-progn
 		  (cl-ext-when (eq (car-safe body) :remove)
