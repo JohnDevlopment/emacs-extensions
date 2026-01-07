@@ -20,42 +20,6 @@
 
 ;; ### Initialization
 
-(defmacro with-check-requires (features &rest r)
-  "
-
-\(fn FEATURES BODY...)"
-  (declare (indent 1))
-  (let* ((body r)
-	 (extensions
-	  (cl-loop for form in body
-		   when (memq (car form) '(load-extension load-extension-safe))
-		   collect (cadr form)
-		   into exts
-		   finally return (s-join ", " exts))))
-    `(progn
-       ,(cl-case (length features)
-	  (0 nil)
-	  (1
-	   `(unless (or (featurep ',(car features))
-			(require ',(car features) nil 'noerror))
-	      (display-warning '(user-extensions)
-			       (format
-				,(s-lex-format
-				  "`%S' is required by the extensions ${extensions}")
-				',(car features)))))
-	  (otherwise
-	   `(cl-loop
-	     for feature in ,(macroexp-quote features)
-	     do
-	     (unless (or (featurep feature)
-			 (require feature nil 'noerror))
-	       (display-warning '(user-extensions)
-				(format
-				 ,(s-lex-format
-				   "`%S' is required by the extensions ${extensions}")
-				 feature))))))
-       ,@body)))
-
 (eval-and-compile
   (require 'embed-doc)
   (embed-doc-document-symbol extensions
@@ -202,6 +166,9 @@ The comparison operator CMP indicates what type of
 comparison is done.  See `with-emacs-version' for the
 description of CMP.
 
+The entire block is wrapped in an implicit nil block, so
+`cl-return' can be used in any of the clauses.
+
 \(fn CLAUSES...)"
   (declare (indent defun))
   (let (new-conditions)
@@ -214,10 +181,28 @@ description of CMP.
 	       (`((,cmp ,version) . ,body)
 		(cons (--emacs-version-cmp version cmp) body))
 	       (_ (error "Invalid form: %S" condition))))))
-    (cons 'cond new-conditions)))
+    `(cl-block nil
+       (cond ,@new-conditions))))
 
-(defsubst signal-disabled ()
-  )
+(defsubst signal-disabled (extension)
+  "Signal that EXTENSION is disabled."
+  (signal 'extension-disabled (list extension)))
+
+(defun extension-check-requires (extension requires)
+  (cl-check-type extension string)
+  (cl-check-type requires (or list null))
+  (if (not requires)
+      t
+    (cl-loop with safe = t
+	     with msg = (format "Extension `%s' requires `%%s'" extension)
+	     for req in requires
+	     do
+	     (unless (or (featurep req)
+			 (require req nil 'noerror))
+	       (setq safe nil)
+	       (display-warning '(user-extensions)
+				(format msg req) :error))
+	     finally return safe)))
 
 
 ;; --- Loading/finding extensions
@@ -256,9 +241,9 @@ description of CMP.
 
 (defun load-extension (extension &optional safe defer)
   "Load EXTENSION.
-EXTENSION is a Lisp file under '~/.emacs.d/extensions' without its
-file extension.  For example, with an extension named 'general',
-the file '~/.emacs.d/extensions/general.el' will be loaded.
+EXTENSION is a Lisp file under \\=`~/.emacs.d/extensions' without its
+file extension.  For example, with an extension named \\=`general',
+the file \\=`~/.emacs.d/extensions/general.el' will be loaded.
 
 If SAFE is non-nil, demote errors to simple messages.  If DEFER is
 non-nil, it is an integer specifying how many seconds of idle time
@@ -266,6 +251,7 @@ to wait before loading EXTENSION.
 
 Interactively, prompt the user for EXTENSION with completion.  With
 the prefix argument, also prompt the user for SAFE and DEFER."
+  ;; TODO: update documentation string
   (interactive (--extension-completion "Load Extenion: "))
   (cl-check-type extension string)
   (cl-check-type defer (or (integer 1 *) (float 0.01 *) null))
@@ -275,6 +261,8 @@ the prefix argument, also prompt the user for SAFE and DEFER."
 		    (format "Loading %s in %d seconds..." extension defer)))
 	 (safe-load (lambda (f) (condition-case err
 				    (load f)
+				  (extension-disabled
+				   (message "%S is disabled" (cdr-safe err)))
 				  (error
 				   (message "Error loading %s: %S" f err))))))
     (prog1 t
@@ -286,31 +274,19 @@ the prefix argument, also prompt the user for SAFE and DEFER."
 	    (defer
 	      (message dmsg)
 	      (run-with-timer defer nil #'load file))
-	    (t (load file))))))
-
-;; (defun extension-check-requires (extension requires)
-;;   (cl-check-type extension string)
-;;   (cl-check-type requires (or list null))
-;;   (if (not requires)
-;;       t
-;;     (cl-loop with safe = t
-;; 	     with msg = (format "Extension `%s' requires `%%s'" extension)
-;; 	     for req in requires
-;; 	     do
-;; 	     (unless (or (featurep req)
-;; 			 (require req nil 'noerror))
-;; 	       (setq safe nil)
-;; 	       (display-warning '(user-extensions)
-;; 				(format msg req) :error))
-;; 	     finally return safe)))
+	    (t (condition-case-unless-debug err
+		   (load file)
+		 (extension-disabled
+		  (display-warning 'extensions
+				   "%S is disabled"
+				   (cdr-safe err)))))))))
 
 (defmacro load-extension-safe (extension &optional defer requires)
   "Load EXTENSION, capturing any error and displaying it as a message."
   (cl-check-type extension string)
   (cl-check-type defer (or (integer 1 *) (float 0.01 *) null))
   (cl-check-type requires (or list null))
-  `(and (extension-check-requires ,extension ,(macroexp-quote requires))
-	(load-extension ,extension t ,defer)))
+  `(load-extension ,extension t ,defer))
 
 (defun --extension-choose-file (files)
   (if (> (length files) 0)
@@ -395,30 +371,35 @@ evaluated.
 
 ;; ### Loading extensions
 
-
 ;; --- Base Extensions
 
-;; (load-extension "types-ext")
-;; (load-extension "errors")
-;; (load-extension "general")
-;; (load-extension "buffers-ext")
-;; (load-extension "abbrev-ext" nil 1)
-;; (load-extension "thingatpt-ext" nil 2)
-;; (load-extension-safe "macro-ext" 2)
+(load-extension "types")
+(load-extension "errors")
+(load-extension "general")
+(emacs-version-cond
+  ((< "29.1")
+   (unless (featurep 'use-package)
+     (display-warning
+      'user-extensions
+      "`use-package' is required")
+     (cl-return))
+   (load-extension-safe "keymaps-ext"))
+  ((>= "29.1")
+   (load-extension-safe "keymaps-ext")))
 
 
 ;; --- Bootstraps for external packages
 
-;; (with-check-requires (use-package)
-;;   (load-extension-safe "jinja2-bootstrap" 1)
-;;   (load-extension-safe "code-outline-bootstrap" 1)
-;;   (load-extension-safe "jdesktop-bootstrap" 1)
-;;   (load-extension-safe "liquidsoap-bootstrap" 1)
-;;   (load-extension-safe "polymode-bootstrap" 1))
-
 
 ;; --- Extensions
 
+(load-extension "compat-28-ext")
+(load-extension "compat-29-ext")
+(load-extension "buffers-ext")
+
+;; (load-extension "thingatpt-ext" nil 2)
+;; (load-extension-safe "macro-ext" 2)
+;; (load-extension "abbrev-ext")
 ;; (load-extension "custom-ext")
 ;; (load-extension "help-ext")
 ;; (load-extension-safe "desktop-ext" 1)
