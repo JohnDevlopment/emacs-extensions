@@ -315,7 +315,9 @@ the prefix argument, also prompt the user for SAFE and DEFER."
 				  (extension-disabled
 				   (message "%S is disabled" (cdr-safe err)))
 				  (error
-				   (message "Error loading %s: %S" f err))))))
+				   (message "Error loading %s: %S" f err)))))
+	 (warning-suppress-types (cons warning-suppress-types
+				       '(comp))))
     (prog1 t
       (cond ((and safe defer (> defer 0))
 	     (message dmsg)
