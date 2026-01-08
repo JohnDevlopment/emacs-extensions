@@ -61,7 +61,7 @@ compiler.
 			   [&optional stringp]
 			   [&or ":remove" [":definition" symbolp]
 				def-body])))
-  (cl-check-type file string-or-null)
+  (cl-check-type file (or string null))
   (cl-check-type symbol symbol)
   (cl-check-type arglist (or list null))
   (let* ((backup-symbol (intern (concat (prin1-to-string symbol) "--old")))
