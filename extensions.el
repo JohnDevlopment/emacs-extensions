@@ -187,6 +187,8 @@ The entire block is wrapped in an implicit nil block, so
 	     (pcase condition
 	       (`((,cmp ,version) . ,body)
 		(cons (--emacs-version-cmp version cmp) body))
+	       (`(t . ,body)
+		(cons t body))
 	       (_ (error "Invalid form: %S" condition))))))
     `(cl-block nil
        (cond ,@new-conditions))))
