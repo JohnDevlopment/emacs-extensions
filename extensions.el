@@ -398,6 +398,7 @@ evaluated.
 (load-extension "buffers-ext")
 (load-extension "syntax-ext")
 (load-extension "hs-ext")
+(load-extension "subr-ext")
 
 ;; (load-extension "thingatpt-ext" nil 2)
 ;; (load-extension-safe "macro-ext" 2)
