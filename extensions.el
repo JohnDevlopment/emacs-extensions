@@ -80,6 +80,13 @@
 
 (defvar extension-history nil "HIstory variable for extension functions.")
 
+(defconst extension-warnings-buffer "*Extension Warnings*"
+  "Name of the warnings buffer for `extensions'.")
+
+(defconst extension-features nil
+  "A list of symbols which are the loaded extensions.
+Used by `extensionp' and modified by `extension-provide'.")
+
 
 ;; ### Functions
 
@@ -188,24 +195,66 @@ The entire block is wrapped in an implicit nil block, so
   "Signal that EXTENSION is disabled."
   (signal 'extension-disabled (list extension)))
 
-(defun extension-check-requires (extension requires)
-  (cl-check-type extension string)
-  (cl-check-type requires (or list null))
-  (if (not requires)
-      t
-    (cl-loop with safe = t
-	     with msg = (format "Extension `%s' requires `%%s'" extension)
-	     for req in requires
-	     do
-	     (unless (or (featurep req)
-			 (require req nil 'noerror))
-	       (setq safe nil)
-	       (display-warning '(user-extensions)
-				(format msg req) :error))
-	     finally return safe)))
+(defun extension-provide (extension &optional subextensions)
+  "Announce that EXTENSION is loaded.
+The optional argument SUBEXTENSIONS should be a list of
+symbols listing subextensions which are also loaded."
+  (unless (memq extension extension-features)
+    (setf (alist-get extension extension-features) subextensions)))
 
-
-;; --- Loading/finding extensions
+(defun extensionp (extension &optional subextension)
+  "Return non-nil if EXTENSION is loaded.
+
+Use this to conditionalize execution of Lisp code based on
+whether EXTENSION is loaded or not.
+Use `extension-provide' to declare that an extension is loaded.
+This function looks at the value of `extension-features'.
+The optional argument SUBEXTENSION can be used to check for
+a specific subextension."
+  (declare (side-effect-free t))
+  (when-let ((ext (assq extension extension-features)))
+    (if subextension
+	(cl-ext-progn
+	  (and subextension
+	       (and (-elem-index subextension ext) t)))
+      (and (car ext) t))))
+
+(defmacro extension-check-requires (&rest requirements)
+  "Declare that EXTENSION depends on REQUIREMENTS.
+If any of the packages in REQUIREMENTS is neither loaded nor
+available, signal an error and list the missing packages in
+the buffer `extension-warnings-buffer'.
+This is meant to be used inside the extension in question,
+to tell `load-extension' that it depends on one or more
+packages.  If even one of the packages is not available,
+then the extension cannot load."
+  (declare (debug (&rest symbol)))
+  (let ((curext
+	 (and-let* ((_ (f-same-p default-directory user-ext-extension-directory))
+		    (fn (-some--> (buffer-file-name)
+			  (f-filename it)
+			  (f-base it))))
+	   (intern-soft fn))))
+    `(extension-check-requires-1 ',curext ',requirements)))
+
+(defun extension-check-requires-1 (extension packages)
+  "Internal function."
+  (cl-check-type extension symbol)
+  (cl-check-type packages list)
+  (cl-loop with warnings-displayed = 0
+	   for package in packages
+	   do
+	   (or (featurep package)
+	       (require package nil t)
+	       (and (cl-incf warnings-displayed)
+		    (display-warning 'user-extensions
+				     (format "Failed to load `%S'" package)
+				     :error
+				     extension-warnings-buffer)))
+	   finally do
+	   (when (> warnings-displayed 0)
+	     (signal-extension-error
+	      (format "Failed to load `%S'" extension)))))
 
 (defun --list-extensions (&optional suffix completion)
   (let* ((regex (rx string-start
@@ -412,5 +461,5 @@ evaluated.
 ;; (load-extension-safe "yasnippets-ext")
 ;; (load-extension-safe "codeium-ext" 1)
 
-(provide 'extensions)
+(extension-provide 'extensions)
 ;;; extensions.el ends here
