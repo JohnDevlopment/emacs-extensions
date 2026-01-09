@@ -190,6 +190,37 @@ The entire block is wrapped in an implicit nil block, so
     `(cl-block nil
        (cond ,@new-conditions))))
 
+(defmacro emacs-version-cond-when-compile (&rest conditions)
+  "The compile-time counterpart to `emacs-version-cond'.
+The main difference is that this macro tries each clause at
+compile time and expands the body for the succeeding clause.
+
+Consider an example.  If the current Emacs version is older
+than or equal to 27.4, then the following will expand to 1.
+
+   (emacs-version-cond-when-compile
+     ((<= \"27.4\") 1)
+     (> \"27.4\" 2)
+     (t 3))
+
+On versions newer than 27.4, the snippet will expand to 2,
+and on any other version will expand to 3.
+
+\(fn CLAUSES...)"
+  (declare (indent defun))
+  (let ((code
+	 (cl-loop
+	  for condition in conditions
+	  do
+	  (pcase condition
+	    (`((,cmp ,version) . ,body)
+	     (when (eval (--emacs-version-cmp version cmp))
+	       (cl-return body)))
+	    (`(t . ,body)
+	     (cl-return body))
+	    (_ (error "Invalid form: %S" condition))))))
+    (car code)))
+
 (defsubst signal-disabled (extension)
   "Signal that EXTENSION is disabled."
   (signal 'extension-disabled (list extension)))
