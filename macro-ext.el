@@ -6,12 +6,15 @@
 (require 'kmacro)
 
 
-;; ### Variables
+;; ### Macro type
 
 (cl-defstruct (macro-ext--macro (:type list))
   (function nil :type function :documentation "Function definition")
   (key nil :type string :documentation "Key macro is bound to.")
   (documentation nil :type nil :documentation "Function documentation."))
+
+
+;; ### Variables
 
 (defvar user-ext-macro-history nil
   "Macro history for completion.")
