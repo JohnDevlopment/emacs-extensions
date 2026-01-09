@@ -266,6 +266,7 @@ is non-nil."
 	   ("M-%" . nonincremental-re-search-backward)
 	   ("M-s" . nonincremental-search-backward)
 	   ("d" . copy-text-down)
+	   ("c" . commit-helper)
 	   ("q" . quit-window)
 	   ("p" . elisp-ext-forward-or-backward-sexp)
 	   ("s" . nonincremental-search-forward)
