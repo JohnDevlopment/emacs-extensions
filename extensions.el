@@ -447,6 +447,67 @@ evaluated.
 		 ,@body)
 	     (file-missing (message "Failed to load %S: %S" (quote ,feature) err)))))))
 
+;; shortdoc
+(with-emacs-version >= "28.1"
+  (define-short-documentation-group user-extensions/main
+    "Finding & Loading"
+    (load-extension
+     :no-value (load-extension "types")
+     :no-manual t)
+    (find-extension
+     :no-value (find-extension "types")
+     :no-manual t)
+    (find-extension-at-point
+     :no-value (find-extension-at-point "types")
+     :no-manual t)
+    (get-extension-documentation
+     :no-value (get-extension-documentation "types")
+     :no-manual t)
+    "Errors"
+    (signal-disabled
+     :no-value (signal-disabled 'types)
+     :no-manual t)
+    (signal-emacs-version-error
+     :no-value (signal-emacs-version-error "30" '<=)
+     :no-manual t)
+    (signal-extension-error
+     :no-value (signal-extension-error "Some error")
+     :no-manual t)
+    (extension-check-requires
+     :no-value (extension-check-requires foo)
+     :no-manual t)
+    (check-emacs-minimum-version
+     :no-value (check-emacs-minimum-version "30.4")
+     :no-manual t)
+    "Helpers"
+    (extension-provide
+     :no-eval (extension-provide 'types)
+     :result types
+     :no-manual t)
+    (extensionp
+     :no-eval* (extensionp 'types)
+     :no-manual t)
+    (emacs-version-cond
+      :no-value (emacs-version-cond
+		  ((>= "29.4")
+		   (message "Version 29.4 or newer"))
+		  (t (message "Older than version 29.4")))
+      :no-manual t)
+    (emacs-version-cond-when-compile
+      :no-eval* (emacs-version-cond-when-compile
+		  ((>= "29.4")
+		   (message "Version 29.4 or newer"))
+		  (t (message "Older than version 29.4")))
+      :no-manual t)
+    (with-emacs-version
+	:no-eval* (with-emacs-version >= "29.4"
+		    (message "Using Emacs version 29.4 or newer"))
+      :no-manual t)
+    (eval-after-require
+      :eval (eval-after-require f
+	      (message "File: %s" (f-join "/tmp" "foo")))
+      :no-manual t)))
+
 
 ;; --- Autoloads
 
@@ -502,3 +563,14 @@ evaluated.
 
 (extension-provide 'extensions)
 ;;; extensions.el ends here
+
+;; Local Variables:
+;; eval: (abbrev-ext-install-local-abbrev-functions)
+;; eval: (abbrev-ext-define-local-abbrev "knm" ":no-manual")
+;; eval: (abbrev-ext-define-local-abbrev "knv" ":no-value")
+;; eval: (abbrev-ext-define-local-abbrev "ke" ":eval")
+;; eval: (abbrev-ext-define-local-abbrev "kne" ":no-eval")
+;; eval: (abbrev-ext-define-local-abbrev "kr" ":result")
+;; eval: (abbrev-ext-define-local-abbrev "ker" ":eg-result")
+;; eval: (abbrev-ext-define-local-abbrev "kr" ":result")
+;; End:
