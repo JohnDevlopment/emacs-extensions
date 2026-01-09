@@ -230,7 +230,8 @@ and on any other version will expand to 3.
 The optional argument SUBEXTENSIONS should be a list of
 symbols listing subextensions which are also loaded."
   (unless (memq extension extension-features)
-    (setf (alist-get extension extension-features) subextensions)))
+    (prog1 extension
+      (setf (alist-get extension extension-features) subextensions))))
 
 (defun extensionp (extension &optional subextension)
   "Return non-nil if EXTENSION is loaded.
