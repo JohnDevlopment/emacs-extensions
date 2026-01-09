@@ -17,7 +17,9 @@
   (require 'subr-x)
   (require 'llama))
 
+;; Assertions
 (check-emacs-minimum-version "27.4")
+(extension-check-requires debug-ext alist-ext cl-ext subr-x llama)
 
 (require 'transient)
 
@@ -874,7 +876,7 @@ Here is an example of to use this:
 		widget))
   :help-echo "C-M-i: complete field; RET: enter value")
 
-(provide 'commit-helper)
+(extension-provide 'commit-helper)
 ;;; commit-helper.el ends here
 
 ;; Local Variables:
