@@ -451,6 +451,7 @@ evaluated.
 (load-extension "subr-ext")
 (load-extension "thingatpt-ext")
 (load-extension "ibuffer-ext")
+(load-extension "tempo-ext")
 
 ;; (load-extension "thingatpt-ext" nil 2)
 ;; (load-extension-safe "macro-ext" 2)
