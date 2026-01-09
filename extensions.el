@@ -134,11 +134,8 @@ the containing file to work.
 If the Emacs version is older than VERSION, then signal
 `extension-emacs-version-error'."
   (cl-check-type version string)
-  (if (macroexp-compiling-p)
-      (unless (version<= version emacs-version)
-	(signal-emacs-version-error version '>=))
-    `(unless (version<= ,version emacs-version)
-       (signal-emacs-version-error ,version '>=))))
+  `(unless (version<= ,version emacs-version)
+     (signal-emacs-version-error ,version '>=)))
 
 (defmacro with-emacs-version (cmp version &rest body)
   "Do BODY if the Emacs version matches VERSION with comparison CMP.
