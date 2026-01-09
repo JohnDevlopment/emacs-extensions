@@ -365,6 +365,8 @@ the prefix argument, also prompt the user for SAFE and DEFER."
 
 (defmacro load-extension-safe (extension &optional defer requires)
   "Load EXTENSION, capturing any error and displaying it as a message."
+  (declare (advertised-calling-convention (extension &optional defer)
+					  "2026-01-09"))
   (cl-check-type extension string)
   (cl-check-type defer (or (integer 1 *) (float 0.01 *) null))
   (cl-check-type requires (or list null))
