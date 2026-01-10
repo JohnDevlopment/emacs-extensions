@@ -545,23 +545,11 @@ evaluated.
 (load-extension "syntax-ext")
 (load-extension "hs-ext")
 (load-extension "subr-ext")
-(load-extension "thingatpt-ext")
-(load-extension "ibuffer-ext")
-(load-extension "tempo-ext")
+(load-extension "thingatpt-ext" nil 1)
+(load-extension "ibuffer-ext" nil 1)
+(load-extension "tempo-ext" nil 1)
 (load-extension-safe "yasnippets-ext" 1)
 (load-extension-safe "macro-ext" 2)
-
-;; (load-extension "thingatpt-ext" nil 2)
-;; (load-extension-safe "macro-ext" 2)
-;; (load-extension "abbrev-ext")
-;; (load-extension "custom-ext")
-;; (load-extension "help-ext")
-;; (load-extension-safe "desktop-ext" 1)
-;; (load-extension "dired-ext" nil 1)
-;; (load-extension "keymaps-ext")
-
-;; (load-extension-safe "yasnippets-ext")
-;; (load-extension-safe "codeium-ext" 1)
 
 (extension-provide 'extensions)
 ;;; extensions.el ends here
