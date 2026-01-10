@@ -548,6 +548,7 @@ evaluated.
 (load-extension "thingatpt-ext")
 (load-extension "ibuffer-ext")
 (load-extension "tempo-ext")
+(load-extension-safe "yasnippets-ext" 1)
 (load-extension-safe "macro-ext" 2)
 
 ;; (load-extension "thingatpt-ext" nil 2)
