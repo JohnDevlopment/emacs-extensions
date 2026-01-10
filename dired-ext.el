@@ -38,7 +38,6 @@ individually, so list-sorting options are pointless."
     ((>= "29")
      (interactive (dired-read-dir-and-switches "") dired-mode))
     (t (interactive (dired-read-dir-and-switches ""))))
-  (dired-ext--barf-if-not-dired-mode)
   (let ((curbuf (current-buffer))
 	(newbuf (dired-noselect dirname switches)))
     (pop-to-buffer-same-window newbuf)
