@@ -20,42 +20,6 @@
 
 ;; ### Initialization
 
-(defmacro with-check-requires (features &rest r)
-  "
-
-\(fn FEATURES BODY...)"
-  (declare (indent 1))
-  (let* ((body r)
-	 (extensions
-	  (cl-loop for form in body
-		   when (memq (car form) '(load-extension load-extension-safe))
-		   collect (cadr form)
-		   into exts
-		   finally return (s-join ", " exts))))
-    `(progn
-       ,(cl-case (length features)
-	  (0 nil)
-	  (1
-	   `(unless (or (featurep ',(car features))
-			(require ',(car features) nil 'noerror))
-	      (display-warning '(user-extensions)
-			       (format
-				,(s-lex-format
-				  "`%S' is required by the extensions ${extensions}")
-				',(car features)))))
-	  (otherwise
-	   `(cl-loop
-	     for feature in ,(macroexp-quote features)
-	     do
-	     (unless (or (featurep feature)
-			 (require feature nil 'noerror))
-	       (display-warning '(user-extensions)
-				(format
-				 ,(s-lex-format
-				   "`%S' is required by the extensions ${extensions}")
-				 feature))))))
-       ,@body)))
-
 (eval-and-compile
   (require 'embed-doc)
   (embed-doc-document-symbol extensions
@@ -116,6 +80,13 @@
 
 (defvar extension-history nil "HIstory variable for extension functions.")
 
+(defconst extension-warnings-buffer "*Extension Warnings*"
+  "Name of the warnings buffer for `extensions'.")
+
+(defconst extension-features nil
+  "A list of symbols which are the loaded extensions.
+Used by `extensionp' and modified by `extension-provide'.")
+
 
 ;; ### Functions
 
@@ -163,11 +134,8 @@ the containing file to work.
 If the Emacs version is older than VERSION, then signal
 `extension-emacs-version-error'."
   (cl-check-type version string)
-  (if (macroexp-compiling-p)
-      (unless (version<= version emacs-version)
-	(signal-emacs-version-error version '>=))
-    `(unless (version<= ,version emacs-version)
-       (signal-emacs-version-error ,version '>=))))
+  `(unless (version<= ,version emacs-version)
+     (signal-emacs-version-error ,version '>=)))
 
 (defmacro with-emacs-version (cmp version &rest body)
   "Do BODY if the Emacs version matches VERSION with comparison CMP.
@@ -202,6 +170,9 @@ The comparison operator CMP indicates what type of
 comparison is done.  See `with-emacs-version' for the
 description of CMP.
 
+The entire block is wrapped in an implicit nil block, so
+`cl-return' can be used in any of the clauses.
+
 \(fn CLAUSES...)"
   (declare (indent defun))
   (let (new-conditions)
@@ -213,14 +184,108 @@ description of CMP.
 	     (pcase condition
 	       (`((,cmp ,version) . ,body)
 		(cons (--emacs-version-cmp version cmp) body))
+	       (`(t . ,body)
+		(cons t body))
 	       (_ (error "Invalid form: %S" condition))))))
-    (cons 'cond new-conditions)))
+    `(cl-block nil
+       (cond ,@new-conditions))))
 
-(defsubst signal-disabled ()
-  )
+(defmacro emacs-version-cond-when-compile (&rest conditions)
+  "The compile-time counterpart to `emacs-version-cond'.
+The main difference is that this macro tries each clause at
+compile time and expands the body for the succeeding clause.
 
-
-;; --- Loading/finding extensions
+Consider an example.  If the current Emacs version is older
+than or equal to 27.4, then the following will expand to 1.
+
+   (emacs-version-cond-when-compile
+     ((<= \"27.4\") 1)
+     (> \"27.4\" 2)
+     (t 3))
+
+On versions newer than 27.4, the snippet will expand to 2,
+and on any other version will expand to 3.
+
+\(fn CLAUSES...)"
+  (declare (indent defun))
+  (let ((code
+	 (cl-loop
+	  for condition in conditions
+	  do
+	  (pcase condition
+	    (`((,cmp ,version) . ,body)
+	     (when (eval (--emacs-version-cmp version cmp))
+	       (cl-return body)))
+	    (`(t . ,body)
+	     (cl-return body))
+	    (_ (error "Invalid form: %S" condition))))))
+    (car code)))
+
+(defsubst signal-disabled (extension)
+  "Signal that EXTENSION is disabled."
+  (signal 'extension-disabled (list extension)))
+
+(defun extension-provide (extension &optional subextensions)
+  "Announce that EXTENSION is loaded.
+The optional argument SUBEXTENSIONS should be a list of
+symbols listing subextensions which are also loaded."
+  (unless (memq extension extension-features)
+    (prog1 extension
+      (setf (alist-get extension extension-features) subextensions))))
+
+(defun extensionp (extension &optional subextension)
+  "Return non-nil if EXTENSION is loaded.
+
+Use this to conditionalize execution of Lisp code based on
+whether EXTENSION is loaded or not.
+Use `extension-provide' to declare that an extension is loaded.
+This function looks at the value of `extension-features'.
+The optional argument SUBEXTENSION can be used to check for
+a specific subextension."
+  (declare (side-effect-free t))
+  (when-let ((ext (assq extension extension-features)))
+    (if subextension
+	(cl-ext-progn
+	  (and subextension
+	       (and (-elem-index subextension ext) t)))
+      (and (car ext) t))))
+
+(defmacro extension-check-requires (&rest requirements)
+  "Declare that EXTENSION depends on REQUIREMENTS.
+If any of the packages in REQUIREMENTS is neither loaded nor
+available, signal an error and list the missing packages in
+the buffer `extension-warnings-buffer'.
+This is meant to be used inside the extension in question,
+to tell `load-extension' that it depends on one or more
+packages.  If even one of the packages is not available,
+then the extension cannot load."
+  (declare (debug (&rest symbol)))
+  (let ((curext
+	 (and-let* ((_ (f-same-p default-directory user-ext-extension-directory))
+		    (fn (-some--> (buffer-file-name)
+			  (f-filename it)
+			  (f-base it))))
+	   (intern-soft fn))))
+    `(extension-check-requires-1 ',curext ',requirements)))
+
+(defun extension-check-requires-1 (extension packages)
+  "Internal function."
+  (cl-check-type extension symbol)
+  (cl-check-type packages list)
+  (cl-loop with warnings-displayed = 0
+	   for package in packages
+	   do
+	   (or (featurep package)
+	       (require package nil t)
+	       (and (cl-incf warnings-displayed)
+		    (display-warning 'user-extensions
+				     (format "Failed to load `%S'" package)
+				     :error
+				     extension-warnings-buffer)))
+	   finally do
+	   (when (> warnings-displayed 0)
+	     (signal-extension-error
+	      (format "Failed to load `%S'" extension)))))
 
 (defun --list-extensions (&optional suffix completion)
   (let* ((regex (rx string-start
@@ -256,9 +321,9 @@ description of CMP.
 
 (defun load-extension (extension &optional safe defer)
   "Load EXTENSION.
-EXTENSION is a Lisp file under '~/.emacs.d/extensions' without its
-file extension.  For example, with an extension named 'general',
-the file '~/.emacs.d/extensions/general.el' will be loaded.
+EXTENSION is a Lisp file under \\=`~/.emacs.d/extensions' without its
+file extension.  For example, with an extension named \\=`general',
+the file \\=`~/.emacs.d/extensions/general.el' will be loaded.
 
 If SAFE is non-nil, demote errors to simple messages.  If DEFER is
 non-nil, it is an integer specifying how many seconds of idle time
@@ -266,6 +331,7 @@ to wait before loading EXTENSION.
 
 Interactively, prompt the user for EXTENSION with completion.  With
 the prefix argument, also prompt the user for SAFE and DEFER."
+  ;; TODO: update documentation string
   (interactive (--extension-completion "Load Extenion: "))
   (cl-check-type extension string)
   (cl-check-type defer (or (integer 1 *) (float 0.01 *) null))
@@ -275,8 +341,12 @@ the prefix argument, also prompt the user for SAFE and DEFER."
 		    (format "Loading %s in %d seconds..." extension defer)))
 	 (safe-load (lambda (f) (condition-case err
 				    (load f)
+				  (extension-disabled
+				   (message "%S is disabled" (cdr-safe err)))
 				  (error
-				   (message "Error loading %s: %S" f err))))))
+				   (message "Error loading %s: %S" f err)))))
+	 (warning-suppress-types (cons warning-suppress-types
+				       '(comp))))
     (prog1 t
       (cond ((and safe defer (> defer 0))
 	     (message dmsg)
@@ -286,31 +356,21 @@ the prefix argument, also prompt the user for SAFE and DEFER."
 	    (defer
 	      (message dmsg)
 	      (run-with-timer defer nil #'load file))
-	    (t (load file))))))
-
-;; (defun extension-check-requires (extension requires)
-;;   (cl-check-type extension string)
-;;   (cl-check-type requires (or list null))
-;;   (if (not requires)
-;;       t
-;;     (cl-loop with safe = t
-;; 	     with msg = (format "Extension `%s' requires `%%s'" extension)
-;; 	     for req in requires
-;; 	     do
-;; 	     (unless (or (featurep req)
-;; 			 (require req nil 'noerror))
-;; 	       (setq safe nil)
-;; 	       (display-warning '(user-extensions)
-;; 				(format msg req) :error))
-;; 	     finally return safe)))
+	    (t (condition-case-unless-debug err
+		   (load file)
+		 (extension-disabled
+		  (display-warning 'extensions
+				   "%S is disabled"
+				   (cdr-safe err)))))))))
 
 (defmacro load-extension-safe (extension &optional defer requires)
   "Load EXTENSION, capturing any error and displaying it as a message."
+  (declare (advertised-calling-convention (extension &optional defer)
+					  "2026-01-09"))
   (cl-check-type extension string)
   (cl-check-type defer (or (integer 1 *) (float 0.01 *) null))
   (cl-check-type requires (or list null))
-  `(and (extension-check-requires ,extension ,(macroexp-quote requires))
-	(load-extension ,extension t ,defer)))
+  `(load-extension ,extension t ,defer))
 
 (defun --extension-choose-file (files)
   (if (> (length files) 0)
@@ -387,6 +447,67 @@ evaluated.
 		 ,@body)
 	     (file-missing (message "Failed to load %S: %S" (quote ,feature) err)))))))
 
+;; shortdoc
+(with-emacs-version >= "28.1"
+  (define-short-documentation-group user-extensions/main
+    "Finding & Loading"
+    (load-extension
+     :no-value (load-extension "types")
+     :no-manual t)
+    (find-extension
+     :no-value (find-extension "types")
+     :no-manual t)
+    (find-extension-at-point
+     :no-value (find-extension-at-point "types")
+     :no-manual t)
+    (get-extension-documentation
+     :no-value (get-extension-documentation "types")
+     :no-manual t)
+    "Errors"
+    (signal-disabled
+     :no-value (signal-disabled 'types)
+     :no-manual t)
+    (signal-emacs-version-error
+     :no-value (signal-emacs-version-error "30" '<=)
+     :no-manual t)
+    (signal-extension-error
+     :no-value (signal-extension-error "Some error")
+     :no-manual t)
+    (extension-check-requires
+     :no-value (extension-check-requires foo)
+     :no-manual t)
+    (check-emacs-minimum-version
+     :no-value (check-emacs-minimum-version "30.4")
+     :no-manual t)
+    "Helpers"
+    (extension-provide
+     :no-eval (extension-provide 'types)
+     :result types
+     :no-manual t)
+    (extensionp
+     :no-eval* (extensionp 'types)
+     :no-manual t)
+    (emacs-version-cond
+      :no-value (emacs-version-cond
+		  ((>= "29.4")
+		   (message "Version 29.4 or newer"))
+		  (t (message "Older than version 29.4")))
+      :no-manual t)
+    (emacs-version-cond-when-compile
+      :no-eval* (emacs-version-cond-when-compile
+		  ((>= "29.4")
+		   (message "Version 29.4 or newer"))
+		  (t (message "Older than version 29.4")))
+      :no-manual t)
+    (with-emacs-version
+	:no-eval* (with-emacs-version >= "29.4"
+		    (message "Using Emacs version 29.4 or newer"))
+      :no-manual t)
+    (eval-after-require
+      :eval (eval-after-require f
+	      (message "File: %s" (f-join "/tmp" "foo")))
+      :no-manual t)))
+
 
 ;; --- Autoloads
 
@@ -395,38 +516,51 @@ evaluated.
 
 ;; ### Loading extensions
 
-
 ;; --- Base Extensions
 
-;; (load-extension "types-ext")
-;; (load-extension "errors")
-;; (load-extension "general")
-;; (load-extension "buffers-ext")
-;; (load-extension "abbrev-ext" nil 1)
-;; (load-extension "thingatpt-ext" nil 2)
-;; (load-extension-safe "macro-ext" 2)
+(load-extension "types")
+(load-extension "errors")
+(load-extension "general")
+(emacs-version-cond
+  ((< "29.1")
+   (unless (featurep 'use-package)
+     (display-warning
+      'user-extensions
+      "`use-package' is required")
+     (cl-return))
+   (load-extension-safe "keymaps-ext"))
+  ((>= "29.1")
+   (load-extension-safe "keymaps-ext")))
 
 
 ;; --- Bootstraps for external packages
 
-;; (with-check-requires (use-package)
-;;   (load-extension-safe "jinja2-bootstrap" 1)
-;;   (load-extension-safe "code-outline-bootstrap" 1)
-;;   (load-extension-safe "jdesktop-bootstrap" 1)
-;;   (load-extension-safe "liquidsoap-bootstrap" 1)
-;;   (load-extension-safe "polymode-bootstrap" 1))
-
 
 ;; --- Extensions
 
-;; (load-extension "custom-ext")
-;; (load-extension "help-ext")
-;; (load-extension-safe "desktop-ext" 1)
-;; (load-extension "dired-ext" nil 1)
-;; (load-extension "keymaps-ext")
+(load-extension "compat-28-ext")
+(load-extension "compat-29-ext")
+(load-extension "abbrev-ext")
+(load-extension "buffers-ext")
+(load-extension "syntax-ext")
+(load-extension "hs-ext")
+(load-extension "subr-ext")
+(load-extension "thingatpt-ext" nil 1)
+(load-extension "ibuffer-ext" nil 1)
+(load-extension "tempo-ext" nil 1)
+(load-extension-safe "yasnippets-ext" 1)
+(load-extension-safe "macro-ext" 2)
 
-;; (load-extension-safe "yasnippets-ext")
-;; (load-extension-safe "codeium-ext" 1)
-
-(provide 'extensions)
+(extension-provide 'extensions)
 ;;; extensions.el ends here
+
+;; Local Variables:
+;; eval: (abbrev-ext-install-local-abbrev-functions)
+;; eval: (abbrev-ext-define-local-abbrev "knm" ":no-manual")
+;; eval: (abbrev-ext-define-local-abbrev "knv" ":no-value")
+;; eval: (abbrev-ext-define-local-abbrev "ke" ":eval")
+;; eval: (abbrev-ext-define-local-abbrev "kne" ":no-eval")
+;; eval: (abbrev-ext-define-local-abbrev "kr" ":result")
+;; eval: (abbrev-ext-define-local-abbrev "ker" ":eg-result")
+;; eval: (abbrev-ext-define-local-abbrev "kr" ":result")
+;; End:

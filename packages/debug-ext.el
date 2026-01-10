@@ -7,6 +7,32 @@
 (eval-when-compile
   (require 'cl-ext))
 
+
+;; ### Variables
+
+;;;###autoload
+(defmacro --ignore (&rest body)
+  "Do nothing and return nil.
+This accepts any number of arguments but never evaluates,
+both in runtime and during compilation. This effectively
+acts as a comment.
+
+This function emits a warning when it is byte compiled
+unless the :no-warn keyword is present.
+
+\(fn [:no-warn] BODY...)"
+  (declare (debug ([&optional ":no-warn"] &rest sexp))
+	   (indent defun))
+  (let ((no-warn (cl-ext-get-keyword-no-arg body :no-warn)))
+    (or no-warn (--show-compiler-warning --ignore))
+    (list 'ignore t)))
+
+;; (defenum debug-level
+;;   ((low 1 "Low level")
+;;    (medium 2 "Medium level")
+;;    (high 3 "High level"))
+;;   "Debug level for functions like `debug-ext-message'.")
+
 (defconst user-ext-debug-level-name-mapping
   (alist-ext-define 1 "LOW" 2 "MEDIUM" 3 "HIGH")
   "Mapping of level numbers to level names.")
@@ -35,6 +61,12 @@ which see.")
 	      (seq "${base}-" (+? nonl)))
       (opt "--cmacro") eos))
 
+(defconst user-ext-debug-truncate-text-column 50
+  "The column from which to elide strings.")
+
+
+;; ### Functions
+
 ;;;###autoload
 (defmacro --show-compiler-warning (function)
   (cl-check-type function symbol)
@@ -43,12 +75,37 @@ which see.")
 (define-obsolete-function-alias 'assert #'cl-assert "2024-12-24")
 
 ;;;###autoload
+(defmacro --print-expr (type form &optional printcharfun)
+  "Print the result of FORM.
+TYPE is used to indicate how FORM should be handled.
+Currently, it can be either symbol `var' or symbol `sexp'.
+PRINTCHARFUN is the output stream in which to print the
+result (see `princ').
+
+This macro emits a warning when it is byte compiled."
+  (declare (debug ([&or "var" "sexp"] sexp &optional form)))
+  (when (macroexp-compiling-p)
+    (--show-compiler-warning --print-expr))
+  (pcase type
+    ('var
+     (cl-check-type form symbol)
+     `(let ((evalled-form ,form))
+	(prog1 evalled-form
+	  (princ (format "DEBUG: %s = %S" (quote ,form) evalled-form) ,printcharfun)
+	  (princ "\n" ,printcharfun))))
+    ('sexp
+     (let ((sargs (cdr-safe form)))
+       `(let ((evalled-form ,form))
+	  (--princ-form ,(macroexp-quote form) (list ,@sargs) evalled-form ,printcharfun))))
+    (_ (error "Unknown type %S" type))))
+
+;;;###autoload
 (defun --symbol-plist (symbol &rest props)
-  (cl-ext-unless (cl-evenp (length props))
+  (or (cl-evenp (length props))
       (error "PROPS requires an even number of elements"))
   (if props
-      (cl-ext-when (eq (car-safe props) :set)
-	  (pop props)
+      (when (eq (car-safe props) :set)
+	(pop props)
 	(setplist symbol props)))
   (cl-prettyprint (symbol-plist symbol)))
 (cl-define-compiler-macro --symbol-plist (&whole form symbol &rest props)
@@ -66,10 +123,17 @@ which see.")
 
 ;;;###autoload
 (defun --destroy-variable (symbol)
-  "Destroy the variable SYMBOL."
+  "Destroy the variable SYMBOL.
+If SYMBOL is automatically buffer-local, then remove that
+setting from SYMBOL."
   (cl-check-type symbol symbol)
-  (makunbound symbol)
-  (setplist symbol nil))
+  (ignore-error void-variable (makunbound symbol))
+  (setplist symbol nil)
+  (when (local-variable-if-set-p symbol)
+    (prog1 t
+      (let ((sn (symbol-name symbol)))
+	(unintern symbol nil)
+	(intern sn)))))
 
 ;;;###autoload
 (defun --destroy-struct (symbol &optional destroy)
@@ -85,60 +149,68 @@ actually destroyed, and neither is SYMBOL."
 	   when (string-match-p regex (symbol-name symbol))
 	   do
 	   (--print-expr var symbol)
-	   (cl-ext-when destroy
-	       (--destroy-function symbol))
+	   (when destroy
+	     (--destroy-function symbol))
 	   finally do
-	   (cl-ext-when destroy
-	       (setplist base nil))))
+	   (when destroy
+	     (setplist base nil))))
+
+(define-obsolete-function-alias 'print-expr #'--print-expr "2025-03-10")
+
+(defun --princ-form (form sargs result &optional printcharfun)
+  ;; TODO: add documentation string
+  (let ((string (truncate-string-to-width (with-output-to-string (princ result))
+					  user-ext-debug-truncate-text-column
+					  nil nil t)))
+    (prog1 result
+      (princ (format "DEBUG: %S [%S] = %S"
+		     form `(,(car form) ,@sargs) result)
+	     printcharfun)
+      (princ "\n" printcharfun))))
+(define-obsolete-function-alias '--princ #'--princ-form "2025-09-10")
 
 ;;;###autoload
-(defmacro --print-expr (type form &optional printcharfun)
-  "Print the result of FORM.
-TYPE is used to indicate how FORM should be handled.
-Currently, it can be either symbol `var' or symbol `sexp'.
-PRINTCHARFUN is the output stream in which to print the
-result (see `princ').
+(defun --proclaim (spec)
+  "Record a global declaration.
 
-This macro emits a warning when it is byte compiled."
-  (declare (debug ([&or "var" "sexp"] sexp &optional form)))
-  (cl-ext-when (macroexp--compiling-p)
-      (--show-compiler-warning --print-expr))
-  (pcase type
-    ('var
-     (cl-check-type form symbol)
-     `(cl-ext-progn
-	(princ (format "DEBUG: %s = %S" (quote ,form) ,form) ,printcharfun)
-	(princ "\n" ,printcharfun)))
-    ('sexp
-     `(cl-ext-progn
-	(princ (format ,(concat "DEBUG: " (cl-prin1-to-string form) " = %S") ,form)
-	       ,printcharfun)
-	(princ "\n" ,printcharfun)))
-    (_ (error "Unknown type %S" type))))
-(define-obsolete-function-alias 'print-expr #'--print-expr "2025-03-10")
+- (debug-level LEVEL): Sets `user-ext-debug-level' to LEVEL."
+  (pcase spec
+    (`(debug-level ,level)
+     (cl-check-type level integer)
+     (setq user-ext-debug-level level))))
+
+;;;###autoload
+(defmacro --declare (&rest specs)
+  "Like `--proclaim' but SPECS are unquoted and unevaluated.
+SPECS are evaluated at both compile time, load time, and
+eval time."
+  (let ((body (mapcar (lambda (x) `(--proclaim ',x)) specs)))
+    (if (macroexp-compiling-p)
+	`(cl-eval-when (compile load eval) ,@body)
+      `(progn ,@body))))
 
 ;;;###autoload
 (defmacro --message (fmt &rest args)
   "Display a message when the buffer's level matches LEVEL.
 This uses `message' to display a message.
 
-The first argument is a format control string, and those
-after LEVEL are data to be formatted according to the
-string.  See `format-message' for details on how this works.
+The first argument is a format control string, and the rest
+are either keyword arguments or data to be formatted
+according to the string.  See `format-message' for details
+on how this works.
 
-The optional second argument LEVEL is an integer denoting
-the level at which the message should be displayed.
-If `user-ext-debug-level' is greater than or equal to LEVEL,
-then the message is displayed.
+The optional keyword :level specifies the level for which
+the message is visible.  LEVEL must be an integer: if
+`user-ext-debug-level' is greater than or equal to LEVEL,
+then the message is displayed.  LEVEL defaults to 3.
 
-\(fn FORMAT-STRING [LEVEL] ARGS...)"
-  (let* ((level (if (cl-member (car-safe args) '(1 2 3))
-		    (pop args) user-ext-debug-level))
-	 level-name)
-    (cl-ext-when (macroexp--compiling-p)
-	(--show-compiler-warning --message))
-    (cl-ext-when (>= user-ext-debug-level level)
-	(setq level-name (alist-ext-rget level user-ext-debug-level-name-mapping))
+\(fn FORMAT-STRING ARGS...)"
+  (let ((level (cl-ext-get-keyword-with-arg args :level 3))
+	level-name)
+    (when (macroexp-compiling-p)
+      (--show-compiler-warning --message))
+    (when (>= user-ext-debug-level level)
+      (setq level-name (alist-get level user-ext-debug-level-name-mapping))
       (cl-assert level-name)
       `(message ,fmt ,@args))))
 
@@ -147,21 +219,13 @@ then the message is displayed.
   (declare (obsolete nil "2025-03-22"))
   (indirect-function symbol))
 
-(defmacro --ignore (&rest _args)
-  "Do nothing and return nil.
-This accepts any number of arguments but never evaluates,
-both in runtime and during compilation. This effectively
-acts as a comment.
-
-This function emits a warning when it is byte compiled."
-  (declare (debug (&rest sexp)))
-  (--show-compiler-warning --ignore)
-  (list 'ignore t))
-
 (provide 'debug-ext)
 
 ;;; debug-ext.el ends here
 
 ;; Local Variables:
 ;; eval: (local-lambda-ext-define-self-insert-command doc/byte-compile-warning "This function emits a warning when it is byte compiled.")
+;; eval: (abbrev-ext-install-local-abbrev-functions)
+;; eval: (abbrev-ext-define-local-abbrev "dx" "debug-ext")
+;; eval: (abbrev-ext-define-local-abbrev "ux" "user-ext-debug")
 ;; End:

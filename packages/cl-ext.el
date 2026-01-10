@@ -3,6 +3,8 @@
 ;; ### Functions
 
 (require 'ert)
+(require 'dash)
+(require 'cl-lib)
 
 (defconst user-ext-cl-special-forms
   '(let let* prog1 prog2 progn save-current-buffer save-excursion
@@ -11,6 +13,12 @@
 This is a list of symbols which are special forms.  Any list
 whose car is one of these symbols will evaluate non-nil when
 passed `cl-ext--pcase-special-form'.")
+
+
+;; ### Functions
+
+(function-put #'cl-tagbody 'lisp-indent-function 'defun)
+(function-put #'cl-prog 'lisp-indent-function 1)
 
 (defun cl-ext--pcase-special-form (form)
   "Return non-nil if FORM is a special form.
@@ -25,6 +33,72 @@ special forms listed in `user-ext-cl-special-forms'."
 				user-ext-cl-special-forms)))))
      form)
     (_ nil)))
+
+(defun cl-ext--take-until-keyword (list)
+  (--take-while (not (keywordp it)) list))
+
+(cl-defun cl-ext--plist-remove (list key &optional (count 1))
+  "Remove KEY and COUNT elements after it from LIST.
+If COUNT is omitted or nil, it defaults to 1.
+
+Example:
+   (cl-ext--plist-remove \\='(1 :warn t 2 3 4) :warn 1)
+   =>
+   (1 2 3 4)
+
+
+\(fn LIST KEY [COUNT])"
+  (if-let ((idx1 (-elem-index key list))
+	   (idx2 (+ idx1 count)))
+      (cl-loop for item in list
+	       and i below (length list)
+	       unless (<= idx1 i idx2)
+	       collect item)
+    list))
+
+(defmacro cl-ext-get-keyword-no-arg (listvar key)
+  "Return KEY if it is is found in LISTVAR, nil otherwise.
+LISTVAR must a symbol; it is a variable containing a property
+list.
+KEY must be a keyword."
+  (declare (debug t))
+  (cl-check-type listvar symbol)
+  (cl-check-type key keyword)
+  `(when-let ((--props-- (plist-member ,listvar ,key)))
+     (prog1 (car --props--)
+       (setq ,listvar (cl-ext--plist-remove ,listvar ,key 0)))))
+
+;;;###autoload
+(defmacro cl-ext-get-keyword-with-arg (listvar key &optional default)
+  "Extract the value of keyword KEY from LISTVAR.
+LISTVAR must a symbol; it is a variable containing a
+property list.
+
+The result, if non-nil, is the element that directly follows
+KEY in LISTVAR.
+
+For example, let's say we have a variable called props containing
+the form
+   (:save t :count 2)
+
+The form
+   (cl-ext-get-keyword-with-arg props :save)
+yields t.
+
+The form
+   (cl-ext-get-keyword-with-arg props :count)
+yields 2."
+  (declare (debug t))
+  (cl-check-type listvar symbol)
+  (cl-check-type key keyword)
+  `(if-let ((--props-- (plist-member ,listvar ,key))
+	    (--args-- (cl-ext--take-until-keyword (cdr --props--))))
+       (cl-case (length --args--)
+	 (0 (error ,(format "Missing argument for keyword %S" key)))
+	 (otherwise
+	  (prog1 (car --args--)
+	    (setq ,listvar (cl-ext--plist-remove ,listvar ,key 1)))))
+     ,default))
 
 ;;;###autoload
 (defmacro cl-ext-when (cond first-form &rest body)
@@ -66,6 +140,7 @@ directly to an `if' form.
        (if (cl-ext--pcase-special-form first-form)
 	   `(if ,cond ,first-form)
 	 `(and ,cond ,first-form))))))
+(define-obsolete-function-alias 'cl-ext-when #'when "2025-09-17")
 
 ;;;###autoload
 (defmacro cl-ext-unless (cond first-form &rest body)
@@ -86,14 +161,15 @@ a result, the form
 
 expands to
 
-   (or n (<= n 0) n)
+   (or (and n nil) (<= n 0) n)
 
 If BODY is nil, and FIRST-FORM returns non-nil on the
 predicate `cl-ext--pcase-special-form', this expands
-directly to an ...
+directly to an `unless' form.
 
 \(fn COND FIRST-FORM BODY...)"
-  (declare (indent 2) (debug t))
+  ;; TODO: Update documentation
+  (declare (indent 1) (debug t))
   (if body
       `(unless ,cond
 	 ,first-form
@@ -102,11 +178,12 @@ directly to an ...
       (`(or . ,x)
        (if (cl-ext--pcase-special-form first-form)
 	   `(unless ,cond ,first-form)
-	 `(or ,@x ,first-form)))
+	 `(or (and (or ,@x) nil) ,first-form)))
       (_
        (if (cl-ext--pcase-special-form first-form)
 	   `(unless ,cond ,first-form)
 	 `(or ,cond ,first-form))))))
+(define-obsolete-function-alias 'cl-ext-unless #'unless "2025-09-10")
 
 ;;;###autoload
 (defmacro cl-ext-append (x place)
@@ -203,30 +280,59 @@ error message if provided."
 
 (defun cl-ext--cond-validate-clause (clause)
   (pcase clause
-    (`(,_condition . ,_body) t)
+    (`(,_condition . ,body)
+     (cl-ext-unless body
+	 (error "Invalid clause %S; body is empty" clause)))
     (_ (error "Invalid clause %S; must be of form (CONDITION BODY...)"
 	      clause))))
 
+(cl-defun cl-ext--cond-two-clauses (clause1 clause2 &rest r)
+  "
+
+\(fn (COND1 BODY1...) (COND2 BODY2...) [ARG...])"
+  (cl-ext-when r
+      (cl-return-from cl-ext--cond-two-clauses))
+  (cl-destructuring-bind (cond1 &rest body1) clause1
+    (cl-destructuring-bind (cond2 &rest body2) clause2
+      (if (eq cond2 t)
+	  (cl-ext-progn
+	    `(if ,cond1
+		 (progn ,@body1)
+	       ,@body2))
+	`(cond ,clause1
+	       ,clause2)))))
+
+;;;###autoload
 (defmacro cl-ext-cond (clause &rest clauses)
   "Try each clause until one succeeds.
 
 This works pretty much like `cond' (which see) except that
 it expands differently depending on how many clauses there
 are."
-  (declare (indent 1) (debug (cond-clause &rest cond-clause)))
-  (cl-ext-unless clause
-      (signal-wrong-argument clause "t or any valid form"))
-  (if-let (clauses)
+  (declare (debug ((form &rest form) &rest (form &rest form)))
+	   (indent defun))
+  (unless (and (listp clause) clause)
+    (signal-wrong-argument clause "Non-nil list"))
+  (if clauses
       (cl-ext-progn
-	(cl-loop for clause in clauses
-		 do (cl-ext--cond-validate-clause clause))
-	(push clause clauses)
-	`(cond ,@clauses))
+	(if-let ((exp (apply #'cl-ext--cond-two-clauses clause clauses)))
+	    (cl-ext-progn exp)
+	  (cl-loop for clause in clauses
+		   do (cl-ext--cond-validate-clause clause))
+	  (push clause clauses)
+	  `(cond ,@clauses)))
     (cl-ext--cond-validate-clause clause)
     (cl-destructuring-bind (condition &rest body) clause
       `(if ,condition
 	   (progn ,@body)))))
-(def-edebug-spec cond-clause ([&or "t" form] &rest form))
+
+(defmacro cl-ext-repeat-form (count form)
+  "Repeat FORM COUNT number of times."
+  (declare (debug (integerp sexp)))
+  (cl-check-type count integer)
+  (let ((body (cl-loop for i below count
+		       collect form)))
+    `(progn ,@body)))
 
 ;; ### Tests
 

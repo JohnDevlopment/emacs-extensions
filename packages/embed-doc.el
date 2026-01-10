@@ -35,7 +35,7 @@
   'embedded-symbol-documentation)
 
 (defconst embed-doc-keywords
-  '(:commands :customs :faces :functions :variables)
+  '(:commands :constants :customs :faces :functions :variables)
   "Valid keywords for `embed-doc-document-library'")
 
 ;; Functions
@@ -93,6 +93,8 @@ PREAMBLE is the first part of the documentation.
 :commands    Document commands (i.e., interactive functions).
 :customs     Document user options (i.e., variables defined
              with `defcustom').
+:constants   Document constants (i.e., variables defined with
+             with `defconst').
 :faces       Document faces (i.e., defined with `defface').
 :functions   Document functions.
 :variables   Document variables.
@@ -127,6 +129,8 @@ variables, and faces.
 	   (setq doc (embed-doc--string-section doc "Faces:" kwargs)))
 	  (:functions
 	   (setq doc (embed-doc--string-section doc "Functions:" kwargs)))
+	  (:constants
+	   (setq doc (embed-doc--string-section doc "Constants:" kwargs)))
 	  (:variables
 	   (setq doc (embed-doc--string-section doc "Variables:" kwargs))))))
     `(prog1 t
