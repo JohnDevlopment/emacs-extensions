@@ -1,5 +1,8 @@
 ;; -*- lexical-binding: t;  -*-
 
+(check-emacs-minimum-version "27.4")
+(extension-check-requires comment-tags)
+
 (require 'comment-tags)
 (require 'compat-28)
 
@@ -120,8 +123,7 @@ This is set once the global minor mode is enabled.")
 
 (define-key comment-tags-command-map (kbd "c") #'comment-tags-ext-add-todo)
 
-(provide 'comment-tags-ext)
-
+(extension-provide 'comment-tags-ext)
 ;;; comment-tags-ext ends here
 
 ;; Local Variables:
