@@ -42,6 +42,144 @@
     (t form)))
 
 
+;; --- Version-specific keymap functions
+
+(defun keymaps-ext--compat-check-key (key)
+  (cl-ext-cond
+    ((string-match (rx ?<
+		       (group (+ (seq (any "ACHMSs") ?-))) ; 1 = modifiers
+		       (group (+ (not ?>)))		   ; 2 = event
+		       ?>)
+		   key)
+     (format "%s<%s>" (match-string 1 key) (match-string 2 key)))
+    (t key)))
+(ert-deftest keymaps-ext-test-correct-key-string ()
+  "Test `keymaps-ext--compat-check-key'."
+  (should (string= (keymaps-ext--compat-check-key "<S-return>")
+		   "S-<return>"))
+  (should (string= (keymaps-ext--compat-check-key "<M-S-return>")
+		   "M-S-<return>")))
+
+(defun keymaps-ext-set-keymap (keymap key definition &optional where)
+  "In KEYMAP, define key sequence KEY for DEFINITION.
+KEYMAP is a keymap; it must satisfy the predicate `keymapp'.
+
+KEY is a string in the format accepted by `kbd' or that which
+satisfies `key-valid-p' (Emacs 29.1 and newer), or a vector
+of symbols.  Two types of vectors have special meanings:
+ [remap COMMAND] remaps the key binding for COMMAND.
+ [t] creates a default definition that applies to any event
+     for which there is no other definition in KEYMAP.
+
+DEFINITION is anything that can be a key's definition:
+- nil unsets the key in this keymap
+- a command (i.e., Lisp function suitable for interactive calling)
+- a string (treated as a keyboard macro)
+- a symbol (at the time key is looked up, the symbol's value
+  or function definition should contain one of the above)
+- a cons (STRING . DEFUN), meaning \"use DEFUN as the
+  function definition\"
+- another type of cons (MAP . CHAR), meaning \"use definition
+  of CHAR inside of keymap MAP\"
+- an extended menu definition
+
+WHERE controls the placement of DEFINITION in KEYMAP: If it
+is omitted or nil, place DEFINITION at the beginning of
+KEYMAP.  If WHERE is t or \\=`end', place DEFINITION at the
+end of KEYMAP.  Otherwise, WHERE is expected to be an event
+type, i.e., of the same type as KEY; in such a case, place
+DEFINITION after the binding for WHERE.
+
+In Emacs version 29.1 and above, this calls `keymap-set'
+internally; in older versions, this calls `define-key'."
+  (cl-check-type keymap keymap)
+  (setq key (keymaps-ext--compat-check-key key))
+  (emacs-version-cond-when-compile
+    ((>= "29.1")
+     (cl-check-type key key)
+     (if where
+	 (keymap-set-after keymap key definition
+	   (pcase where
+	     ((or 't 'end) t)
+	     (w w)))
+       (keymap-set keymap key definition)))
+    (t (if where
+	   (define-key-after keymap key definition
+	     (pcase where
+	       ((or 't 'end) t)
+	       (w w)))
+	 (define-key keymap-map (kbd key) definition)))))
+(define-obsolete-function-alias 'set-keymap 'keymaps-ext-set-keymap "2026-01-13")
+(--ignore
+  (let ((symbol (intern-soft
+		 (completing-read "Function: "
+				  '(keymaps-ext-set-keymap)))))
+    (prog1 nil
+      (with-current-buffer (get-buffer-create "*output*")
+	(emacs-lisp-mode)
+	(cl-prettyprint
+	 (condition-case result
+	     (symbol-function symbol)
+	   (error (error-message-string result))))
+	(run-with-idle-timer 0.2 nil #'activate-view-mode 1)
+	(set-buffer-modified-p nil))
+      (pop-to-buffer "*output*" t)
+      (call-interactively #'menu-bar--toggle-truncate-long-lines)))
+  t)
+
+(defun keymaps-ext-set-keymap-global (key command &optional interactive)
+  "Give KEY a global binding as COMMAND.
+KEY is of the same type as its same-name argument in
+`keymaps-ext-set-keymap', which see.
+COMMAND is the command definition to use; usually it is a
+symbol naming an interactive function.  However, it can take
+any form supported by DEFINITION in `keymaps-ext-set-keymap'.
+
+Note that if KEY has a local binding in the current buffer,
+it will continue to shadow the global binding.
+
+In Emacs version 29.1 and above, this calls `keymap-global-set'
+internally; in older versions, this calls `global-set-key'."
+  (declare (advertised-calling-convention (key command) "2026-01-13"))
+  (interactive (list nil nil t))
+  (setq key (and key (keymaps-ext--compat-check-key key)))
+  (emacs-version-cond-when-compile
+    ((>= "29.1")
+     (if interactive
+	 (call-interactively #'keymap-global-set)
+       (keymap-global-set key command)))
+    (t (if interactive
+	   (call-interactively #'global-set-key)
+	 (global-set-key (kbd key) command)))))
+(define-obsolete-function-alias 'set-keymap-global 'keymaps-ext-set-keymap-global "2026-01-14")
+
+(defun keymaps-ext-set-keymap-local (key command &optional interactive)
+  "Give KEY a local binding as COMMAND.
+KEY is of the same type as its same-name argument in
+`keymaps-ext-set-keymap', which see.
+COMMAND is the command definition to use; usually it is a
+symbol naming an interactive function.  However, it can take
+any form supported by DEFINITION in `keymaps-ext-set-keymap'.
+
+The binding goes in the current buffer's local map, which in
+most cases is the current buffer's major mode's map.
+
+In Emacs version 29.1 and above, this calls `keymap-local-set'
+internally; in older versions, this calls `local-set-key'."
+  (declare (advertised-calling-convention (key command) "2026-01-13"))
+  (interactive (list nil nil t))
+  (setq key (and key (keymaps-ext--compat-check-key key)))
+  (emacs-version-cond-when-compile
+    ((>= "29.1")
+     (if interactive
+	 (call-interactively #'keymap-local-set)
+       (keymap-local-set key command)))
+    (t (if interactive
+	   (call-interactively #'local-set-key)
+	 (local-set-key (kbd key) command)))))
+(define-obsolete-function-alias 'set-keymap-local 'keymaps-ext-set-keymap-local "2026-01-13")
+
+
 ;; --- Define Contextual Keys
 
 (defun --contextual-key-func-warning (function value)
