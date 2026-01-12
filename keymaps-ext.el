@@ -4,6 +4,7 @@
 
 (require 'ido)
 (require 's)
+(require 'dash)
 
 (eval-when-compile
   (require 'subr-x))
@@ -113,7 +114,9 @@ S         shift"
       (`(,_choice1 . ,_choices)
        (->
 	(ido-completing-read
-	 "Function: " (mapcar (lambda (s) (symbol-name s)) choices)
+	 "Function: "
+	 (mapcar (lambda (s) (symbol-name s))
+		 (-filter #'fboundp choices))
 	 nil t)
 	(intern)
 	(list arg)))
