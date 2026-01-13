@@ -35,17 +35,18 @@
 - The name of the extension without the ~-ext~ (e.g., ~sh~)
   - Exceptions
     - ~extensions~: referred to as ~main~
-    - Extensions with no ~-ext~suffix
+    - Extensions with no ~-ext~ suffix
       - ~errors~
       - ~general~
       - ~local-lambda~
-  - For extensions that implement some external feature (such as a minor mode),
-    append a ~/X~, with ~X~ being one of the following:
-    - Hs minor mode --- e.g., ~sh/hs~
-    - Skeletons --- e.g., ~sh/skeletons~
-    - Ert tests --- e.g., ~pkg:cl/ert~
+  - when the scope is ~keymaps~, the subscope refers to one of:
   - For ~polymode-ext~ in particular, the "subscope" can is the name of a polymode
     - e.g., ~polymode/sh~ for Shell script mode
+- For extensions that implement some external feature (such as a minor mode),
+  append a ~/X~, with ~X~ being one of the following:
+  - Hs minor mode --- e.g., ~sh/hs~
+  - Skeletons --- e.g., ~sh/skeletons~
+  - Ert tests --- e.g., ~pkg:cl/ert~
 
 If the subject line would be empty, it may be replaced with the scope, like so:
 ~[REFACTOR] General~
