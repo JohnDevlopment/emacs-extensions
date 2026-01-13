@@ -1,6 +1,6 @@
 ;;; embed-doc.el --- Embed documentation in libraries  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2025  John
+;; Copyright (C) 2025, 2026  John
 
 ;; Author: John <john@john-System-Product-Name>
 ;; Keywords: docs, extensions
