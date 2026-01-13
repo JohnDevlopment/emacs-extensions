@@ -447,6 +447,12 @@ evaluated.
 		 ,@body)
 	     (file-missing (message "Failed to load %S: %S" (quote ,feature) err)))))))
 
+(defun --make-sure-user-actually-wants-to-quit ()
+  (y-or-n-p-with-timeout
+   (substitute-command-keys
+    "You hit \\[save-buffers-kill-terminal]. Did you mean to quit Emacs (default n in 3 seconds)? ")
+   3 nil))
+
 ;; shortdoc
 (with-emacs-version >= "28.1"
   (define-short-documentation-group user-extensions/main
