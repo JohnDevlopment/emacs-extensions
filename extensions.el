@@ -219,7 +219,7 @@ and on any other version will expand to 3.
 	    (`(t . ,body)
 	     (cl-return body))
 	    (_ (error "Invalid form: %S" condition))))))
-    (car code)))
+    `(progn ,@code)))
 
 (defsubst signal-disabled (extension)
   "Signal that EXTENSION is disabled."
