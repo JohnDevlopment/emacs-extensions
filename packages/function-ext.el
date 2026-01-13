@@ -35,9 +35,6 @@
 			 (x (error "Invalid form %S: must be symbol, function or lambda" x)))
      ,docstring))
 
-;; (defmacro fext-rename-function (symbol new-symbol)
-;;   )
-
 ;;;###autoload
 (defmacro fext-replace-function (symbol file arglist &optional docstring &rest body)
   "Replace the function definition of SYMBOL.
@@ -97,6 +94,8 @@ compiler.
 					     `',code
 					   code)))
 	    (defun ,symbol ,arglist ,docstring ,@body))))))
+(with-emacs-version > "27"
+  (make-obsolete 'fext-replace-function 'fext-defadvice "2026-01-12"))
 
 ;;;###autoload
 (defmacro fext-defadvice (function args &rest body)
