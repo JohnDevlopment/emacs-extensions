@@ -35,7 +35,7 @@
   'embedded-symbol-documentation)
 
 (defconst embed-doc-keywords
-  '(:commands :constants :customs :faces :functions :variables)
+  '(:commands :constants :customs :faces :functions :types :variables)
   "Valid keywords for `embed-doc-document-library'")
 
 ;; Functions
@@ -108,6 +108,7 @@ variables, and faces.
 			  [&optional ":customs" &rest symbolp]
 			  [&optional ":faces" &rest symbolp]
 			  [&optional ":functions" &rest symbolp]
+			  [&optional ":types" &rest symbolp]
 			  [&optional ":variables" &rest symbolp]))
 	   (indent 1))
   (cl-check-type symbol symbol)
@@ -123,14 +124,16 @@ variables, and faces.
 	(pcase keyword
 	  (:commands
 	   (setq doc (embed-doc--string-section doc "Commands:" kwargs)))
+	  (:constants
+	   (setq doc (embed-doc--string-section doc "Constants:" kwargs)))
 	  (:customs
 	   (setq doc (embed-doc--string-section doc "User Options:" kwargs)))
 	  (:faces
 	   (setq doc (embed-doc--string-section doc "Faces:" kwargs)))
 	  (:functions
 	   (setq doc (embed-doc--string-section doc "Functions:" kwargs)))
-	  (:constants
-	   (setq doc (embed-doc--string-section doc "Constants:" kwargs)))
+	  (:types
+	   (setq doc (embed-doc--string-section doc "Types:" kwargs)))
 	  (:variables
 	   (setq doc (embed-doc--string-section doc "Variables:" kwargs))))))
     `(prog1 t
