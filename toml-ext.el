@@ -1,7 +1,7 @@
 ;; -*- lexical-binding: t; -*-
 
 (check-emacs-minimum-version "27.4")
-
+(extension-check-requires toml-mode json-mode)
 
 (eval-when-compile
   (require 'toml-mode)
