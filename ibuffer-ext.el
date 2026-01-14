@@ -10,16 +10,12 @@
 
 (eval-and-compile
   (embed-doc-document-symbol ibuffer-ext
-    "IBuffer mode extension.
-
-This extension defines the `ibuffer-filter-spec' widget for
-use with user options dealing with filters and filter groups."
+    "IBuffer extension."
     :commands
     ibuffer-ext-buffer-name
+    ibuffer-ext-do-change-major-mode
     ibuffer-ext-insert-independent-filter-group
-    ibuffer-ext-toggle-current-filter-group
-    :customs
-    user-ext-ibuffer-global-filter-groups))
+    ibuffer-ext-toggle-current-filter-group))
 
 
 ;; ### Customization
