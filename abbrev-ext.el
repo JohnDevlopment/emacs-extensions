@@ -280,6 +280,8 @@ argument means to undefine the specified abbrev."
 (define-abbrev global-abbrev-table "regex" "regular expression" #'abbrev-ext-insert-hook :system t)
 (define-abbrev global-abbrev-table "regexs" "regular expressions" #'abbrev-ext-insert-hook :system t)
 
+
+(extension-provide 'abbrev-ext)
 ;; Local Variables:
 ;; eval: (abbrev-ext-install-local-abbrev-functions)
 ;; eval: (abbrev-ext-define-local-abbrev "ax" "abbrev-ext")
