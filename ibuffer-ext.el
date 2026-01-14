@@ -79,7 +79,7 @@ which see."
   (when-let ((buf (ibuffer-current-buffer t)))
     (message "Buffer: %s" (buffer-name buf))))
 
-(fext-replace-function ibuffer-visit-buffer "ibuffer-ext" (&optional single)
+(fext-defadvice ibuffer-visit-buffer (override ibuffer-visit-buffer (&optional single))
   "Visit the buffer on this line.
 If optional argument SINGLE is non-nil, then also ensure
 there is only one window.
