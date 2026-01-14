@@ -225,6 +225,34 @@ and on any other version will expand to 3.
   "Signal that EXTENSION is disabled."
   (signal 'extension-disabled (list extension)))
 
+(defmacro eval-after-require (feature &optional first-form &rest body)
+  "Attempt to load FEATURE and eval BODY if it succeeds.
+If the file provuding FEATURE cannot be found, an error
+message is provided.  On success, the BODY forms are
+evaluated.
+
+\(fn FEATURE [IGNORE-ERRORS] BODY...)"
+  (declare (indent defun) (debug (symbolp [&optional booleanp] body)))
+  `(progn
+     ,@(if (and (booleanp first-form) first-form)
+	   `((ignore-errors
+	       (prog1 (require (quote ,feature))
+		 ,@body)))
+	 `((condition-case err
+	       (prog1 (require (quote ,feature))
+		 ,first-form
+		 ,@body)
+	     (file-missing (message "Failed to load %S: %S" (quote ,feature) err)))))))
+
+(defun --make-sure-user-actually-wants-to-quit ()
+  (y-or-n-p-with-timeout
+   (substitute-command-keys
+    "You hit \\[save-buffers-kill-terminal]. Did you mean to quit Emacs (default n in 3 seconds)? ")
+   3 nil))
+
+
+;; --- Extension loading/checking
+
 (defun extension-provide (extension &optional subextensions)
   "Announce that EXTENSION is loaded.
 The optional argument SUBEXTENSIONS should be a list of
@@ -428,32 +456,9 @@ point."
 				    extension)
 			      (called-interactively-p 'interactive)))))))
 
-(defmacro eval-after-require (feature &optional first-form &rest body)
-  "Attempt to load FEATURE and eval BODY if it succeeds.
-If the file provuding FEATURE cannot be found, an error
-message is provided.  On success, the BODY forms are
-evaluated.
+
+;; --- Shortdoc
 
-\(fn FEATURE [IGNORE-ERRORS] BODY...)"
-  (declare (indent defun) (debug (symbolp [&optional booleanp] body)))
-  `(progn
-     ,@(if (and (booleanp first-form) first-form)
-	   `((ignore-errors
-	       (prog1 (require (quote ,feature))
-		 ,@body)))
-	 `((condition-case err
-	       (prog1 (require (quote ,feature))
-		 ,first-form
-		 ,@body)
-	     (file-missing (message "Failed to load %S: %S" (quote ,feature) err)))))))
-
-(defun --make-sure-user-actually-wants-to-quit ()
-  (y-or-n-p-with-timeout
-   (substitute-command-keys
-    "You hit \\[save-buffers-kill-terminal]. Did you mean to quit Emacs (default n in 3 seconds)? ")
-   3 nil))
-
-;; shortdoc
 (with-emacs-version >= "28.1"
   (define-short-documentation-group user-extensions/main
     "Finding & Loading"
