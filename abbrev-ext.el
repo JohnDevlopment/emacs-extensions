@@ -266,10 +266,10 @@ argument means to undefine the specified abbrev."
 
 ;; ### Keymap
 
-(bind-keys ("C-x a L" . abbrev-ext-add-local-abbrev)
-	   ("C-x a I" . abbrev-ext-install-local-abbrev-functions)
-	   ("C-x a i L" . abbrev-ext-inverse-add-local-abbrev)
-	   ("C-x a G" . abbrev-ext-add-global-abbrev))
+(keymaps-ext-set-keymap-global "C-x a I" #'abbrev-ext-install-local-abbrev-functions)
+(keymaps-ext-set-keymap-global "C-x a i L" #'abbrev-ext-inverse-add-local-abbrev)
+(keymaps-ext-set-keymap-global "C-x a L" #'abbrev-ext-add-local-abbrev)
+(keymaps-ext-set-keymap-global "C-x a G" #'abbrev-ext-add-global-abbrev)
 
 
 ;; ### System Abbrevs
