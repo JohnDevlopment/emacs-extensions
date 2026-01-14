@@ -527,16 +527,12 @@ evaluated.
 (load-extension "types")
 (load-extension "errors")
 (load-extension "general")
-(emacs-version-cond
-  ((< "29.1")
-   (unless (featurep 'use-package)
-     (display-warning
-      'user-extensions
-      "`use-package' is required")
-     (cl-return))
-   (load-extension-safe "keymaps-ext"))
-  ((>= "29.1")
-   (load-extension-safe "keymaps-ext")))
+(with-emacs-version < "29"
+  (unless (featurep 'use-package)
+    (display-warning
+     'user-extensions
+     "`use-package' is required")))
+(load-extension-safe "keymaps-ext")
 
 
 ;; --- Bootstraps for external packages
