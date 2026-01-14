@@ -10,20 +10,21 @@
 (require 'dash)
 
 (eval-and-compile
-  (embed-doc-document-symbol types
-    "Custom types.
-
-Types:
-- `list-or-null'
-- `marker-or-null'
-- `integer-or-null'
-- `string-or-null'
-- `unsigned-byte'
-- `seconds-type'
-- `alist'"
-    :functions
-    alist-p
-    alist-of))
+  (eval `(embed-doc-document-symbol types
+	   "Custom types."
+	   :types
+	   list-or-null
+	   marker-or-null
+	   integer-or-null
+	   string-or-null
+	   unsigned-byte
+	   seconds-type
+	   alist
+	   keymap
+	   ,(with-emacs-version >= "29.1" 'key)
+	   :functions
+	   alist-p
+	   alist-of)))
 
 (defun alist-p (obj)
   "Return t if OBJ is a valid alist."
@@ -53,6 +54,9 @@ Types:
   `(integer 0 ,(if (eq bits '*) bits (1- (ash 1 bits)))))
 (cl-deftype seconds-type () '(or (integer 1 *) (float 0.01 *)))
 (cl-deftype alist () '(satisfies alist-p))
+(cl-deftype keymap () '(satisfies keymapp))
+(with-emacs-version >= "29.1"
+  (cl-deftype key () '(satisfies key-valid-p)))
 
 (extension-provide 'types-ext)
 ;;; types-ext.el ends here
