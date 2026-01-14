@@ -61,6 +61,10 @@ which see."
 
 ;; ### Advice
 
+(defun ibuffer-ext--after-operation (&rest _r)
+  "Used as :after advice for operations."
+  (ibuffer-unmark-all-marks))
+
 (advice-add #'ibuffer-do-revert :after #'ibuffer-ext--after-operation)
 (advice-add #'ibuffer-do-eval :after #'ibuffer-ext--after-operation)
 
@@ -68,16 +72,6 @@ which see."
   "Activate View mode after visiting buffer."
   (interactive)
   (view-mode 1))
-
-
-;; ### Functions
-
-(defun ibuffer-ext-buffer-name ()
-  "Display the name of the buffer on this line."
-  (declare (interactive-only t))
-  (interactive)
-  (when-let ((buf (ibuffer-current-buffer t)))
-    (message "Buffer: %s" (buffer-name buf))))
 
 (fext-defadvice ibuffer-visit-buffer (override ibuffer-visit-buffer (&optional single))
   "Visit the buffer on this line.
@@ -92,9 +86,15 @@ When called interactively, SINGLE is the prefix argument."
     (when single
       (delete-other-windows))))
 
-(defun ibuffer-ext--after-operation (&rest _r)
-  "Used as :after advice for operations."
-  (ibuffer-unmark-all-marks))
+
+;; ### Functions
+
+(defun ibuffer-ext-buffer-name ()
+  "Display the name of the buffer on this line."
+  (declare (interactive-only t))
+  (interactive)
+  (when-let ((buf (ibuffer-current-buffer t)))
+    (message "Buffer: %s" (buffer-name buf))))
 
 (defun ibuffer-ext-do-change-major-mode (mode)
   "Change the major mode of marked buffers to MODE."
@@ -122,18 +122,11 @@ NAME must be the string name of a filter group defined in
 	       (group (nth idx fgroups)))
       
       (cl-pushnew group ibuffer-filter-groups)
-      (ibuffer-update nil t)
+      (emacs-version-cond-when-compile
+	((> "27")
+	 (ibuffer-filter-disable))
+	(t (ibuffer-update nil t)))
       (message "Inserted independent filter group %S" name))))
-(--ignore
- (defun temp--ibuffer-ext-insert-independent-filter-group (value)
-   (prog1 nil
-     (with-current-buffer (get-buffer-create "*output*")
-       (emacs-lisp-mode)
-       (cl-prettyprint value)
-       (run-with-idle-timer 0.2 nil #'activate-view-mode 1)
-       (set-buffer-modified-p nil))
-     (pop-to-buffer "*output*" t)))
- t)
 
 ;;;###autoload
 (defun ibuffer-ext-toggle-current-filter-group ()
