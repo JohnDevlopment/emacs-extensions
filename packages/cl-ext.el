@@ -72,50 +72,6 @@ Example:
 	       collect item)
     list))
 
-(defmacro cl-ext-get-keyword-no-arg (listvar key)
-  "Return KEY if it is is found in LISTVAR, nil otherwise.
-LISTVAR must a symbol; it is a variable containing a property
-list.
-KEY must be a keyword."
-  (declare (debug t))
-  (cl-check-type listvar symbol)
-  (cl-check-type key keyword)
-  `(when-let ((--props-- (plist-member ,listvar ,key)))
-     (prog1 (car --props--)
-       (setq ,listvar (cl-ext--plist-remove ,listvar ,key 0)))))
-
-;;;###autoload
-(defmacro cl-ext-get-keyword-with-arg (listvar key &optional default)
-  "Extract the value of keyword KEY from LISTVAR.
-LISTVAR must a symbol; it is a variable containing a
-property list.
-
-The result, if non-nil, is the element that directly follows
-KEY in LISTVAR.
-
-For example, let's say we have a variable called props containing
-the form
-   (:save t :count 2)
-
-The form
-   (cl-ext-get-keyword-with-arg props :save)
-yields t.
-
-The form
-   (cl-ext-get-keyword-with-arg props :count)
-yields 2."
-  (declare (debug t))
-  (cl-check-type listvar symbol)
-  (cl-check-type key keyword)
-  `(if-let ((--props-- (plist-member ,listvar ,key))
-	    (--args-- (cl-ext--take-until-keyword (cdr --props--))))
-       (cl-case (length --args--)
-	 (0 (error ,(format "Missing argument for keyword %S" key)))
-	 (otherwise
-	  (prog1 (car --args--)
-	    (setq ,listvar (cl-ext--plist-remove ,listvar ,key 1)))))
-     ,default))
-
 ;;;###autoload
 (defmacro cl-ext-when (cond first-form &rest body)
   "If COND yields non-nil, do FIRST-FORM and BODY, else return nil.
@@ -334,6 +290,91 @@ are."
 		       collect form)))
     `(progn ,@body)))
 
+
+;; --- Keyword argument parsing
+
+(defun cl-ext--format-args-alist (list-or-alist)
+  (cl-check-type list-or-alist (or alist list))
+  (if (alist-p list-or-alist)
+      list-or-alist
+    (let ((alist (-partition-before-pred (## keywordp %1) list-or-alist)))
+      (unless (keywordp (car (nth 0 alist)))
+	(push :positional-args (nth 0 alist)))
+      alist)))
+
+(defmacro cl-ext-format-args-alist (listvar)
+  "Format the value of LISTVAR (a list) into an alist.
+LISTVAR is a symbol, the name of a variable containing a
+list.
+
+LISTVAR's value is changed to a list where each item has the
+form (KEYWORD ARG...).  If the first item does not have a
+KEYWORD, then :positional-args is added to it as the key,
+such that
+   (a)
+becomes
+   (:positional-args a)
+
+This should be used at the beginning of any function that
+uses `cl-ext-get-keyword-with-arg', `cl-ext-get-keyword-no-arg',
+or `cl-ext-get-keyword-with-n-args'."
+  (declare (debug t))
+  (cl-check-type listvar symbol)
+  `(setq ,listvar (cl-ext--format-args-alist ,listvar)))
+
+(defun cl-ext--keyword-values (list key &optional count)
+  "Return a sublist of COUNT elements following keyword KEY in LIST.
+If COUNT is non-nil, return that many elements following
+KEY; if it is nil, return the whole sublist."
+  (declare (pure t) (side-effect-free t))
+  (cl-check-type count (or (integer 0 *) null))
+  (let ((parts (cl-ext--format-args-alist list)))
+    (when-let ((sl (assq key parts)))
+      (pcase-let* ((`(,kw . ,args) sl)
+		   (diff (if count (- count (length args)) 0)))
+	(when (> diff 0)
+	  (setq args (append args (-repeat diff :missing))))
+	(pcase count
+	  (0 t)
+	  ('nil args)
+	  (_ (-take count args)))))))
+
+;;;###autoload
+(defmacro cl-ext-get-keyword-no-arg (alistvar key)
+  "Return t if KEY is found in ALISTVAR, nil otherwise.
+ALISTVAR is the name of a variable containing an alist, a
+symbol.
+KEY is a keyword used to search the alist."
+  (cl-check-type alistvar symbol)
+  (cl-check-type key keyword)
+  `(cl-ext--keyword-values ,alistvar ,key 0))
+
+;;;###autoload
+(defmacro cl-ext-get-keyword-with-arg (alistvar key)
+  "Extract the value of KEY from ALISTVAR.
+ALISTVAR is the name of a variable containing an alist, a
+symbol.
+The result, if non-nil, is the element that directly follows
+KEY in ALISTVAR."
+  (declare (debug t))
+  (cl-check-type alistvar symbol)
+  (cl-check-type key keyword)
+  `(car (cl-ext--keyword-values ,alistvar ,key 1)))
+
+;;;###autoload
+(defmacro cl-ext-get-keyword-with-n-args (alistvar key count)
+  "Extract COUNT values if keyword KEY from ALISTVAR."
+  (declare (debug t))
+  (cl-check-type count (or (integer 0 *) symbol))
+  (and (symbolp count)
+       (not (eq count '*))
+       (error "Invalid symbol %S, can only be \\=`*'" count))
+  (cl-check-type alistvar symbol)
+  (cl-check-type key keyword)
+  `(cl-ext--keyword-values ,alistvar ,key
+			   ,@(and (integerp count) (list count))))
+
+
 ;; ### Tests
 
 (ert-deftest cl-ext-test-append ()
@@ -363,3 +404,9 @@ are."
 
 (provide 'cl-ext)
 ;;; cl-ext.el ends here
+
+;; Local Variables:
+;; eval: (abbrev-ext-install-local-abbrev-functions)
+;; eval: (abbrev-ext-define-local-abbrev "cx" "cl-ext")
+;; eval: (abbrev-ext-define-local-abbrev "ux" "user-ext-cl")
+;; End:
