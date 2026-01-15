@@ -20,6 +20,22 @@ passed `cl-ext--pcase-special-form'.")
 (function-put #'cl-tagbody 'lisp-indent-function 'defun)
 (function-put #'cl-prog 'lisp-indent-function 1)
 
+;;;###autoload
+(defmacro cl-ext-progn (&rest body)
+  "Eval BODY forms sequentially and return value of last one.
+
+This expansion changes to different things depending on how
+many elements BODY has: if 0, this expands to a single call
+to \`(ignore)'; if 1, to just that element; if 2 or greater,
+this behaves exactly like `progn'.
+
+\(fn BODY...)"
+  (declare (indent 0) (debug t))
+  (pcase (length body)
+    (0 '(ignore))
+    (1 (car body))
+    (_ `(progn ,@body))))
+
 (defun cl-ext--pcase-special-form (form)
   "Return non-nil if FORM is a special form.
 Return non-nil if FORM is a list whose car is one of the
@@ -249,22 +265,6 @@ Any errors are caught and printed as simple messages.
      (goto-char user-ext-cl--point)
      user-ext-cl--result))
 (define-obsolete-function-alias 'cl-save-point #'cl-ext-save-point "2025.02.02")
-
-;;;###autoload
-(defmacro cl-ext-progn (&rest body)
-  "Eval BODY forms sequentially and return value of last one.
-
-This expansion changes to different things depending on how
-many elements BODY has: if 0, this expands to a single call
-to \`(ignore)'; if 1, to just that element; if 2 or greater,
-this behaves exactly like `progn'.
-
-\(fn BODY...)"
-  (declare (indent 0) (debug t))
-  (pcase (length body)
-    (0 '(ignore))
-    (1 (car body))
-    (_ `(progn ,@body))))
 
 ;;;###autoload
 (defmacro cl-ext-check-type (form type &optional string)
