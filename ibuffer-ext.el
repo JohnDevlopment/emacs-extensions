@@ -2,13 +2,11 @@
 
 (check-emacs-minimum-version "27.1")
 
-(require 'ibuffer)
-
-(eval-when-compile
-  (require 'alist-ext)
-  (require 'function-ext))
-
 (eval-and-compile
+  (require 'ibuffer)
+  (require 'alist-ext)
+  (require 'function-ext)
+
   (embed-doc-document-symbol ibuffer-ext
     "IBuffer extension."
     :commands
