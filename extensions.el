@@ -261,7 +261,7 @@ symbols listing subextensions which are also loaded."
     (prog1 extension
       (setf (alist-get extension extension-features) subextensions))))
 
-(defun extensionp (extension &optional subextension)
+(defun extensionp (extension &optional subextension interactive-p)
   "Return non-nil if EXTENSION is loaded.
 
 Use this to conditionalize execution of Lisp code based on
@@ -269,14 +269,26 @@ whether EXTENSION is loaded or not.
 Use `extension-provide' to declare that an extension is loaded.
 This function looks at the value of `extension-features'.
 The optional argument SUBEXTENSION can be used to check for
-a specific subextension."
-  (declare (side-effect-free t))
-  (when-let ((ext (assq extension extension-features)))
-    (if subextension
-	(cl-ext-progn
-	  (and subextension
-	       (and (-elem-index subextension ext) t)))
-      (and (car ext) t))))
+a specific subextension.
+
+When called interactively, the user is prompted for the
+extension but unable to spexify SUBEXTENSION."
+  (declare (side-effect-free t)
+	   (advertised-calling-convention (extension &optional subextension)
+					  "2026-01-15"))
+  (interactive (append (--extension-completion "Extension: ")
+		       (list nil t)))
+  (if interactive-p
+      (let ((extension (intern extension)))
+	(if (assq extension extension-features)
+	    (message "Extension `%S' is loaded" extension)
+	  (message "Extension `%S' is not loaded" extension)))
+    (when-let ((ext (assq extension extension-features)))
+      (if subextension
+	  (cl-ext-progn
+	    (and subextension
+		 (and (-elem-index subextension ext) t)))
+	(and (car ext) t)))))
 
 (defmacro extension-check-requires (&rest requirements)
   "Declare that EXTENSION depends on REQUIREMENTS.
