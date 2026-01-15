@@ -57,7 +57,8 @@ compiler.
 	   (debug (&define name stringp (&rest arg)
 			   [&optional stringp]
 			   [&or ":remove" [":definition" symbolp]
-				def-body])))
+				def-body]))
+	   (obsolete fext-defadvice "2026-01-12"))
   (cl-check-type file (or string null))
   (cl-check-type symbol symbol)
   (cl-check-type arglist (or list null))
