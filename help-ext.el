@@ -10,27 +10,29 @@
   (declare-function help-ext-command "help-ext")
   (defvar help-ext-command))
 
-(eval-and-compile
-  (define-prefix-command 'help-ext-command)
-  (global-set-key (kbd "C-h M") #'help-ext-command)
+
+;; ### Keymaps
 
-  ;; Subject lookup
-  (define-key help-ext-command (kbd "l") #'elisp-index-search)
-  (define-key help-ext-command (kbd "u") #'emacs-index-search)
+;; Subject lookup
+(define-prefix-command 'help-ext-command-map)
+(keymaps-ext-set-keymap-global "C-h M-c" help-ext-command-map)
+(keymaps-ext-set-keymap help-ext-command-map "l" #'elisp-index-search)
+(keymaps-ext-set-keymap help-ext-command-map "u" #'emacs-index-search)
 
-  (define-prefix-command 'help-ext-apropos-map)
-  (global-set-key (kbd "C-h A") #'help-ext-apropos-map)
-  (define-key help-ext-apropos-map (kbd "o") #'apropos)
-  (define-key help-ext-apropos-map (kbd "l") #'apropos-library)
-  (define-key help-ext-apropos-map (kbd "v") #'apropos-variable))
+(define-prefix-command 'help-ext-apropos-map)
+(keymaps-ext-set-keymap-global "C-h A" #'help-ext-apropos-map)
+(keymaps-ext-set-keymap help-ext-apropos-map "o" #'apropos)
+(keymaps-ext-set-keymap help-ext-apropos-map "l" #'apropos-library)
+(keymaps-ext-set-keymap help-ext-apropos-map "v" #'apropos-variable)
 
-;; Hook
+;; ### Hook
 
 (defun help-ext--search (regexp &optional _x)
   (cl-ext-save-point
     (goto-char (point-min))
     (re-search-forward regexp (line-end-position) t)))
 
+;;;###autoload
 (defun help--extra-hook ()
   (run-with-idle-timer
    0.1 nil
@@ -45,10 +47,7 @@
 	      (setq word-wrap nil)
 	      (toggle-truncate-lines 1)))))))
 
-(--ignore
- (cl-prettyprint (symbol-function 'help--extra-hook))
- t)
-
+;;;###autoload
 (add-hook 'help-mode-hook #'help--extra-hook)
 
 (extension-provide 'help-ext)
