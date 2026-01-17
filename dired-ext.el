@@ -43,18 +43,18 @@ individually, so list-sorting options are pointless."
     (pop-to-buffer-same-window newbuf)
     (kill-buffer curbuf)))
 
-(defun dired-ext-find-alternate-updir ()
-  "In Dired, find alternate file in parent directory."
-  (emacs-version-cond-when-compile
-    ((>= "29")
-     (interactive nil dired-mode))
-    (t (interactive nil)))
-  (dired-ext--barf-if-not-dired-mode)
-  (when (derived-mode-p 'dired-mode)
-    ;; (dired-listing-switches dired-actual-switches)
-    ;; (find-alternate-file "..")
-    ;; dired-actual-switches
-    (dired-alternate "..")))
+(emacs-version-cond-when-compile
+  ((>= "29")
+   (defun dired-ext-find-alternate-updir ()
+     "In Dired, find alternate file in parent directory."
+     (interactive nil dired-mode)
+     (dired-ext--barf-if-not-dired-mode)
+     (dired-alternate "..")))
+  (t (defun dired-ext-find-alternate-updir ()
+       "In Dired, find alternate file in parent directory."
+       (interactive nil)
+       (dired-ext--barf-if-not-dired-mode)
+       (dired-alternate ".."))))
 
 (defun dired-dirs (dirname &optional _switches)
   "\"Edit\" directory DIRNAME like `dired', but list only directories.
