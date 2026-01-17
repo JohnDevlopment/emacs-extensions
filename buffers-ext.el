@@ -23,6 +23,31 @@
   buffer-string-no-properties
   with-tmpbuf)
 
+(with-emacs-version >= "28.1"
+  (define-short-documentation-group user-extensions/buffers
+    "Killing Buffers"
+    (kill-buffers
+     :no-manual t
+     :no-value (kill-buffers "\\`\\*Customize.*"))
+    (kill-certain-temp-buffers
+     :no-manual t
+     :no-value (kill-certain-temp-buffers))
+    (kill-customization-buffers
+     :no-manual t
+     :no-value (kill-customization-buffers))
+    "Misc"
+    (revert-all-buffers
+     :no-manual t
+     :no-value (revert-all-buffers))
+    (tmpbuf
+     :no-manual t
+     :no-eval (tmpbuf "delete this")
+     :eg-result-string "#<buffer *delete this*>")
+    (with-tmpbuf
+	:no-manual t
+	:no-eval (with-tmpbuf "delete this" (* 2 3))
+	:result 6)))
+
 ;; ### Customization
 
 (defgroup buffers-ext nil
