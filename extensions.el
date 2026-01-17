@@ -291,41 +291,66 @@ extension but unable to spexify SUBEXTENSION."
 	(and (car ext) t)))))
 
 (defmacro extension-check-requires (&rest requirements)
-  "Declare that EXTENSION depends on REQUIREMENTS.
-If any of the packages in REQUIREMENTS is neither loaded nor
-available, signal an error and list the missing packages in
-the buffer `extension-warnings-buffer'.
+  "Declare that the current extension has dependencies.
+Each ARG is the name of a package, a symbol.
+If the keyword :extensions is found, each ARG following it
+is either the name of an extension (a symbol) or a list of
+the form (EXTENSION SUBEXTENSION).  In the latter case,
+EXTENSION is the name of an extension (a symbol), and
+SUBEXTENSION is the name of a subextension, a symbol.
+
+If any requirement is neither loaded nor available, signal
+an error and list the missing requirements in the buffer
+`extension-warnings-buffer'.
+
 This is meant to be used inside the extension in question,
 to tell `load-extension' that it depends on one or more
 packages.  If even one of the packages is not available,
-then the extension cannot load."
-  (declare (debug (&rest symbol)))
-  (let ((curext
+then the extension cannot load.
+
+\(fn ARG...)"
+  (cl-ext-format-args-alist requirements)
+  (let ((extensions (cl-ext-get-keyword-with-n-args
+		     requirements :extensions *))
+	(packages (cl-ext-get-keyword-with-n-args
+		   requirements :positional-args *))
+	(curext
 	 (and-let* ((_ (f-same-p default-directory user-ext-extension-directory))
 		    (fn (-some--> (buffer-file-name)
 			  (f-filename it)
 			  (f-base it))))
-	   (intern-soft fn))))
-    `(extension-check-requires-1 ',curext ',requirements)))
+	   (make-symbol fn))))
+    `(extension-check-requires-1 ',curext ',packages ',extensions)))
 
-(defun extension-check-requires-1 (extension packages)
+(defun extension-check-requires-1 (extension packages extensions)
   "Internal function."
   (cl-check-type extension symbol)
   (cl-check-type packages list)
-  (cl-loop with warnings-displayed = 0
-	   for package in packages
-	   do
-	   (or (featurep package)
-	       (require package nil t)
-	       (and (cl-incf warnings-displayed)
-		    (display-warning 'user-extensions
-				     (format "Failed to load `%S'" package)
-				     :error
-				     extension-warnings-buffer)))
-	   finally do
-	   (when (> warnings-displayed 0)
-	     (signal-extension-error
-	      (format "Failed to load `%S'" extension)))))
+  (let* ((warnings-displayed 0)
+	 (iter (lambda (items pred err)
+		 (cl-loop for item in items
+			  do
+			  (or (funcall pred item)
+			      (and (cl-incf warnings-displayed)
+				   (display-warning 'user-extensions
+						    (format err item)
+						    :error
+						    extension-warnings-buffer)))))))
+    (funcall iter
+	     packages
+	     (## or (featurep %1) (require %1 nil t))
+	     "Failed to load package `%S'")
+    (funcall iter
+	     extensions
+	     (lambda (item)
+	       (pcase item
+		 (`(,ext ,subext)
+		  (extensionp ext subext))
+		 (ext (extensionp ext))))
+	     "Failed to load extension `%S'")
+    (when (> warnings-displayed 0)
+      (signal-extension-error
+       (format "Failed to load extension `%S'" extension)))))
 
 (defun --list-extensions (&optional suffix completion)
   (let* ((regex (rx string-start
