@@ -2,18 +2,17 @@
 
 (check-emacs-minimum-version "27.1")
 
-(eval-and-compile
-  (require 'ibuffer)
-  (require 'alist-ext)
-  (require 'function-ext)
+(require 'ibuffer)
+(require 'alist-ext)
+(require 'function-ext)
 
-  (embed-doc-document-symbol ibuffer-ext
-    "IBuffer extension."
-    :commands
-    ibuffer-ext-buffer-name
-    ibuffer-ext-do-change-major-mode
-    ibuffer-ext-insert-independent-filter-group
-    ibuffer-ext-toggle-current-filter-group))
+(embed-doc-document-symbol ibuffer-ext
+  "IBuffer extension."
+  :commands
+  ibuffer-ext-buffer-name
+  ibuffer-ext-do-change-major-mode
+  ibuffer-ext-insert-independent-filter-group
+  ibuffer-ext-toggle-current-filter-group)
 
 
 ;; ### Customization
@@ -147,10 +146,10 @@ If point is on a buffer, toggle the group it is in."
 
 ;; ### Keymaps
 
-(define-key ibuffer-mode-map (kbd "/ T") #'ibuffer-ext-toggle-current-filter-group)
-(define-key ibuffer-mode-map (kbd "/ G") #'ibuffer-ext-insert-independent-filter-group)
-(define-key ibuffer-mode-map (kbd "C-x b") #'ibuffer-ext-buffer-name)
-(define-key ibuffer-mode-map (kbd "M-M") #'ibuffer-ext-do-change-major-mode)
+(keymaps-ext-set-keymap ibuffer-mode-map "/ T" #'ibuffer-ext-toggle-current-filter-group)
+(keymaps-ext-set-keymap ibuffer-mode-map "/ G" #'ibuffer-ext-insert-independent-filter-group)
+(keymaps-ext-set-keymap ibuffer-mode-map "C-x b" #'ibuffer-ext-buffer-name)
+(keymaps-ext-set-keymap ibuffer-mode-map "M-M" #'ibuffer-ext-do-change-major-mode)
 
 
 (extension-provide 'ibuffer-ext)
