@@ -9,6 +9,7 @@
 (add-to-list 'load-path "~/.emacs.d/extensions/packages")
 
 (require 'cl-lib)
+(require 'embed-doc)
 
 (eval-when-compile
   (require 'debug-ext)
@@ -20,20 +21,18 @@
 
 ;; ### Initialization
 
-(eval-and-compile
-  (require 'embed-doc)
-  (embed-doc-document-symbol extensions
-    "Main loader for extensions."
-    :functions
-    eval-after-require
-    load-extension-safe
-    :variables
-    user-ext-extension-directory
-    :commands
-    find-extension
-    find-extension-at-point
-    get-extension-documentation
-    load-extension))
+(embed-doc-document-symbol extensions
+  "Main loader for extensions."
+  :functions
+  eval-after-require
+  load-extension-safe
+  :variables
+  user-ext-extension-directory
+  :commands
+  find-extension
+  find-extension-at-point
+  get-extension-documentation
+  load-extension)
 
 
 ;; --- `use-package' for autoloads
@@ -52,12 +51,6 @@
   s-lex-format
   s-lex-fmt|expand
   s-lex-value-as-lisp)
-
-(use-package embed-doc
-  :defer t
-  :autoload
-  embed-doc-document-symbol
-  embed-doc-get-documentation)
 
 (use-package mode-local
   :autoload
