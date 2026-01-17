@@ -5,25 +5,23 @@
 (require 'cl-lib)
 (require 'custom)
 
-(eval-and-compile
-  (embed-doc-document-symbol buffers-ext
-    "Buffer functions."
+(embed-doc-document-symbol buffers-ext
+  "Buffer functions."
 
-    :customs
-    user-ext-temp-buffers-to-kill
-    user-ext-temp-buffers-to-kill-regex
+  :customs
+  user-ext-temp-buffers-to-kill
+  user-ext-temp-buffers-to-kill-regex
 
-    :commands
-    kill-buffers
-    kill-certain-temp-buffers
-    kill-customization-buffers
+  :commands
+  kill-buffers
+  kill-certain-temp-buffers
+  kill-customization-buffers
 
-    tmpbuf
-    
+  tmpbuf
 
-    :functions
-    buffer-string-no-properties
-    with-tmpbuf))
+  :functions
+  buffer-string-no-properties
+  with-tmpbuf)
 
 ;; ### Customization
 
