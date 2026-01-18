@@ -84,11 +84,11 @@ directory entries for."
 
 (put #'dired-find-alternate-file 'disabled nil)
 
-(global-set-key (kbd "C-x M-d") #'dired-alternate)
-(global-set-key (kbd "C-x C-M-d") #'dired-dirs)
+(keymaps-ext-set-keymap-global "C-x C-M-d" #'dired-alternate)
+(keymaps-ext-set-keymap-global "C-x C-M-d" #'dired-dirs)
 
-(define-key dired-mode-map "^" #'dired-ext-find-alternate-updir)
-(define-key dired-mode-map "k" #'dired-ext-quit-kill-window)
+(keymaps-ext-set-keymap dired-mode-map "^" #'dired-ext-find-alternate-updir)
+(keymaps-ext-set-keymap dired-mode-map "k" #'dired-ext-quit-kill-window)
 
 
 ;; ### Hook
