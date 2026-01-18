@@ -26,6 +26,12 @@
 (keymaps-ext-set-keymap help-ext-apropos-map "v" #'apropos-variable)
 
 
+;; --- Other
+
+(with-emacs-version >= "28.1"
+  (keymaps-ext-set-keymap-global "C-h M-k" #'describe-keymap))
+
+
 ;; ### Hook
 
 (defun help-ext--search (regexp &optional _x)
