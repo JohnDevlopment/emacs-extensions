@@ -5,30 +5,31 @@
 (require 'menu-bar)
 
 (eval-when-compile
-  (require 'cl-ext)
-
   (declare-function help-ext-command "help-ext")
   (defvar help-ext-command))
 
 
 ;; ### Keymaps
 
-;; Subject lookup
+;; --- Subject lookup
 (define-prefix-command 'help-ext-command-map)
 (keymaps-ext-set-keymap-global "C-h M-c" help-ext-command-map)
 (keymaps-ext-set-keymap help-ext-command-map "l" #'elisp-index-search)
 (keymaps-ext-set-keymap help-ext-command-map "u" #'emacs-index-search)
 
+
+;; --- Apropos
 (define-prefix-command 'help-ext-apropos-map)
 (keymaps-ext-set-keymap-global "C-h A" #'help-ext-apropos-map)
 (keymaps-ext-set-keymap help-ext-apropos-map "o" #'apropos)
 (keymaps-ext-set-keymap help-ext-apropos-map "l" #'apropos-library)
 (keymaps-ext-set-keymap help-ext-apropos-map "v" #'apropos-variable)
 
+
 ;; ### Hook
 
 (defun help-ext--search (regexp &optional _x)
-  (cl-ext-save-point
+  (save-excursion
     (goto-char (point-min))
     (re-search-forward regexp (line-end-position) t)))
 
@@ -50,5 +51,6 @@
 ;;;###autoload
 (add-hook 'help-mode-hook #'help--extra-hook)
 
+
 (extension-provide 'help-ext)
 ;;; help-ext.el ends here
