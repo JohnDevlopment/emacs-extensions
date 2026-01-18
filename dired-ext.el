@@ -34,10 +34,7 @@ directory entries for.
 
 In this case, SWITCHES are applied to each file
 individually, so list-sorting options are pointless."
-  (emacs-version-cond-when-compile
-    ((>= "29")
-     (interactive (dired-read-dir-and-switches "") dired-mode))
-    (t (interactive (dired-read-dir-and-switches ""))))
+  (interactive (dired-read-dir-and-switches ""))
   (let ((curbuf (current-buffer))
 	(newbuf (dired-noselect dirname switches)))
     (pop-to-buffer-same-window newbuf)
@@ -63,11 +60,7 @@ DIRNAME is either a string or a cons: as a string, the name
 of the directory to edit; as a cons, the first element is
 the directory, and the tail is a list of files to make
 directory entries for."
-  (emacs-version-cond-when-compile
-    ((>= "29")
-     (interactive (dired-read-dir-and-switches "") dired-mode))
-    (t (interactive (dired-read-dir-and-switches ""))))
-  (dired-ext--barf-if-not-dired-mode)
+  (interactive (dired-read-dir-and-switches ""))
   (let ((newbuf (dired-noselect
 		 (mapcar (lambda (str) (f-join dirname str)) '("*/" ".*/")) "-adl")))
     (pop-to-buffer-same-window newbuf)))
