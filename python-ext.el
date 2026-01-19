@@ -975,10 +975,16 @@ creating a new one."
 		(^ '(- (1+ (current-indentation)))))
 	      hs-allow-nesting t
 	      beginning-of-defun-function #'py-backward-def-or-class)
+  (when (bound-and-true-p outline-minor-mode)
+    (outline-minor-mode 0))
   (declare-function python-ext-tree-sitter-mode "python-subext_syntax")
-  (when (extensionp 'python-ext 'tree-sitter)
-    (tree-sitter-hl-mode 1)
-    (python-ext-tree-sitter-mode 1)))
+  (when (extensionp 'python-ext 'syntax)
+    ;; Enable tree sitter and tree sitter highlight
+    (with-suppressed-warnings ((noruntime tree-sitter-hl-mode))
+      (when (fboundp 'tree-sitter-hl-mode)
+	(tree-sitter-hl-mode 1))
+      (python-ext-tree-sitter-mode 1)))
+  (add-hook 'completion-at-point-functions #'py-fast-complete nil t))
 
 ;;;###autoload
 (add-hook 'python-mode-hook #'python--extra-hook)
