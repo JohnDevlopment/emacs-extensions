@@ -592,7 +592,7 @@ When called interactively, ARG is the prefix argument."
 
 (define-key tree-sitter-query-mode-map (kbd "C-c C-c") #'tree-sitter-query-quit)
 
-(provide 'tree-sitter-ext)
+(extension-provide 'tree-sitter-ext)
 ;;; tree-sitter-ext.el ends here
 
 ;; Local Variables:
