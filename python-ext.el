@@ -456,6 +456,9 @@ otherwise.")
 
 ;; ### Functions
 
+(load-extension-safe "python-subext_syntax")
+(load-extension-safe "python-subext_project")
+
 (with-emacs-version < "29"
   (fext-defadvice py-electric-backspace-mode
       (around py-electric-backspace-mode (oldfun &rest r))
