@@ -992,6 +992,8 @@ creating a new one."
 ;;;###autoload
 (add-hook 'python-mode-hook #'python--extra-hook)
 
+(remove-hook 'completion-at-point-functions #'py-fast-complete)
+
 
 (extension-provide 'python-ext user-ext-python-subextensions)
 ;;; python-ext ends here
