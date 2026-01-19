@@ -5,6 +5,20 @@
 (require 'gv)
 (require 'macroexp)
 
+(with-emacs-version >= "28.1"
+  (define-short-documentation-group user-extensions/subr
+    "Operations On Lists"
+    (push-end
+     :no-manual t
+     :no-eval* (push-end c l))
+    (pop-last
+     :no-manual t
+     :no-eval* (pop-last l))
+    "Misc"
+    (compile-when
+	:no-manual t
+	:no-eval* (compile-when (fboundp 'eglot) 1))))
+
 (defmacro compile-when (cond &rest body)
   "Expand BODY if COND evaluates to non-nil.
 Evaluate COND at compile and load time; if it evaluates to
