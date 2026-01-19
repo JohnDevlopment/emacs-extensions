@@ -5,6 +5,14 @@
 (require 'gv)
 (require 'macroexp)
 
+(defmacro compile-when (cond &rest body)
+  "Expand BODY if COND evaluates to non-nil.
+Evaluate COND at compile and load time; if it evaluates to
+non-nil, expand BODY at compile time."
+  (declare (debug (sexp body)) (indent 1))
+  (if (eval cond)
+      `(progn ,@body)))
+
 (defmacro push-end (newelt place)
   "Add NEWELT to the list stored in the generalized variable PLACE.
 This is morally equivalent to (setf PLACE (append PLACE (list NEWELT))),
