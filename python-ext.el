@@ -468,16 +468,12 @@ otherwise.")
 (defun python-ext-compute-indentation (oldfun &rest args)
   "Compute Python indentation."
   (declare-function python-ext--string-at-pos "python-subext_syntax")
-  (if (and (extensionp 'python-ext 'syntax)
-	   (extensionp 'python-ext 'docstring))
-      (let ((cl-x (python-ext--string-at-pos))
-	    (indent (save-excursion
-		      (goto-char
-		       (if (fboundp 'python-ext--docstring-start)
-			   (python-ext--docstring-start cl-x)
-			 ))
-		      (skip-syntax-backward "\"")
-		      (current-column))))
+  (if (extensionp 'python-ext 'syntax)
+      (if-let ((cl-x (python-ext--string-at-pos))
+	       (indent (save-excursion
+			 (goto-char (python-ext--docstring-start cl-x))
+			 (skip-syntax-backward "\"")
+			 (current-column))))
 	  (cl-ext-progn
 	    indent)
 	(apply oldfun args))))
