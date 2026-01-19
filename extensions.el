@@ -550,11 +550,6 @@ point."
       :no-manual t)))
 
 
-;; --- Autoloads
-
-(load-extension-safe "loaddefs-ext")
-
-
 ;; ### Loading extensions
 
 ;; --- Base Extensions
@@ -562,12 +557,14 @@ point."
 (load-extension "types")
 (load-extension "errors")
 (load-extension "general")
+
 (with-emacs-version < "29"
   (unless (featurep 'use-package)
     (display-warning
      'user-extensions
      "`use-package' is required")))
-(load-extension-safe "keymaps-ext")
+(load-extension "keymaps-ext")
+(load-extension-safe "loaddefs-ext")
 
 
 ;; --- Bootstraps for external packages
