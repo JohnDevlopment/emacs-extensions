@@ -34,6 +34,13 @@ of its buffers.  Otherwise, shutdown one of its servers."
 	  (kill-buffers rx))
       (call-interactively #'eglot-shutdown))))
 
+(defun eglot-ext-inlay-complete-function-return ()
+  "Complete the function return type at point using the inlay hint."
+  (interactive)
+  (dolist (ov (overlays-at (point)))
+    (when-let ((bs (overlay-get ov 'before-string)))
+      (insert bs))))
+
 (fext-defadvice eglot-show-workspace-configuration
     (after eglot-show-workspace-configuration)
   (let ((buffer (get-buffer "*EGLOT workspace configuration*")))
@@ -143,6 +150,7 @@ of its buffers.  Otherwise, shutdown one of its servers."
    ("a n" "Do an inline action" eglot-code-action-inline)
    ("a x" "Do an extract action" eglot-code-action-extract)
    ("a w" "Do a rewrite action" eglot-code-action-rewrite)
+   ("a c" "Complete inlay function hint" eglot-ext-inlay-complete-function-return)
    " "
    "Rename"
    ("r r" "Rename symbol at point" eglot-rename)
