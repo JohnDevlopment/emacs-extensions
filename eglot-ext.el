@@ -147,6 +147,11 @@ of its buffers.  Otherwise, shutdown one of its servers."
    "Rename"
    ("r r" "Rename symbol at point" eglot-rename)
    " "
+   "Jumping"
+   ("g d" "Find declaration of identifier at point" eglot-find-declaration)
+   ("g i" "Find implementation for identifier at point" eglot-find-implementation)
+   ("g t" "Find type definition for identifier at point" eglot-find-typeDefinition)
+   " "
    "Feature"
    ("T i" "Toggle inlay hints" eglot-inlay-hints-mode)
    " "
