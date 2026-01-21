@@ -288,7 +288,7 @@ POS defaults to point."))
 
 ;; --- String
 
-(cl-defstruct (python-ext--docstring
+(cl-defstruct (python-ext--string
 	       (:type list))
   (string-delim "" :type string
 		:documentation "Characters used to delimit the string.")
@@ -303,12 +303,13 @@ POS defaults to point."))
   (ml nil :type boolean :documentation "Whether string is multiline."))
 
 (defun python-ext--string-at-pos (&optional pos)
+  "Return the string at POS as a `python-ext--string'."
   (declare (side-effect-free t))
   (when-let ((node (tree-sitter-node-at-pos 'string pos)))
     (-let* (((sbeg . send) (tree-sitter-ext-region-from-node node))
 	    ((cbeg . cend) (tree-sitter-ext-region-from-node
 			    (tsc-get-nth-named-child node 1))))
-      (make-python-ext--docstring
+      (make-python-ext--string
        :string-delim (tsc-node-text (tsc-get-first-named-child node))
        :start (copy-marker sbeg)
        :end (copy-marker send)
