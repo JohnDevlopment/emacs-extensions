@@ -41,6 +41,23 @@ to use without their respective prefixes.
     :functions
     funcall-safe))
 
+(define-fringe-bitmap
+  'saved-position-fringe
+  [96 144 144 144 96 96 146 140 140 114]
+  nil 9)
+
+
+;; ### Customization
+
+(defgroup general nil
+  "General extension group."
+  :group 'user-extensions)
+
+(defface general-saved-position-face
+  '((t (:inherit bookmark-face)))
+  "Face for saved position fringe."
+  :group 'general)
+
 
 ;; ### Variables
 
@@ -245,12 +262,36 @@ This merely prints the contents of `user-ext-local-position-ring'."
 	      "\n")))
     (message msg)))
 
+(defun general--make-saved-position-overlay (pos)
+  (let ((ov (make-overlay pos (1+ pos))))
+    (condition-case-unless-debug err
+	(progn
+	  (overlay-put ov 'category 'saved-position)
+	  (overlay-put ov 'evaporate t)
+	  (overlay-put ov 'before-string
+		       (propertize
+			"x" 'display
+			'(left-fringe
+			  saved-position-fringe
+			  general-saved-position-face))))
+      (error (message "Error deleting overlay: %S" err)
+	     (delete-overlay ov)))))
+
+(defun general--delete-saved-position-overlay (pos)
+  (let ((ovs (overlays-at pos))
+	found ov)
+    (while (and (not found) ovs)
+      (setq ov (pop ovs))
+      (when (eq (overlay-get ov 'category) 'saved-position)
+	(delete-overlay (setq found ov))))))
+
 (defun save-current-position (&optional pos)
   "Save POS to the local position ring.
 Unless POS is provided, point is used."
   (interactive)
   (let ((pos (or pos (point-marker))))
     (add-to-history 'user-ext-local-position-ring pos)
+    (general--make-saved-position-overlay (line-beginning-position))
     (message
      (substitute-command-keys
       "Position saved to local position ring. Go back with `\\[pop-saved-position]'."))))
@@ -266,7 +307,9 @@ This pops the last-saved position from
 	(error "The local position ring is empty"))
     (setq pos (pop user-ext-local-position-ring))
     (goto-char pos)
+    (general--delete-saved-position-overlay (line-beginning-position))
     (message "Restored to position %s." pos)))
 
+
 (extension-provide 'general)
 ;;; general ends here
