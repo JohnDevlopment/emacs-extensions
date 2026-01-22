@@ -86,6 +86,13 @@ When called interactively, SINGLE is the prefix argument."
 
 ;; ### Functions
 
+(defun ibuffer-ext-redisplay ()
+  "Redisplay the list of buffers."
+  (emacs-version-cond-when-compile
+    ((> "27")
+     (ibuffer-filter-disable))
+    (t (ibuffer-update t t))))
+
 (defun ibuffer-ext-buffer-name ()
   "Display the name of the buffer on this line."
   (declare (interactive-only t))
@@ -119,10 +126,7 @@ NAME must be the string name of a filter group defined in
 	       (group (nth idx fgroups)))
       
       (cl-pushnew group ibuffer-filter-groups)
-      (emacs-version-cond-when-compile
-	((> "27")
-	 (ibuffer-filter-disable))
-	(t (ibuffer-update nil t)))
+      (ibuffer-ext-redisplay)
       (message "Inserted independent filter group %S" name))))
 
 ;;;###autoload
