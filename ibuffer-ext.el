@@ -66,6 +66,7 @@ which see."
 
 (advice-add #'ibuffer-do-revert :after #'ibuffer-ext--after-operation)
 (advice-add #'ibuffer-do-eval :after #'ibuffer-ext--after-operation)
+(advice-add #'ibuffer-bury-buffer :after #'ibuffer-ext--after-operation)
 
 (fext-defadvice ibuffer-do-view (after ibuffer-do-view)
   "Activate View mode after visiting buffer."
