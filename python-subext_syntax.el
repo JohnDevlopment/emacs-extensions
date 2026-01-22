@@ -302,6 +302,26 @@ POS defaults to point."))
 	       :documentation "Position of closing delimiter.")
   (ml nil :type boolean :documentation "Whether string is multiline."))
 
+(defun python-ext--string-content (cl-x &optional buffer-or-name)
+  "Return the buffer contents of `python-ext--string' CL-X."
+  (declare (side-effect-free t))
+  (save-current-buffer
+    (and buffer-or-name (set-buffer buffer-or-name))
+    (buffer-substring-no-properties
+     (python-ext--string-content-start cl-x)
+     (python-ext--string-content-end cl-x))))
+(cl-define-compiler-macro python-ext--string-content
+    (cl-x &optional buffer-or-name)
+  (if buffer-or-name
+      `(save-current-buffer
+	 (set-buffer buffer-or-name)
+	 (buffer-substring-no-properties
+	  (python-ext--string-content-start ,cl-x)
+	  (python-ext--string-content-end ,cl-x)))
+    `(buffer-substring-no-properties
+      (python-ext--string-content-start ,cl-x)
+      (python-ext--string-content-end ,cl-x))))
+
 (defun python-ext--string-at-pos (&optional pos)
   "Return the string at POS as a `python-ext--string'."
   (declare (side-effect-free t))
