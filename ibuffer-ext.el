@@ -60,7 +60,9 @@ which see."
 
 (defun ibuffer-ext--after-operation (&rest _r)
   "Used as :after advice for operations."
-  (ibuffer-unmark-all-marks))
+  (when (> (ibuffer-count-marked-lines t) 0)
+    (ibuffer-unmark-all-marks))
+  (ibuffer-ext-redisplay))
 
 (advice-add #'ibuffer-do-revert :after #'ibuffer-ext--after-operation)
 (advice-add #'ibuffer-do-eval :after #'ibuffer-ext--after-operation)
