@@ -340,6 +340,8 @@ error if `${cname}' has zero elements."))
 
 (define-contextual-key-func "l")
 
+(define-contextual-key-func "m")
+
 (define-contextual-key-func "o")
 
 (define-contextual-key-func "p")
