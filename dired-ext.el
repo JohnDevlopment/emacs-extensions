@@ -84,7 +84,7 @@ directory entries for."
 
 (put #'dired-find-alternate-file 'disabled nil)
 
-(keymaps-ext-set-keymap-global "C-x C-M-d" #'dired-alternate)
+(keymaps-ext-set-keymap-global "C-x M-d" #'dired-alternate)
 (keymaps-ext-set-keymap-global "C-x C-M-d" #'dired-dirs)
 
 (keymaps-ext-set-keymap dired-mode-map "^" #'dired-ext-find-alternate-updir)
