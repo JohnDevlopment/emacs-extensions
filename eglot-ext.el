@@ -199,6 +199,9 @@ of its buffers.  Otherwise, shutdown one of its servers."
 (defun eglot-managed--extra-hook ()
   (eglot-semantic-tokens-mode
    (if user-ext-eglot-semantic-tokens-mode 1 0))
+  (eval-after-require tree-sitter-hl
+    (when eglot-semantic-tokens-mode
+      (tree-sitter-hl-mode 0)))
   (let ((wf (lambda (f)
 	      (prog1 nil
 		(with-demoted-errors "`user-ext-eglot-manage-hook' error: %S"
