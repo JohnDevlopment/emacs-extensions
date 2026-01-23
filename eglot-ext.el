@@ -196,14 +196,7 @@ of its buffers.  Otherwise, shutdown one of its servers."
 	      (prog1 nil
 		(with-demoted-errors "`user-ext-eglot-manage-hook' error: %S"
 		  (funcall f))))))
-    (run-hook-wrapped 'user-ext-eglot-manage-hook wf))
-  ;; (add-hook 'eglot-managed-mode-hook function nil t)
-  )
-
-(--ignore
-  (defun temp ()
-    (eglot--update-hints (point-min) (point-max)))
-  t)
+    (run-hook-wrapped 'user-ext-eglot-manage-hook wf)))
 
 ;;;###autoload
 (add-hook 'eglot-managed-mode-hook #'eglot-managed--extra-hook)
