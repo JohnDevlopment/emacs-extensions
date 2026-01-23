@@ -19,6 +19,11 @@
   :group 'eglot-ext
   :type 'hook)
 
+(defcustom user-ext-eglot-semantic-tokens-mode t
+  "Whether to enable `eglot-semantic-tokens-mode'."
+  :group 'eglot-ext
+  :type 'boolean)
+
 
 ;; ### Functions
 
@@ -192,6 +197,8 @@ of its buffers.  Otherwise, shutdown one of its servers."
 
 ;;;###autoload
 (defun eglot-managed--extra-hook ()
+  (eglot-semantic-tokens-mode
+   (if user-ext-eglot-semantic-tokens-mode 1 0))
   (let ((wf (lambda (f)
 	      (prog1 nil
 		(with-demoted-errors "`user-ext-eglot-manage-hook' error: %S"
