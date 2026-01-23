@@ -41,6 +41,13 @@ of its buffers.  Otherwise, shutdown one of its servers."
     (when-let ((bs (overlay-get ov 'before-string)))
       (insert bs))))
 
+(defun eglot-ext-find-references ()
+  "Find references to SYM, the identifier at point."
+  (interactive)
+  (eglot--lsp-xref-helper
+   :textDocument/references
+   :extra-params '(:context (:includeDeclaration t))))
+
 (fext-defadvice eglot-show-workspace-configuration
     (after eglot-show-workspace-configuration)
   (let ((buffer (get-buffer "*EGLOT workspace configuration*")))
@@ -159,6 +166,7 @@ of its buffers.  Otherwise, shutdown one of its servers."
    ("g d" "Find declaration of identifier at point" eglot-find-declaration)
    ("g i" "Find implementation for identifier at point" eglot-find-implementation)
    ("g t" "Find type definition for identifier at point" eglot-find-typeDefinition)
+   ("g r" "Find references" eglot-ext-find-references)
    " "
    "Feature"
    ("T i" "Toggle inlay hints" eglot-inlay-hints-mode)
