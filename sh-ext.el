@@ -10,6 +10,18 @@
   (require 'cl-ext))
 
 
+;; ### Customization
+
+(defgroup sh-ext nil
+  "Shell script mode extension."
+  :group 'user-extensions)
+
+(defcustom user-ext-sh-mode-hook nil
+  "Hook run by `sh-ext'."
+  :type 'hook
+  :group 'sh-ext)
+
+
 ;; ### Variables
 
 (defmacro sh-ext--rx (&rest body)
@@ -367,7 +379,8 @@ The arguments are exactly the same as those for
 	  ("*Functions*" "^\\s-*\\([_a-z-]+\\)()" 1)
 	  ("*Aliases*" "\\<alias \\([A-Za-z0-9_-]+\\)" 1)
 	  ("*Tags*" "^\\s-*###\\s-*\\(.+\\)" 1))
-	indent-tabs-mode nil))
+	indent-tabs-mode nil)
+  (run-hooks 'user-ext-sh-mode-hook))
 
 ;;;###autoload
 (add-hook 'sh-mode-hook #'sh--extra-hook)
