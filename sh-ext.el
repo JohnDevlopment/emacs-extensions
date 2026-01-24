@@ -9,6 +9,7 @@
   (require 'cl-lib)
   (require 'cl-ext))
 
+
 ;; ### Variables
 
 (defmacro sh-ext--rx (&rest body)
@@ -53,6 +54,7 @@ Group 2 matches the name of the function.")
     (reset . "00"))
   "Color/property names mapped to their equivalent Bash escape code.")
 
+
 ;; ### Functions
 
 (cl-defstruct (sh-ext-function
@@ -130,6 +132,7 @@ This returns the string after \"usage:\"."
 ;;;###autoload
 (defalias 'bash-mode #'shell-script-mode)
 
+
 ;; ---Hs minor mode
 
 (defun sh-ext--fold-map-prompt ()
@@ -198,6 +201,7 @@ the check."
 	  (goto-char pos))
       (goto-char pos))))
 
+
 ;; --- Other functions
 
 (defun sh-ext-help-shell-builtin-command (command)
@@ -289,6 +293,7 @@ it is non-nil, \"1;\" is prepended to the color code."
   (insert "\\[\\]")
   (left-char 2))
 
+
 ;; ### Skeletons
 
 (defmacro sh-ext-define-skeleton (name docstring &rest skeleton)
@@ -352,6 +357,7 @@ The arguments are exactly the same as those for
      (when (and v2 (search-backward-regexp "echo \".+\"$" nil v1))
        (replace-match (format "echo \"%s\"" v2) t))))
 
+
 ;; ### Hook
 
 ;;;###autoload
@@ -366,6 +372,7 @@ The arguments are exactly the same as those for
 ;;;###autoload
 (add-hook 'sh-mode-hook #'sh--extra-hook)
 
+
 ;; ### Key bindings and abbrevs
 
 (define-abbrev sh-mode-abbrev-table "cmds" "" #'sh-ext-skeleton-src-command-list)
@@ -380,5 +387,6 @@ The arguments are exactly the same as those for
 (define-key user-ext-sh-fold-map (kbd "C-f") #'sh-ext-hide-all-functions)
 (define-key user-ext-sh-fold-map (kbd "M-f") #'sh-ext-show-function)
 
+
 (extension-provide 'sh-ext)
 ;;; sh-ext ends here
