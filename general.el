@@ -54,7 +54,7 @@ to use without their respective prefixes.
   :group 'user-extensions)
 
 (defface general-saved-position-face
-  '((t (:inherit bookmark-face)))
+  '((t (:inherit default)))
   "Face for saved position fringe."
   :group 'general)
 
