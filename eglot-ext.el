@@ -19,6 +19,11 @@
   :group 'eglot-ext
   :type 'hook)
 
+(defcustom user-ext-eglot-after-save-hook nil
+  "A hook run after an Eglot-managed buffer is saved."
+  :group 'eglot-ext
+  :type 'hook)
+
 (defcustom user-ext-eglot-semantic-tokens-mode t
   "Whether to enable `eglot-semantic-tokens-mode'."
   :group 'eglot-ext
@@ -195,8 +200,12 @@ of its buffers.  Otherwise, shutdown one of its servers."
 
 ;; ### Hooks
 
+(defun eglot-ext--run-after-save-hook ()
+  (run-hooks 'user-ext-eglot-after-save-hook))
+
 ;;;###autoload
 (defun eglot-managed--extra-hook ()
+  (add-hook 'after-save-hook #'eglot-ext--run-after-save-hook nil t)
   (eglot-semantic-tokens-mode
    (if user-ext-eglot-semantic-tokens-mode 1 0))
   (eval-after-require tree-sitter-hl
