@@ -58,6 +58,21 @@ of its buffers.  Otherwise, shutdown one of its servers."
    :textDocument/references
    :extra-params '(:context (:includeDeclaration t))))
 
+(defmacro eglot-ext-with-visible-range (&rest body)
+  "Bind BEG and END to the visible range of window, then do BODY.
+BEG is bound to the visible start of window.
+END is bound to the visible end of window."
+  (declare (indent defun) (debug (body)))
+  `(let ((beg (max (point-min) (window-start)))
+	 (end (min (point-max) (window-end))))
+     ,@body))
+
+(defun eglot-ext-update-inlay-hints ()
+  "Update the inlay hints currently visible."
+  (interactive)
+  (eglot-ext-with-visible-range
+    (eglot--update-hints beg end)))
+
 (fext-defadvice eglot-show-workspace-configuration
     (after eglot-show-workspace-configuration)
   (let ((buffer (get-buffer "*EGLOT workspace configuration*")))
