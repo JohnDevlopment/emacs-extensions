@@ -118,7 +118,10 @@ position of that node."
   (interactive)
   (let ((src-buffer (current-buffer))
 	strings buffer)
-    (setq strings (tree-sitter-ext-debug-buffer--setup)
+    (setq strings (let ((s (tree-sitter-ext-debug-buffer--setup)))
+		    (cl-assert s)
+		    (cl-assert (not (string-empty-p s)) t)
+		    s)
 	  buffer (get-buffer-create
 		  (tree-sitter-ext-debug-buffer--buffer-name)))
     (with-current-buffer buffer
