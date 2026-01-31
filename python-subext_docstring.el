@@ -48,7 +48,7 @@ This is passed to `window-configuration-to-register'.")
   'user-ext-python--orig-position
   'user-ext-python/docstring--original-position
   "2026-01-21")
-(defvar user-ext-python--orig-position nil
+(defvar user-ext-python/docstring--original-position nil
   "Position in the original buffer when editing Python docstring.")
 
 
@@ -64,12 +64,80 @@ type if point is inside a string."
   (python-ext--string-at-pos))
 
 (defsubst python-ext-docstring--init-vars ()
-  (setq user-ext-python--orig-position (point-marker)
-	user-ext-python--orig-buffer (current-buffer)))
+  (setq user-ext-python/docstring--original-position (point-marker)
+	user-ext-python/docstring--original-buffer (current-buffer)
+	user-ext-python/docstring--buffer nil))
 
 (defsubst python-ext-docstring--clear-vars ()
-  (setq user-ext-python--orig-position nil
-	user-ext-python--orig-position nil))
+  (setq user-ext-python/docstring--original-position nil
+	user-ext-python/docstring--original-buffer nil
+	user-ext-python/docstring--buffer nil))
+
+(defun python-ext--dedent-string (string)
+  "Dedent STRING."
+  (let* ((lines (split-string string "\n"))
+	 (common-indent
+	  (cl-loop
+	   for line in (seq-filter (lambda (line) ; return list of non-empty lines
+				     (not (string-empty-p line))) ;
+				   lines)			  ;
+	   with indent = most-positive-fixnum
+	   do
+	   (setq indent (min indent
+			     (progn
+			       (string-match "^[ \t]*" line)
+			       (match-end 0))))
+	   finally return indent)))
+    (mapconcat (lambda (line)
+		 (if (<= (length line) common-indent)
+		     (string-trim-left line)
+		   (substring line common-indent)))
+	       lines
+	       "\n")))
+
+(defun python-ext--write-docstring ()
+  "Exit the Python docstring buffer and apply the docstring."
+  (interactive)
+  (let (num-lines prefix buffer-string)
+    (deactivate-mark)
+    (let ((beg (point-min))
+	  (end (point-max)))
+      (untabify beg end)
+      (setq num-lines (count-lines beg end) ; count number of lines
+	    buffer-string (let ((s (buffer-string)))
+			    (set-text-properties 0 (length s) nil s)
+			    s)))
+    (when (string-blank-p buffer-string)
+      ;; string is empty; exit
+      (kill-buffer)
+      (jump-to-register user-ext-python/docstring--register)
+      (python-ext-docstring--clear-vars)
+      (user-error "Docstring is empty"))
+    (kill-buffer)
+    (jump-to-register user-ext-python/docstring--register)
+    (insert buffer-string)
+    (cl-ext-check-type user-ext-python/docstring--original-position integer-or-marker)
+    (goto-char user-ext-python/docstring--original-position) ; go back to original position
+    (save-excursion
+      ;; get leading spaces
+      (beginning-of-line)
+      (setq prefix
+	    (if (looking-at "^\\([ \t]+\\)")
+		(match-string 1)
+	      "")))
+    ;; go to the beginning of each line and indent it
+    ;; starting on the second line
+    (move-beginning-of-line 2)
+    (dotimes (_i (1- num-lines))
+      (if (looking-at-p "[ \t]*\n")	; check if line is blank
+	  (move-beginning-of-line 2)	; if blank, go to next line
+	(insert prefix)			; otherwise, insert prefix
+	(move-beginning-of-line 2)))
+    (python-ext-docstring--clear-vars)))
+
+(defun python-ext--cancel-docstring ()
+  "Cancel editing the docstring."
+  (interactive))
 
 ;;;###autoload
 (defun python-ext-docstring ()
@@ -142,73 +210,6 @@ The initial fill column is controlled by the user option
 		    "Python Docstring: Type \\[python-ext--write-docstring] to apply changes")
 	      (message "Type C-c C-c to save changes.")))
     (setq header-line-format nil)))
-
-
-(--ignore :no-warn
-  (defun python-ext--write-docstring ()
-    "Exit the Python docstring buffer and apply the docstring."
-    (interactive)
-    (let (num-lines prefix buffer-string)
-      (deactivate-mark)
-      (untabify (point-min) (point-max))
-      (setq num-lines (count-lines (point-min) (point-max)) ; count number of lines
-	    buffer-string (let ((s (buffer-string)))
-			    (set-text-properties 0 (length s) nil s)
-			    s))
-      (when (string-blank-p buffer-string)
-	;; string is empty; exit
-	(kill-buffer)
-	(jump-to-register user-ext-python--register)
-	(setq user-ext-python--orig-position nil)
-	(error "Docstring is empty"))
-      (kill-buffer)
-      (jump-to-register user-ext-python--register)
-      (insert buffer-string)
-      (cl-ext-check-type user-ext-python--orig-position integer-or-marker)
-      (goto-char user-ext-python--orig-position) ; go back to original position
-      (save-excursion
-	;; get leading spaces
-	(beginning-of-line)
-	(setq prefix
-	      (if (looking-at "^\\([ \t]+\\)")
-		  (match-string 1)
-		"")))
-      ;; go to the beginning of each line and indent it
-      ;; starting on the second line
-      (move-beginning-of-line 2)
-      (dotimes (_i (1- num-lines))
-	(if (looking-at-p "[ \t]*\n")	; check if line is blank
-	    (move-beginning-of-line 2)	; if blank, go to next line
-	  (insert prefix)			; otherwise, insert prefix
-	  (move-beginning-of-line 2)))
-      (python-ext-docstring--clear-vars)))
-
-  (defun python-ext--cancel-docstring ()
-    (interactive))
-
-  (defun python-ext--dedent-string (string)
-    "Dedent STRING."
-    (let* ((lines (split-string string "\n"))
-	   (common-indent
-	    (cl-loop
-	     for line in (seq-filter (lambda (line) ; return list of non-empty lines
-				       (not (string-empty-p line))) ;
-				     lines)			  ;
-	     with indent = most-positive-fixnum
-	     do
-	     (setq indent (min indent
-			       (progn
-				 (string-match "^[ \t]*" line)
-				 (match-end 0))))
-	     finally return indent)))
-      (mapconcat (lambda (line)
-		   (if (<= (length line) common-indent)
-		       (string-trim-left line)
-		     (substring line common-indent)))
-		 lines
-		 "\n")))
-  
-  t)
 
 
 (cl-pushnew 'docstring user-ext-python-subextensions)
