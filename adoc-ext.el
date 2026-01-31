@@ -400,8 +400,8 @@ specifies the number of columns and rows in the table.
 	    (lambda ()
 	      (and (looking-at-p "^\n")
 		   (forward-line 1)))))
-      (unless (and (< 0 row rows)
-		   (< 0 column columns))
+      (unless (and (<= 1 row rows)
+		   (<= 1 column columns))
 	(user-error "Invalid cell %S, bounds are %S"
 		    (cons column row)
 		    (cons columns rows)))
