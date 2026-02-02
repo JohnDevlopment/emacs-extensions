@@ -2,10 +2,10 @@
 
 (check-emacs-minimum-version "27.4")
 
+(extension-check-requires eglot transient)
+
 (require 'eglot nil t)
 (require 'transient nil t)
-
-(extension-check-requires eglot transient)
 
 
 ;; ### Customization
