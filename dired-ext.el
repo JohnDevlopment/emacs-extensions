@@ -24,6 +24,7 @@
   (interactive nil dired-mode)
   (quit-window t))
 
+;;;###autoload
 (defun dired-alternate (dirname &optional switches)
   "\"Edit\" directory DIRNAME, same as `dired', kill the current buffer.
 
@@ -84,6 +85,7 @@ directory entries for."
 
 (put #'dired-find-alternate-file 'disabled nil)
 
+;;;###autoload
 (keymaps-ext-set-keymap-global "C-x M-d" #'dired-alternate)
 (keymaps-ext-set-keymap-global "C-x C-M-d" #'dired-dirs)
 
