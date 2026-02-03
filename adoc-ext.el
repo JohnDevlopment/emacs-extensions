@@ -261,6 +261,21 @@ See also `tempo-ext-tempo-handler'."
   (skeleton-insert
    `(nil "image::" ,(f-relative file default-directory))))
 
+(defun adoc-ext-insert-link (href &optional description)
+  "Insert a link."
+  (interactive
+   (let ((href (read-string "URL: " nil t))
+	 (desc (read-string "Description: " nil t)))
+     (list href
+	   (if (string-empty-p desc) nil desc))))
+  (when (string-match-p "[^a-zA-Z0-9_-]" href)
+    (setq href (concat "++" href "++")))
+  (if description
+      (skeleton-insert
+       `("link:" ,href "[" ,description "]"))
+    (skeleton-insert
+     `("link:" ,href))))
+
 (defun adoc-ext--get-transient-arg (prefix arg)
   (when-let* ((args (transient-args prefix))
 	      (arg (cl-member arg args :test #'string=)))
@@ -437,6 +452,7 @@ specifies the number of columns and rows in the table.
 
 (keymaps-ext-set-keymap adoc-mode-map "C-c i i" #'adoc-ext-insert-inline-image)
 (keymaps-ext-set-keymap adoc-mode-map "C-c i I" #'adoc-ext-insert-block-image)
+(keymaps-ext-set-keymap adoc-mode-map "C-c i l" #'adoc-ext-insert-link)
 
 
 ;; ### Hook
