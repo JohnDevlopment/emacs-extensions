@@ -54,6 +54,7 @@ individually, so list-sorting options are pointless."
        (dired-ext--barf-if-not-dired-mode)
        (dired-alternate ".."))))
 
+;;;###autoload
 (defun dired-dirs (dirname &optional _switches)
   "\"Edit\" directory DIRNAME like `dired', but list only directories.
 
@@ -87,6 +88,8 @@ directory entries for."
 
 ;;;###autoload
 (keymaps-ext-set-keymap-global "C-x M-d" #'dired-alternate)
+
+;;;###autoload
 (keymaps-ext-set-keymap-global "C-x C-M-d" #'dired-dirs)
 
 (keymaps-ext-set-keymap dired-mode-map "^" #'dired-ext-find-alternate-updir)
