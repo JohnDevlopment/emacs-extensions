@@ -749,7 +749,6 @@ creating a new one."
 (keymaps-ext-set-keymap python-mode-map "C-c C-j"    #'imenu)
 (keymaps-ext-set-keymap python-mode-map "M-S-SPC" #'company-capf)
 (keymaps-ext-set-keymap python-mode-map "C-c M-r" #'python-ext-revert-all-python-buffers)
-;; (keymaps-ext-set-keymap python-mode-map "<" #'self-insert-command)
 
 
 ;; ### Python Shell Mode
@@ -798,7 +797,12 @@ creating a new one."
 ;;;###autoload
 (add-hook 'python-mode-hook #'python--extra-hook)
 
-(remove-hook 'completion-at-point-functions #'py-fast-complete)
+(run-with-idle-timer
+ 1 nil
+ (lambda ()
+   (when (in-hook-p 'completion-at-point-functions #'py-fast-complete)
+     (message "Removing `py-fast-complete' from `completion-at-point-functions'")
+     (remove-hook 'completion-at-point-functions #'py-fast-complete))))
 
 
 (extension-provide 'python-ext user-ext-python-subextensions)
