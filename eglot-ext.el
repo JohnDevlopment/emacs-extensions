@@ -170,7 +170,9 @@ END is bound to the visible end of window."
    "Misc."
    (". c" "Customize group" (lambda ()
 			      (interactive)
-			      (customize-group 'eglot-ext)))])
+			      (customize-group 'eglot-ext)))
+   (". e" "Show event buffer" eglot-events-buffer)
+   (". s" "Show stderr buffer" eglot-stderr-buffer)])
 
 (define-key eglot-mode-map (kbd "<mouse-3>") #'imenu)
 
