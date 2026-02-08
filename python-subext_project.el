@@ -84,7 +84,6 @@ This has the same format as `project-vc-ignores', which see."
 
 (defun python-ext-try-project (dir)
   "Detect Python project."
-  (--print-expr var dir)
   (let ((root (locate-dominating-file default-directory "pyproject.toml")))
     (when root
       (make-python-ext-project :root root
