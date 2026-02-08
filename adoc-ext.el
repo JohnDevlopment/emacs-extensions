@@ -245,10 +245,8 @@ See also `tempo-ext-tempo-handler'."
      (adoc-ext-barf-if-not-adoc-mode)
      (find-file-read-args "Find file: " t)))
   (adoc-ext-barf-if-not-adoc-mode)
-  (--print-expr var file)
-  (--print-expr sexp (f-relative file default-directory))
   (skeleton-insert
-   `(nil "image:" ,(f-relative file default-directory))))
+   `(nil "image:" ,(f-relative file default-directory) "[]")))
 
 (defun adoc-ext-insert-block-image (file &optional _arg)
   "Insert block image a point."
@@ -259,7 +257,7 @@ See also `tempo-ext-tempo-handler'."
 			  (confirm-nonexistent-file-or-buffer))))
   (adoc-ext-barf-if-not-adoc-mode)
   (skeleton-insert
-   `(nil "image::" ,(f-relative file default-directory))))
+   `(nil "image::" ,(f-relative file default-directory) "[]")))
 
 (defun adoc-ext-insert-link (href &optional description)
   "Insert a link."
