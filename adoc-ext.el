@@ -268,11 +268,8 @@ See also `tempo-ext-tempo-handler'."
 	   (if (string-empty-p desc) nil desc))))
   (when (string-match-p "[^a-zA-Z0-9_-]" href)
     (setq href (concat "++" href "++")))
-  (if description
-      (skeleton-insert
-       `("link:" ,href "[" ,description "]"))
-    (skeleton-insert
-     `("link:" ,href))))
+  (skeleton-insert
+   `(nil "link:" ,href "[" ,description "]")))
 
 (defun adoc-ext--get-transient-arg (prefix arg)
   (when-let* ((args (transient-args prefix))
