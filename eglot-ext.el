@@ -30,6 +30,11 @@
   :type 'boolean)
 
 
+;; ### Variables
+
+(defconst user-ext-eglot-help-buffer "*eglot help*" "Name of the help buffer.")
+
+
 ;; ### Functions
 
 (defun eglot-ext-kill-buffers (arg)
@@ -80,92 +85,51 @@ END is bound to the visible end of window."
     (with-current-buffer buffer
       (activate-view-mode 1))))
 
+(defun eglot-ext-show-help-at-point ()
+  "Show the documentation for symbol at point."
+  (interactive)
+  (eglot-server-capable-or-lose :hoverProvider)
+  (let ((buf (current-buffer)))
+    (eglot--async-request
+     (eglot--current-server-or-lose)
+     :textDocument/hover
+     (eglot--TextDocumentPositionParams)
+     :success-fn
+     (eglot--lambda ((Hover) contents (range nil))
+       (ignore range)
+       (eglot-ext--display-content
+	(eglot--format-markup contents)))
+     :hint :textDocument/hover)))
+
+(defun eglot-ext--display-content (content)
+  (with-current-buffer (get-buffer-create user-ext-eglot-help-buffer)
+    (delay-mode-hooks
+      (eglot-ext-help-mode)
+      (with-help-window user-ext-eglot-help-buffer
+	(insert content)))
+    (run-mode-hooks)))
+
+;; TODO: Remove this function
+(defun temp-show-in-temp-buffer (obj)
+  (prog1 nil
+    (with-current-buffer (get-buffer-create "*output*")
+      (emacs-lisp-mode)
+      (cl-prettyprint obj)
+      (run-with-idle-timer 0.2 nil #'activate-view-mode 1)
+      (set-buffer-modified-p nil))
+    (pop-to-buffer "*output*" t)))
+
+
+;; ### Help mode
+
+(defvar eglot-ext-help-mode-map (make-sparse-keymap)
+  "Keymap for `eglot-ext-help-mode'.")
+
+(define-derived-mode eglot-ext-help-mode help-mode "EglotHelp"
+  "Major mode for displaying Eglot extension help.")
+
 
 ;; ### Keymaps
-
-(--ignore
-  (cl-ext-progn
-    (define-key eglot-mode-map (kbd "C-c l") nil)
-    (define-key eglot-mode-map (kbd "<mouse-3>") nil)
-    ;; Workspace map
-    (define-key user-ext-eglot-workspace-map (kbd "d") nil)
-    (define-key user-ext-eglot-workspace-map (kbd "q") nil)
-    (define-key user-ext-eglot-workspace-map (kbd "M-q") nil)
-    (define-key user-ext-eglot-workspace-map (kbd "k") nil)
-
-    ;; Code actions map
-    (define-key user-ext-eglot-code-actions-map (kbd "a") nil)
-    (define-key user-ext-eglot-code-actions-map (kbd "i") nil)
-    (define-key user-ext-eglot-code-actions-map (kbd "q") nil)
-    (define-key user-ext-eglot-code-actions-map (kbd "n") nil)
-    (define-key user-ext-eglot-code-actions-map (kbd "x") nil)
-    (define-key user-ext-eglot-code-actions-map (kbd "w") nil)
-
-    ;; Rename map
-    (define-key user-ext-eglot-rename-map (kbd "r") nil)
-
-    ;; Format map
-    (define-key user-ext-eglot-format-map (kbd "r") nil)
-    (define-key user-ext-eglot-format-map (kbd "=") nil)
-
-    (define-key user-ext-eglot-command-map (kbd "w") nil)
-    (define-key user-ext-eglot-command-map (kbd "a") nil)
-    (define-key user-ext-eglot-command-map (kbd "r") nil)
-    (define-key user-ext-eglot-command-map (kbd "=") nil)
-
-    (setq user-ext-eglot-command-map nil)
-    (setq user-ext-eglot-workspace-map nil)
-    (setq user-ext-eglot-code-actions-map nil)
-    (setq user-ext-eglot-rename-map nil)
-    (setq user-ext-eglot-format-map nil))
-
-  (dolist (symbol '(user-ext-eglot-code-actions-map
-		    user-ext-eglot-command-map
-		    user-ext-eglot-format-map
-		    user-ext-eglot-rename-map
-		    user-ext-eglot-workspace-map))
-    (--destroy-function symbol)
-    (--destroy-variable symbol))
-
-  t)
-
-(--ignore
-  (eval-and-compile
-    ;; Command map
-    (define-prefix-command 'user-ext-eglot-command-map)
-    (define-key eglot-mode-map (kbd "C-c l") #'user-ext-eglot-command-map)
-
-    ;; Workspace
-    (define-prefix-command 'user-ext-eglot-workspace-map)
-    (define-key user-ext-eglot-command-map (kbd "w") #'user-ext-eglot-workspace-map)
-    ;; (define-key user-ext-eglot-workspace-map (kbd "d") #'eglot-show-workspace-configuration)
-    ;; (define-key user-ext-eglot-workspace-map (kbd "q") #'eglot-shutdown)
-    ;; (define-key user-ext-eglot-workspace-map (kbd "M-q") #'eglot-shutdown-all)
-    ;; (define-key user-ext-eglot-workspace-map (kbd "k") #'eglot-ext-kill-buffers)
-
-    ;; Code actions
-    ;; (define-prefix-command 'user-ext-eglot-code-actions-map)
-    ;; (define-key user-ext-eglot-command-map (kbd "a") #'user-ext-eglot-code-actions-map)
-    ;; (define-key user-ext-eglot-code-actions-map (kbd "a") #'eglot-code-actions)
-    ;; (define-key user-ext-eglot-code-actions-map (kbd "i") #'eglot-code-action-organize-imports)
-    ;; (define-key user-ext-eglot-code-actions-map (kbd "q") #'eglot-code-action-quickfix)
-    ;; (define-key user-ext-eglot-code-actions-map (kbd "n") #'eglot-code-action-inline)
-    ;; (define-key user-ext-eglot-code-actions-map (kbd "x") #'eglot-code-action-extract)
-    ;; (define-key user-ext-eglot-code-actions-map (kbd "w") #'eglot-code-action-rewrite)
-
-    ;; Rename
-    ;; (define-prefix-command 'user-ext-eglot-rename-map)
-    ;; (define-key user-ext-eglot-command-map (kbd "r") #'user-ext-eglot-rename-map)
-    ;; (define-key user-ext-eglot-rename-map (kbd "r") #'eglot-rename)
-
-    ;; Format
-    (define-prefix-command 'user-ext-eglot-format-map)
-    (define-key user-ext-eglot-command-map (kbd "=") #'user-ext-eglot-format-map)
-    ;; (define-key user-ext-eglot-format-map (kbd "r") #'eglot-format)
-    ;; (define-key user-ext-eglot-format-map (kbd "=") #'eglot-format-buffer)
-
-    (define-key eglot-mode-map (kbd "<mouse-3>") #'imenu))
-  t)
 
 (transient-define-prefix eglot-ext-main ()
   "Run an Eglot command."
@@ -201,7 +165,7 @@ END is bound to the visible end of window."
    ("= =" "Format the buffer" eglot-format-buffer)
    " "
    "Help"
-   ("h h" "Show help for symbol at point" eldoc)
+   ("h h" "Show help for symbol at point" eglot-ext-show-help-at-point)
    " "
    "Misc."
    (". c" "Customize group" (lambda ()
