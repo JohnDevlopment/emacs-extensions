@@ -8,11 +8,11 @@
   (require 'function-ext)
   (declare-function elisp-ext-minify "elisp-ext" (start end)))
 
-(eval-and-compile
-  (require 'embed-doc)
-  (embed-doc-document-symbol
-      general
-    "General all-purpose functions and commands.
+(require 'embed-doc)
+
+(embed-doc-document-symbol
+    general
+  "General all-purpose functions and commands.
 
 This extension advises several commands:
 - `backward-page'
@@ -24,22 +24,23 @@ that is, a transient map is activated to make them available
 to use without their respective prefixes.
 
 \\{user-ext-page-motion-transient-map}"
-    :commands
-    copy-line
-    count-words-region2
-    describe-region
-    enable-wrap
-    kill-and-quit
-    minify
-    pop-saved-position
-    print-saved-positions
-    save-and-kill
-    save-current-position
-    sleep
-    upcase-insert
-    yank-and-indent
-    :functions
-    funcall-safe))
+  :commands
+  copy-line
+  count-words-region2
+  describe-region
+  enable-wrap
+  kill-and-quit
+  minify
+  pop-saved-position
+  print-saved-positions
+  save-and-kill
+  save-current-position
+  sleep
+  upcase-insert
+  yank-and-indent
+  :functions
+  funcall-safe
+  in-hook-p)
 
 (define-fringe-bitmap
   'saved-position-fringe
@@ -88,6 +89,7 @@ to use without their respective prefixes.
 (advice-add 'backward-page :after #'advice-ext--after-page-motion)
 (advice-add 'forward-page :after #'advice-ext--after-page-motion)
 
+
 ;; ### Functions
 
 (defsubst funcall-safe (func &rest args)
@@ -97,7 +99,23 @@ Return the value FUNCTION returns.
 
 \(fn FUNCTION &rest ARGUMENTS)"
   (cl-check-type func (or symbol function))
-  (and func (apply func args)))
+  (and func (functionp func) (apply func args)))
+
+(defun in-hook-p (hook function &optional local)
+  "Return non-nil if FUNCTION is added to HOOK.
+If LOCAL is non-nil, check the buffer-local value of HOOK,
+otherwise check the global value.
+
+In either case, if the respective value of HOOK is void,
+this returns nil."
+  (declare (side-effect-free t))
+  (cl-check-type hook symbol)
+  (cl-check-type function (or symbol function))
+  (and (or (and local (buffer-local-boundp hook (current-buffer)))
+	   (and (not local) (default-boundp hook)))
+       (let ((hook-value (if local (symbol-value hook) (default-value hook))))
+	 (when (memq function hook-value)
+	   (cons function local)))))
 
 
 ;; --- General commands
