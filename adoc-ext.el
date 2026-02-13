@@ -7,7 +7,8 @@
 (check-emacs-minimum-version "27.4")
 
 (eval-when-compile
-  (require 'debug-ext))
+  (require 'debug-ext)
+  (require 'cl-ext))
 
 
 ;; ### Variables
@@ -42,8 +43,8 @@ See also `tempo-ext-tempo-handler'."
 	 (fname (intern (format "tempo-template-%s" name)))
 	 (body (list `(tempo-define-template ,name ,(macroexp-quote elements)
 					     nil ,documentation))))
-    (cl-ext-when after
-	(setq body (append body `((advice-add ',fname :after #'adoc-ext--after-tempo)))))
+    (when after
+      (setq body (append body `((advice-add ',fname :after #'adoc-ext--after-tempo)))))
     `(prog1 ',fname
        ,@body)))
 
@@ -343,51 +344,6 @@ defined under `skeleton-insert'.
   'adoc-ext-tempo-handler
   'tempo-ext-tempo-handler
   "2026-01-28")
-
-;; (defun adoc-ext--tempo-handle-if-condition (condition &optional top-level)
-;;   (let ((ivfun
-;; 	 (lambda ()
-;; 	   (signal-invalid-argument
-;; 	    condition
-;; 	    "See documentation of `adoc-ext-tempo-define-template' for valid elements")))
-;; 	(cfun (lambda (cond1 &rest condn)
-;; 		(cl-loop
-;; 		 for cond in (cons cond1 condn)
-;; 		 collect (cl-ext-progn
-;; 			   (adoc-ext--tempo-handle-if-condition cond)))))
-;; 	result conditions)
-;;     (pcase condition
-;;       (`(and ,cond1 . ,condn)
-;;        (setq conditions (apply cfun cond1 condn)
-;; 	     result `(and ,@conditions)))
-;;       (`(or ,cond1 . ,condn)
-;;        (setq conditions (apply cfun cond1 condn)
-;; 	     result `(or ,@conditions)))
-;;       (`(not ,cond)
-;;        (setq cond (adoc-ext--tempo-handle-if-condition cond)
-;; 	     result `(not ,cond)))
-;;       (`(flag ,name)
-;;        (cl-ext-unless (symbolp name)
-;; 	   (signal-type-error name (type-of name) 'symbolp))
-;;        (setq result `(tempo-lookup-named ',name)))
-;;       (`(named ,name)
-;;        (cl-ext-unless (symbolp name)
-;; 	   (signal-type-error name (type-of name) 'symbolp))
-;;        (setq result `(and (setq value (tempo-lookup-named ',name))
-;; 			  (not (string-empty-p value)))))
-;;       (`(- . ,args)
-;;        ;; (- [N] CHAR)
-;;        (cl-ecase (length args)
-;; 	 (1 (let ((char (car args)))
-;; 	      (setq result `(eql (char-before) ,char))))
-;; 	 (2 (setq result `(save-excursion
-;; 			    (left-char ,(car args))
-;; 			    (eql (char-after) (cadr args)))))))
-;;       (_ (funcall ivfun)))
-;;     (if top-level
-;; 	`(let (value)
-;; 	   ,result)
-;;       result)))
 
 (defun adoc-ext--after-tempo ()
   (pop tempo-marks))
