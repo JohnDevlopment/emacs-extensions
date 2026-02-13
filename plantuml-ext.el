@@ -61,7 +61,7 @@ Group 1 matches the name of the variable.")
   "Regular expression for matching variables.")
 
 (defconst user-ext-plantuml-indent-else-regexp
-  (plantuml-ext-rx bol "else" (* nonl) eol)
+  (plantuml-ext-rx bol (* whitespace) "else" (* nonl) eol)
   "Regular expression for the start of else blocks.")
 
 (defconst user-ext-plantuml-font-lock-global-keywords
