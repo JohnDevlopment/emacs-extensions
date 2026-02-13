@@ -10,6 +10,22 @@
   (require 'debug-ext))
 
 
+;; ### Variables
+
+(defmacro adoc-ext-rx (&rest regexps)
+  "Adoc-specialized variation of `rx'."
+  `(rx-let ()
+     (rx ,@regexps)))
+
+(defconst user-ext-adoc-list-regexp
+  (rx bol (* whitespace)
+      (group (+ ?*))
+      (group (* whitespace)))
+  "Regular expression for matching list items.
+Group 1 matches the bullets.
+Group 2 matches the whitespace before the list contents.")
+
+
 ;; ### Templates
 
 (defmacro adoc-ext-tempo-define-template (name documentation elements &optional after)
@@ -426,6 +442,21 @@ specifies the number of columns and rows in the table.
 	       do
 	       (forward-line 1)))))
 
+(defun adoc-ext-shift-return (&optional arg interactive-p)
+  "Insert a newline, or do something else depending on context."
+  (interactive "*P\np")
+  (barf-if-buffer-read-only)
+  (cl-ext-cond
+    ((save-excursion
+       (goto-char (line-beginning-position))
+       (looking-at user-ext-adoc-list-regexp))
+     (let ((bullets (match-string-no-properties 1))
+	   (space (match-string-no-properties 2)))
+       (newline)
+       (indent-relative t t)
+       (insert bullets space)))
+    (t (newline arg interactive-p))))
+
 
 ;; ### Keymaps
 
@@ -444,6 +475,8 @@ specifies the number of columns and rows in the table.
 (keymaps-ext-set-keymap user-ext-adoc-sections-map "2" #'tempo-template-adoc-title-3)
 (keymaps-ext-set-keymap user-ext-adoc-sections-map "3" #'tempo-template-adoc-title-4)
 (keymaps-ext-set-keymap user-ext-adoc-sections-map "4" #'tempo-template-adoc-title-5)
+
+(keymaps-ext-set-keymap adoc-mode-map "S-<return>" #'adoc-ext-shift-return)
 
 (keymaps-ext-set-keymap adoc-mode-map "C-c i i" #'adoc-ext-insert-inline-image)
 (keymaps-ext-set-keymap adoc-mode-map "C-c i I" #'adoc-ext-insert-block-image)
