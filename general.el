@@ -80,6 +80,13 @@ to use without their respective prefixes.
 (fext-defadvice narrow-to-region (after narrow-to-region)
   (deactivate-mark))
 
+(declare-function 'advice-ext--after-add-hook "general")
+(fext-defadvice add-hook (after add-hook (hook function &optional depth local))
+  "Remove `py-fast-complete' from `completion-at-point-functions'."
+  (and (eq hook 'completion-at-point-functions)
+       (in-hook-p `completion-at-point-functions 'py-fast-complete)
+       (remove-hook 'completion-at-point-functions 'py-fast-complete)))
+
 
 ;; --- Page Motion
 
