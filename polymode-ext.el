@@ -188,13 +188,10 @@
     :innermodes '(poly-shell-script-here-doc-innermode))
   t)
 
-;;;###autoload
 (advice-add 'hack-local-variables :around #'polymode-inhibit-in-indirect-buffers)
 
-;;;###autoload
 (advice-add 'tree-sitter-mode :around #'polymode-inhibit-in-indirect-buffers)
 
-;;;###autoload
 (advice-add 'tree-sitter-hl-mode :around #'polymode-inhibit-in-indirect-buffers)
 
 (extension-provide 'polymode-ext)
