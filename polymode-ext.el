@@ -194,5 +194,7 @@
 
 (advice-add 'tree-sitter-hl-mode :around #'polymode-inhibit-in-indirect-buffers)
 
+(advice-add 'eglot--managed-mode :around #'polymode-inhibit-in-indirect-buffers)
+
 (extension-provide 'polymode-ext)
 ;;; polymode-ext.el ends here
