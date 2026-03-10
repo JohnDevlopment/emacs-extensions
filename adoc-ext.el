@@ -448,6 +448,8 @@ specifies the number of columns and rows in the table.
 
 (keymaps-ext-set-keymap adoc-mode-map "S-<return>" #'adoc-ext-shift-return)
 
+(keymaps-ext-set-keymap adoc-mode-map "<mouse-3>" #'imenu)
+
 (keymaps-ext-set-keymap adoc-mode-map "C-c i i" #'adoc-ext-insert-inline-image)
 (keymaps-ext-set-keymap adoc-mode-map "C-c i I" #'adoc-ext-insert-block-image)
 (keymaps-ext-set-keymap adoc-mode-map "C-c i l" #'adoc-ext-insert-link)
