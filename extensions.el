@@ -570,6 +570,7 @@ point."
 ;; --- Bootstraps for external packages
 
 (load-extension-safe "jdesktop-bootstrap" 1)
+(load-extension-safe "jinja2-bootstrap" 1)
 
 
 ;; --- Extensions
