@@ -232,6 +232,19 @@ See also `tempo-ext-tempo-handler'."
   (interactive (list (transient-scope 'adoc-ext-templates)))
   (tempo-template-adoc-ext-block-listing arg))
 
+;; Collapsible block
+(adoc-ext-tempo-define-template "block-collapsible"
+  "Insert a collapsible block."
+  (bol "[%collapsible]" \n
+       (make-string 10 ?=) \n
+       (r "Text: " text) \n
+       (make-string 10 ?=)))
+(transient-define-suffix adoc-ext-insert-block-collapsible
+  (&optional arg)
+  "Insert a collapsible block."
+  (interactive (list (transient-scope 'adoc-ext-templates)))
+  (tempo-template-adoc-ext-block-collapsible arg))
+
 ;; Table
 (adoc-ext-tempo-define-template "table"
   "Insert a table."
@@ -335,6 +348,7 @@ defined under `skeleton-insert'.
   ["Delimited Blocks"
    ("b ." "Literal block" adoc-ext-insert-block-literal)
    ("b -" "Listing block" adoc-ext-insert-block-listing)
+   ("b >" "Collapsible block" adoc-ext-insert-block-collapsible)
    ("b *" "Sidebar" adoc-ext-insert-block-sidebar)
    ("b t" "Table" tempo-template-adoc-ext-table)]
   (interactive "P")
