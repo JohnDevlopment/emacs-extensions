@@ -139,28 +139,29 @@ position of that node."
 (defun tree-sitter-ext-debug-buffer--setup (&optional buffer)
   "Return a string containing BUFFER's syntax tree.
 If BUFFER is nil, default to the current buffer."
+  ;; FIXME: For some reason, in native compiled code, this returns an empty string
   (let (strings root)
     (save-current-buffer
       (and buffer
 	   (set-buffer buffer))
-      (tree-sitter-ext-with-mode-enabled
-	(cl-assert tree-sitter-tree)
-	(setq root (tsc-root-node tree-sitter-tree))
-	(tsc-traverse-do ([type field depth named-p extra-p start-byte end-byte] root)
-	  (when named-p
-	    (if field
-		(push (format "%s%s %S (extra: %S) (range: [%d,%d])"
-			      (make-string (* depth 2) 32)
-			      field type extra-p
-			      (byte-to-position start-byte)
-			      (byte-to-position end-byte))
-		      strings)
-	      (push (format "%s%S (extra: %S) (range: [%d,%d])"
-			    (make-string (* depth 2) ?\ )
-			    type extra-p
+      (cl-assert tree-sitter-tree)
+      (setq root (tsc-root-node tree-sitter-tree))
+      (tree-sitter-ext-assert-valid-state tree-sitter-mode)
+      (tsc-traverse-do ([type field depth named-p extra-p start-byte end-byte] root)
+	(when named-p
+	  (if field
+	      (push (format "%s%s %S (extra: %S) (range: [%d,%d])"
+			    (make-string (* depth 2) 32)
+			    field type extra-p
 			    (byte-to-position start-byte)
 			    (byte-to-position end-byte))
-		    strings))))))
+		    strings)
+	    (push (format "%s%S (extra: %S) (range: [%d,%d])"
+			  (make-string (* depth 2) ?\ )
+			  type extra-p
+			  (byte-to-position start-byte)
+			  (byte-to-position end-byte))
+		  strings)))))
     (s-join "\n" (nreverse strings))))
 
 ;;;###autoload
