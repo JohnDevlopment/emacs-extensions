@@ -205,10 +205,16 @@ The initial fill column is controlled by the user option
 	    (keymaps-ext-set-keymap map "C-c C-k" #'python-ext--cancel-docstring)
 	    map)
   (if python-ext-docstring-mode
-      (setq header-line-format
-	    (prog1 (substitute-command-keys
-		    "Python Docstring: Type \\[python-ext--write-docstring] to apply changes")
-	      (message "Type C-c C-c to save changes.")))
+      (cl-ext-progn
+	(run-with-idle-timer 0.5 nil
+			     (lambda ()
+			       (with-demoted-errors "Error applying local variables list: %S"
+				 (hack-local-variables 'ignore))
+			       (message "Applied local variables list")))
+	(setq header-line-format
+	      (prog1 (substitute-command-keys
+		      "Python Docstring: Type \\[python-ext--write-docstring] to apply changes")
+		(message "Type C-c C-c to save changes."))))
     (setq header-line-format nil)))
 
 
