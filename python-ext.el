@@ -416,9 +416,6 @@ Group 2 matches the name of the function.")
   (python-rx defun (* space))
   "Matches the beginning of a function definition.")
 
-(defvar user-ext-python--reverted nil
-  "t if `python-ext-revert-all-python-buffers' is called.")
-
 (defvar user-ext-python--first-buffer-loaded nil
   "Indicates whether the first Python buffer was loaded.
 This is non-nil if the first Python buffer was loaded, nil
@@ -518,19 +515,17 @@ This only affects the buffer-local mark ring."
 (defun python-ext-revert-all-python-buffers ()
   "Revert all Python buffers."
   (interactive)
-  (unless user-ext-python--reverted
-    (cl-loop
-     with bl = (buffer-list)
-     with bfn = nil
-     for buf in bl
-     do
-     (setq bfn (buffer-file-name))
-     (with-current-buffer buf
-       (when (and bfn (file-exists-p bfn)
-		  (not (buffer-modified-p))
-		  (derived-mode-p 'python-mode))
-	 (revert-buffer t t)
-	 (setq user-ext-python--reverted t))))))
+  (cl-loop
+   with bl = (buffer-list)
+   with bfn = nil
+   for buf in bl
+   do
+   (setq bfn (buffer-file-name))
+   (with-current-buffer buf
+     (when (and bfn (file-exists-p bfn)
+		(not (buffer-modified-p))
+		(derived-mode-p 'python-mode))
+       (revert-buffer t t)))))
 
 (defun python-ext-shift-return ()
   "Called when the user presses <S-return>."
