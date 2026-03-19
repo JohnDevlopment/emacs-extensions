@@ -138,6 +138,7 @@ END is bound to the visible end of window."
    ("w q" "Shutdown a workspace" eglot-shutdown)
    ("w M-q" "Shutdown all workspaces" eglot-shutdown-all)
    ("w k" "Kill all Eglot-related buffers" eglot-ext-kill-buffers)
+   ("w r" "Reconnect to server" eglot-reconnect)
    " "
    "Code Actions"
    ("a a" "Do a code action" eglot-code-actions)
