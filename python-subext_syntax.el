@@ -1,7 +1,5 @@
 ;; -*- lexical-binding: t; -*-
 
-(check-emacs-minimum-version "27.4")
-
 (require 'python-mode)
 (require 'python)
 (require 'hideshow)
@@ -106,16 +104,41 @@ direction)."
 
 ;; ### Functions
 
+(defmacro python-ext-intern-format (fmt &rest args)
+  "Format a string and turn it into a symbol via `intern'.
+This is effectively the same as (intern (format FMT ARGS...))."
+  (declare (debug t))
+  `(intern (format ,fmt ,@args)))
+
+(defmacro python-ext-intern-format-soft (fmt &rest args)
+  "Format a string and turn it into a symbol via `intern-soft'.
+This is effectively the same as
+(intern-soft (format FMT ARGS...))."
+  (declare (debug t))
+  `(intern-soft (format ,fmt ,@args)))
+
 (cl-defmacro python-ext-define-motion-commands
-    (form node-fn &key dec assert-type)
+    (form node-fn &key dec assert-type beg-offset end-offset no-body)
   "Define motion commands for FORM.
 NODE-FN is used to get the node at point.
+The subsequent args are keyword args.
 
-The keyword :dec, if non-nil, means that FORM is a decorated
-form (i.e., a form which supports decorators).
-If the keyword :assert-type is provided, assertions are
-added to check the type of nodes.  TYPE can be a symbol or a
-list of symbols.
+Keywords:
+
+- :dec FORM - if FORM is non-nil, FORM is a decorated form
+  (i.e., a form that supports decorators).
+- :assert-type TYPE - with a non-nil TYPE, assertions are
+  added to check the type of nodes.  TYPE can be a symbol or
+  a list of symbols (unquoted).
+- :beg-offset OFFSET - OFFSET is added to the final position
+  for backward and beginning-of functions.  OFFSET can be an
+  integer or marker, or a variable containing such.
+- :end-offset OFFSET - OFFSET is added to the final position
+  for forward functions.  OFFSET can be an integer or
+  marker, or a variable containing such.
+- :no-body FORM - a non-nil FORM means that this node has no
+  :body field, so the child node is used instead.  (This
+  applies to python-ext-backward-FORM-2).
 
 The functions defined are:
 - python-ext-backward-FORM
@@ -125,19 +148,21 @@ The functions defined are:
 - python-ext--beginning-of-FORM-p-2
 - python-ext-mark-FORM
 
-\(fn FORM NODE-FN [:dec BOOLEAN] [:assert-type TYPE])"
+\(fn FORM NODE-FN ARGS...)"
   (declare (indent defun)
 	   (debug (&define symbol form
 			   [&optional ":dec" boolean]
 			   [&optional ":assert-type"
 				      [&or symbolp
-					   (&rest symbolp)]])))
-  (let ((backward-fun (intern (format "python-ext-backward-%S" form)))
-	(backward2-fun (intern (format "python-ext-backward-%S-2" form)))
-	(forward-fun (intern (format "python-ext-forward-%S" form)))
-	(beg-fun (intern (format "python-ext--beginning-of-%S-p" form)))
-	(beg2-fun (intern (format "python-ext--beginning-of-%S-p-2" form)))
-	(mark-fun (intern (format "python-ext-mark-%S" form))))
+					   (&rest symbolp)]]
+			   [&optional ":beg-offset" form]
+			   [&optional ":beg-offset" form])))
+  (let ((backward-fun (python-ext-intern-format "python-ext-backward-%S" form))
+	(backward2-fun (python-ext-intern-format "python-ext-backward-%S-2" form))
+	(forward-fun (python-ext-intern-format "python-ext-forward-%S" form))
+	(beg-fun (python-ext-intern-format "python-ext--beginning-of-%S-p" form))
+	(beg2-fun (python-ext-intern-format "python-ext--beginning-of-%S-p-2" form))
+	(mark-fun (python-ext-intern-format "python-ext-mark-%S" form)))
     `(progn
        (defun ,backward-fun (&optional orig bol ret-node)
 	 ,(s-lex-format "Go to beginning of ${form}.
@@ -145,30 +170,34 @@ Return position or node if successful, nil otherwise.
 If ORIG is non-nil, use it as starting position; it defaults
 to point.
 If BOL is non-nil, move point to beginning of line of
-beginning of ${form}.  Then return that position.
+beginning of ${form}, then return point.
 If RET-NODE is non-nil, return the node instead of position.")
 	 (interactive)
 	 (when-let ((node (,node-fn orig)))
-	   ;; ,(when dec
-	   ;;    `(when (and (not py-mark-decorators)
-	   ;; 		  (tree-sitter-ext-type-p node 'decorated_definition))
-	   ;; 	 (setq node (tsc-get-child-by-field node :definition))))
 	   ,(when assert-type
 	      (cl-typecase assert-type
 		(list
 		 `(cl-assert (member (tsc-node-type node) ',assert-type) t))
 		(symbol
-		 `(cl-assert (equal (tsc-node-type node) (macroexp-quote ,assert-type)) t))
+		 `(cl-assert (equal (tsc-node-type node) ,(macroexp-quote assert-type)) t))
 		(otherwise
 		 (error "Invalid :assert-type %S, must be a symbol or list" assert-type))))
-	   (goto-char (tsc-node-start-position node))
-	   (and bol (goto-char (line-beginning-position)))
-	   (if ret-node node (point))))
+	   ,@(let ((pos-form '(tsc-node-start-position node)))
+	       (pcase beg-offset
+		 (0 t)
+		 ('nil t)
+		 (1 (setq pos-form `(1+ ,pos-form)))
+		 (-1 (setq pos-form `(1- ,pos-form)))
+		 (o (setq pos-form `(+ ,pos-form ,o))))
+	       `((goto-char ,pos-form)
+		 (and bol (goto-char (line-beginning-position)))
+		 (if ret-node node (point))))))
        (defun ,backward2-fun ()
 	 ,(s-lex-format "Go to the beginning of ${form} body.")
 	 (let* (py-mark-decorators
 		(node (,backward-fun nil nil t))
-		(body-node (and node (tsc-get-child-by-field node :body))))
+		(body-node (and node ,(if no-body `(tsc-get-first-named-child node)
+					`(tsc-get-child-by-field node :body)))))
 	   (if body-node
 	       (prog1 (goto-char (tsc-node-start-position body-node))
 		 (skip-syntax-backward " >")))))
@@ -205,13 +234,10 @@ If BOL is non-nil, go to beginning of line following end-position.")
 	       (bof (intern (format "py--beginning-of-%S-p" form)))
 	       (bof2 (intern (format "py--beginning-of-%S-p-2" form)))
 	       body)
-	   (if bf
-	       (cl-ext-progn
-		 (push `(advice-add (function ,bf)
-				    :override (function ,backward-fun))
-		       body))
-	     (lwarn 'python-ext :warning
-		    "py-backward-%S is not defined" form))
+	   (when bf
+	     (push `(advice-add (function ,bf)
+				:override (function ,backward-fun))
+		   body))
 	   (push `(defalias ',bf2 #',backward2-fun) body)
 	   (push `(defalias ',bof #',beg-fun) body)
 	   (push `(defalias ',bof2 #',beg2-fun) body)
