@@ -214,9 +214,9 @@ The Markdown extension adds `tempo-ext-tempo-handler' to
 
 ;; ### Keymaps
 
-(define-key markdown-mode-style-map (kbd "I") #'markdown-skeleton-id)
-(define-key markdown-mode-style-map (kbd "f") #'markdown-ext-insert-footnote)
-(define-key markdown-mode-map (kbd "C-c m t") #'markdown-toc-mode)
+(keymaps-ext-set-keymap markdown-mode-style-map "I" #'markdown-skeleton-id)
+(keymaps-ext-set-keymap markdown-mode-style-map "f" #'markdown-ext-insert-footnote)
+(keymaps-ext-set-keymap markdown-mode-map "C-c m t" #'markdown-toc-mode)
 
 (bind-keys :map markdown-toc-mode-map
 	   ("C-c C-t t" . markdown-toc-generate-or-refresh-toc)
