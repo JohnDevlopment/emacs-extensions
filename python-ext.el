@@ -423,6 +423,9 @@ otherwise.")
 
 (defvar-local user-ext-python--mark-timer nil)
 
+(defvar-local user-ext-python-edit-indirect-buffer-p nil
+  "Non-nil if the current buffer originated is an indirect edit buffer.")
+
 
 ;; ### Functions
 
@@ -536,42 +539,31 @@ This only affects the buffer-local mark ring."
   (forward-line -1)
   (py-indent-or-complete))
 
-(--ignore
-  (defsubst python-ext--regexp-match (subexp end)
-    (cond
-     ((and subexp end)
-      (match-end subexp))
-     (subexp (match-beginning subexp))
-     (end (match-end 0))
-     (t (match-beginning 0))))
-  
-  (defun python-ext-forward-regexp (regexp &optional subexp end)
-    "Search forward from point for regular expression REGEXP.
-Move point to the beginning of the match next.  If SUBEXP is
-non-nil, match that subexpression (e.g., 1 for group 1).  If
-END is non-nil, move point to the end of the match."
-    (cl-check-type regexp string)
-    (cl-check-type subexp (or integer null))
-    (when (cl-ext-save-point (re-search-forward regexp nil t))
-      (let ((pos (python-ext--regexp-match subexp end)))
-	(prog1 pos
-	  (and pos (goto-char pos))))))
+(defun python-ext--convert-string-region (&optional enter)
+  "Convert the edit-indirect buffer's contents before commit.
 
-  (defun python-ext-backward-regexp (regexp &optional subexp limit end)
-    "Search backward from point for regular expression REGEXP.
-Move point to the beginning of the next match.  SUBEXP and
-END are the same as for `python-ext-forward-regexp', which
-see.  If LIMIT is non-nil, bound the search so that the
-match has to be after it; it is a buffer position."
-    (cl-check-type regexp string)
-    (cl-check-type subexp integer-or-null)
-    (cl-check-type limit (or integer-or-marker null))
-    (when (and (not (bobp))
-	       (cl-ext-save-point (re-search-backward regexp limit t)))
-      (let ((pos (python-ext--regexp-match subexp end)))
-	(prog1 pos
-	  (and pos (goto-char pos))))))
-  t)
+This is used as :before advice for `edit-indirect-commit'."
+  (when user-ext-python-edit-indirect-buffer-p
+    (edit-indirect--barf-if-not-indirect)
+    (goto-char (point-min))
+    (if enter
+	(cl-ext-progn
+	  (replace-string-in-region "\\n" "\n"))
+      (replace-string-in-region "\n" "\\n"))))
+(advice-add #'edit-indirect-commit :before #'python-ext--convert-string-region)
+
+(defun python-ext-edit-string ()
+  "Edit the string at point in another buffer.
+The region is copied to a separate buffer, called an
+edit-indirect buffer, via `edit-indirect-region', which see.
+
+See also: `edit-indirect-commit', `python-ext--convert-string-region'."
+  (interactive)
+  (-let (((beg . end) (or (thing-at-point-bounds-of-string-at-point)
+			  (user-error "Not inside a string"))))
+    (edit-indirect-region (1+ beg) (1- end) t)
+    (setq user-ext-python-edit-indirect-buffer-p t)
+    (python-ext--convert-string-region t)))
 
 (--ignore :no-warn
   ;; TODO: move to subextension "pydoc"
