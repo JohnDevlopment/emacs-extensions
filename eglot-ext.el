@@ -76,7 +76,8 @@ END is bound to the visible end of window."
   "Update the inlay hints currently visible."
   (interactive)
   (eglot-ext-with-visible-range
-    (eglot--update-hints beg end)))
+    (eglot--update-hints beg end))
+  (eglot-inlay-hints-mode 1))
 
 (fext-defadvice eglot-show-workspace-configuration
     (after eglot-show-workspace-configuration)
