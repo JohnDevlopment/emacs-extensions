@@ -805,7 +805,8 @@ creating a new one."
       (when (fboundp 'tree-sitter-hl-mode)
 	(tree-sitter-hl-mode 1))
       (python-ext-tree-sitter-mode 1)))
-  (add-hook 'completion-at-point-functions #'py-fast-complete nil t))
+  ;; (add-hook 'completion-at-point-functions #'py-fast-complete nil t)
+  (remove-hook 'completion-at-point-functions #'py-fast-complete t))
 
 ;;;###autoload
 (add-hook 'python-mode-hook #'python--extra-hook)
