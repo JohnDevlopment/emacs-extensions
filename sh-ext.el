@@ -389,16 +389,19 @@ The arguments are exactly the same as those for
 ;; ### Key bindings and abbrevs
 
 (define-abbrev sh-mode-abbrev-table "cmds" "" #'sh-ext-skeleton-src-command-list)
-(define-key sh-mode-map (kbd "C-c \\") #'sh-ext-color-escape)
-(define-key sh-mode-map (kbd "C-c [") #'sh-ext-insert-non-printing-escape)
-(define-key sh-mode-map [remap sh-while-getopts] #'sh-ext-skeleton-while-getops)
+(keymaps-ext-set-keymap sh-mode-map "C-c \\" #'sh-ext-color-escape)
+(keymaps-ext-set-keymap sh-mode-map "C-c [" #'sh-ext-insert-non-printing-escape)
+(keymaps-ext-set-keymap sh-mode-map [remap sh-while-getopts] #'sh-ext-skeleton-while-getops)
+
+(keymaps-ext-set-keymap sh-mode-map "C-c C-j" #'imenu)
+(keymaps-ext-set-keymap sh-mode-map "<mouse-3>" #'imenu)
 
 (eval-when-compile (defvar user-ext-sh-fold-map))
 (define-prefix-command 'user-ext-sh-fold-map nil (sh-ext--fold-map-prompt))
-(define-key sh-mode-map (kbd "C-c f") 'user-ext-sh-fold-map)
-(define-key user-ext-sh-fold-map (kbd "f") #'sh-ext-hide-function)
-(define-key user-ext-sh-fold-map (kbd "C-f") #'sh-ext-hide-all-functions)
-(define-key user-ext-sh-fold-map (kbd "M-f") #'sh-ext-show-function)
+(keymaps-ext-set-keymap sh-mode-map "C-c f" 'user-ext-sh-fold-map)
+(keymaps-ext-set-keymap user-ext-sh-fold-map "f" #'sh-ext-hide-function)
+(keymaps-ext-set-keymap user-ext-sh-fold-map "C-f" #'sh-ext-hide-all-functions)
+(keymaps-ext-set-keymap user-ext-sh-fold-map "M-f" #'sh-ext-show-function)
 
 
 (extension-provide 'sh-ext)
