@@ -285,6 +285,24 @@ POS defaults to point."))
 (defalias 'py--beginning-of-def-p #'python-ext--beginning-of-def-p)
 (defalias 'py--beginning-of-def-p-2 #'python-ext--beginning-of-def-p-2)
 
+;; Imports
+(defun python-ext-jump-to-imports ()
+  "Jump to the module-level imports.
+The previous position is saved."
+  (interactive)
+  (push-mark)
+  (let (found)
+    (setq found
+	  (cl-block nil
+	    (tsc-traverse-do ([named-p type start-byte] tree-sitter-tree)
+	      (when (and named-p (memq type '(import_statement import_from_statement)))
+		(let ((pos (byte-to-position start-byte)))
+		  (setq found pos)
+		  (python-ext-goto pos)
+		  (cl-return pos))))))
+    (unless found
+      (python-ext-mark-ring-goto))))
+
 
 ;; --- String
 
@@ -468,8 +486,11 @@ POS defaults to point."))
 (keymaps-ext-set-keymap python-mode-map "C-c C-f" #'user-ext-python-motion-map)
 (keymaps-ext-set-keymap user-ext-python-motion-map "d" #'python-ext-backward-def)
 (keymaps-ext-set-keymap user-ext-python-motion-map "D" #'python-ext-forward-def)
+(keymaps-ext-set-keymap user-ext-python-motion-map "i" #'python-ext-jump-to-imports)
 (keymaps-ext-set-keymap user-ext-python-motion-map "c" #'python-ext-backward-class)
 (keymaps-ext-set-keymap user-ext-python-motion-map "C" #'python-ext-forward-class)
+
+(keymaps-ext-set-keymap python-mode-map "C-c c @" #'pop-to-mark-command)
 
 
 (cl-pushnew 'syntax user-ext-python-subextensions)
