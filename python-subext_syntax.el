@@ -244,19 +244,27 @@ If BOL is non-nil, go to beginning of line following end-position.")
 	   (nreverse body)))))
 
 (defmacro python-ext--form-at-pos (name type &optional form dec-p)
+  "Define a function that checks for Python form NAME at point.
+The function will be named python-ext--NAME-at-pos.
+TYPE is the tree sitter node type, a symbol.
+FORM is the form used to get the node.  If FORM omitted, it
+defaults to (tree-sitter-node-at-pos TYPE pos).
+If DEC-P is non-nil, the node can be decorated, and if a
+decorator is found, return the \\=`decorated_definition'
+instead."
   (declare (indent 2)
 	   (debug (&define stringp [&or symbolp stringp] &optional sexp form)))
   (cl-check-type name string)
-  (let ((fname (intern (format "python-ext--%s-at-pos" name)))
-	(form (or form
-		  `(tree-sitter-node-at-pos ,type pos))))
+  (let ((fname (python-ext-intern-format "python-ext--%s-at-pos" name))
+	(form (or form `(tree-sitter-node-at-pos ,type pos))))
     `(defun ,fname (&optional pos)
        ,(let ((is-dec (if dec-p (s-lex-format "
 If ${name} is decorated and `py-mark-decorators' is non-nil,
 mark the decorator along with the ${name}.")
 			"")))
 	  (s-lex-format "Return the ${name} at POS.${is-dec}
-POS defaults to point."))
+POS defaults to point.
+With a prefix arg, skip whitespace backward before checking."))
        (declare (side-effect-free t))
        (let ((pos (or pos (point))))
 	 (save-excursion
@@ -265,14 +273,17 @@ POS defaults to point."))
 	     (setq pos (+ pos (skip-syntax-backward " >"))))
 	   (when (= pos (line-end-position))
 	     (cl-decf pos)))
-	 (let ((node ,form))
-	   (if (and node
-		    (member (tsc-node-type node)
-			    user-ext-python-syntax-decorated-nodes)
-		    py-mark-decorators)
-	       (let ((parent (tsc-get-parent node)))
-		 (when (tree-sitter-ext-type-p parent 'decorated_definition)
-		   (setq node parent))))
+	 (let ((node (save-excursion
+		       (skip-syntax-backward " ")
+		       (or (bolp) (forward-char -1))
+		       ,form)))
+	   ,(if dec-p
+		`(if (and node
+			  (member (tsc-node-type node) user-ext-python-syntax-decorated-nodes)
+			  py-mark-decorators)
+		     (let ((parent (tsc-get-parent node)))
+		       (when (tree-sitter-ext-type-p parent 'decorated_definition)
+			 (setq node parent)))))
 	   node)))))
 
 ;; Block
