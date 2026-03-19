@@ -203,6 +203,7 @@ The initial fill column is controlled by the user option
   :keymap (let ((map (make-sparse-keymap)))
 	    (keymaps-ext-set-keymap map "C-c C-c" #'python-ext--write-docstring)
 	    (keymaps-ext-set-keymap map "C-c C-k" #'python-ext--cancel-docstring)
+	    (keymaps-ext-set-keymap map "M-F" #'fill-region)
 	    map)
   (if python-ext-docstring-mode
       (cl-ext-progn
