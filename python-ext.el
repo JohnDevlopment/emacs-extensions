@@ -424,6 +424,8 @@ Group 2 matches the name of the function.")
 This is non-nil if the first Python buffer was loaded, nil
 otherwise.")
 
+(defvar-local user-ext-python--mark-timer nil)
+
 
 ;; ### Functions
 
@@ -489,6 +491,29 @@ otherwise.")
 		finally return
 		new-regex))))
   t)
+
+(defun python-ext-goto (pos &optional location nomsg activate)
+  "Move point to POS and push the mark via `push-mark'.
+LOCATION, NOMSG, and ACTIVATE are the same as for `push-mark'."
+  (python-ext--cancel-mark-timer)
+  (push-mark location nomsg activate)
+  (goto-char pos)
+  (setq user-ext-python--mark-timer
+	(run-with-idle-timer 1 nil
+			     #'message
+			     (substitute-command-keys
+			      "Type \\[pop-to-mark-command] to restore position"))))
+
+(defun python-ext-mark-ring-goto ()
+  "Jump to mark, and pop a new position for mark off the ring.
+This only affects the buffer-local mark ring."
+  (pop-to-mark-command)
+  (python-ext--cancel-mark-timer))
+
+(defsubst python-ext--cancel-mark-timer ()
+  (when user-ext-python--mark-timer
+    (setq user-ext-python--mark-timer
+	  (cancel-timer user-ext-python--mark-timer))))
 
 (defun python-ext-revert-all-python-buffers ()
   "Revert all Python buffers."
