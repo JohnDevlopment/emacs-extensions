@@ -8,6 +8,9 @@
 (require 'org-table)
 (require 'yasnippet)
 
+(with-eval-after-load 'ox-extra
+  (ox-extras-activate '(ignore-headlines)))
+
 (eval-when-compile
   (declare-function org-ext-custom-command "org-ext")
   (declare-function org-ext-insert-command "org-ext")
@@ -480,7 +483,7 @@ holding contextual information."
     (pop-to-buffer "*output*" t))
 
   ;; <menu-bar> <Org> <Hyperlinks> <Descriptive Links>
-  
+
   (easy-menu-add-item
    org-mode-map
    '("Hyperlinks")
@@ -493,7 +496,7 @@ holding contextual information."
 ;;;###autoload
 (defun org--extra-hook ()
   "Extra hook for `org-mode'."
-  t)
+  (require 'ox-extra nil 'noerror))
 
 ;; Yasnippet
 (add-hook 'org-tab-first-hook #'yas-ext-org-very-safe-expand)
