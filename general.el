@@ -142,8 +142,14 @@ this returns nil."
     (unless (get-buffer "tree-sitter-ext.el")
       (find-extension "tree-sitter-ext"))
     (message "Compiling after 2 seconds")
-    (run-with-idle-timer
-     2 nil #'emacs-lisp-byte-compile-and-load)))
+    (run-with-idle-timer 2 nil
+			 (lambda ()
+			   (emacs-lisp-byte-compile-and-load)
+			   (sleep-for 2)
+			   (if (fboundp 'jdesktop-clear)
+			       (with-suppressed-warnings ((unresolved jdesktop-clear))
+				 (jdesktop-clear))
+			     (desktop-clear))))))
 
 
 ;; --- General commands
