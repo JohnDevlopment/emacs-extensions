@@ -66,7 +66,6 @@ use.  If the input is non-empty, it is inserted at point."
 		  (read-from-minibuffer prompt))))
     (unless (string= input "")
       (insert input))))
-(put #'macro-ext-query 'disabled t)
 
 (defsubst macro-ext-read-macro ()
   "Complete a macro name in the minibuffer."
