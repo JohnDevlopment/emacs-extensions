@@ -565,8 +565,8 @@ See also: `edit-indirect-commit', `python-ext--convert-string-region'."
     (setq user-ext-python-edit-indirect-buffer-p t)
     (python-ext--convert-string-region t)))
 
+;; TODO: move to subextension "pydoc"
 (--ignore :no-warn
-  ;; TODO: move to subextension "pydoc"
   (defun python-ext--pydoc (what)
     (cl-assert (stringp what) t "what = %s" what)
     (let (code)
@@ -606,8 +606,8 @@ See also: `edit-indirect-commit', `python-ext--convert-string-region'."
 	      (add-text-properties beg end '(face user-ext-python-pydoc-keyword))))))))
   t)
 
+;; TODO: move into subextension "lsp" or "eglot"
 (--ignore :no-warn
-  ;; TODO: move into subextension "lsp" or "eglot"
   (defun python-ext-finish-variable-type ()
     "Finish the type of the variable at point.
 
@@ -650,8 +650,8 @@ look for \`inlayHintProvider'."
 	      (message "label: %s, position: %s" label pos)))))))
   t)
 
+;; TODO: implement these later
 (--ignore :no-warn
-  ;; TODO: implement these later
   (defun python-ext-kill-pyi-buffers ()
     (interactive)
     (kill-buffers "\\.pyi$"))
@@ -662,11 +662,8 @@ look for \`inlayHintProvider'."
 			      (string-match-p "/\\.venv/.+$" (buffer-file-name buf)))))
   t)
 
-
-;; ### Process buffer
-
+;; TODO: move into subextension "subprocess"
 (--ignore :no-warn
-  ;; TODO: move into subextension "subprocess"
   (defconst python-ext-python-process-mode-map
     (let ((map (make-sparse-keymap)))
       (set-keymap-parent map comint-mode-map)
