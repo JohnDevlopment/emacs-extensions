@@ -117,20 +117,28 @@ When called interactively, SINGLE is the prefix argument."
 ;;;###autoload
 (defun ibuffer-ext-insert-independent-filter-group (name)
   "Insert the independent filter group associated with NAME.
-NAME must be the string name of a filter group defined in
-`user-ext-ibuffer-global-filter-groups', which see."
+NAME (a string) is either the name of a filter group defined
+in `user-ext-ibuffer-global-filter-groups' (which see) or a
+comma-separated list of the names of filter groups.
+
+Warning: Combinator groups from `user-ext-ibuffer-global-filter-groups'
+do not work right now.
+
+FIXME: Turn combinator groups (e.g., \\=`or', \\=`and') into
+a form compatible with `ibuffer-filter-groups'."
   (interactive (list (->> (mapcar #'car user-ext-ibuffer-global-filter-groups)
 			  (completing-read "Filter Group: "))))
   (cl-check-type name string)
   (unless (eq major-mode 'ibuffer-mode)
     (user-error "Must be in IBuffer buffer"))
   (cl-symbol-macrolet ((fgroups user-ext-ibuffer-global-filter-groups))
-    (when-let ((idx (--find-index (string= (car it) name) fgroups))
-	       (group (nth idx fgroups)))
-      
-      (cl-pushnew group ibuffer-filter-groups)
-      (ibuffer-ext-redisplay)
-      (message "Inserted independent filter group %S" name))))
+    (cl-loop for sub-name in (split-string name ",")
+	     do
+	     (when-let ((idx (--find-index (string= (car it) sub-name) fgroups))
+			(group (nth idx fgroups)))
+	       (cl-pushnew group ibuffer-filter-groups)
+	       (message "Inserted independent filter group %S" sub-name))
+	     finally do (ibuffer-ext-redisplay))))
 
 ;;;###autoload
 (defun ibuffer-ext-toggle-current-filter-group ()
