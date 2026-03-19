@@ -438,12 +438,17 @@ The previous position is saved."
 		   (fmt &rest args)
 		   `(intern-soft (format ,fmt ,@args))))
       (let* ((beg (or beg
-		      (funcall-safe (intern-format "py--beginning-of-%S-p-2" form))
-		      (funcall-safe (intern-format "py--beginning-of-%S-p" form))
-		      (funcall-safe (intern-format "py-backward-%S-2" form))
-		      (funcall-safe (intern-format "py-backward-%S" form))))
+		      (funcall-safe
+		       (python-ext-intern-format-soft "py--beginning-of-%S-p-2" form))
+		      (funcall-safe
+		       (python-ext-intern-format-soft "py--beginning-of-%S-p" form))
+		      (funcall-safe
+		       (python-ext-intern-format-soft "py-backward-%S-2" form))
+		      (funcall-safe
+		       (python-ext-intern-format-soft "py-backward-%S" form))))
 	     (end (or end
-		      (funcall-safe (intern-format "py-forward-%S" form))))
+		      (funcall-safe
+		       (python-ext-intern-format-soft "py-forward-%S" form))))
 	     (modified (buffer-modified-p))
 	     (inhibit-read-only t))
 	(if (and beg end)
