@@ -348,7 +348,7 @@ then the extension cannot load.
 (defun --list-extensions (&optional suffix completion)
   (let* ((regex (rx string-start
 		    (any (?a . ?z))
-		    (+ (any "a-z0-9-"))
+		    (+ (any "a-z0-9_-"))
 		    ".el" (opt ".gz")
 		    string-end))
 	 (regex2 (rx ".el" (opt ".gz") string-end))
