@@ -322,6 +322,42 @@ With a prefix arg, skip whitespace backward before checking."))
 (defalias 'py--beginning-of-def-p #'python-ext--beginning-of-def-p)
 (defalias 'py--beginning-of-def-p-2 #'python-ext--beginning-of-def-p-2)
 
+;; Def (arguments)
+(defun python-ext--def-args-at-pos (&optional pos)
+  "Return the def-args at POS.
+POS defaults to point."
+  (declare (side-effect-free t))
+  (let ((pos (or pos (point))))
+    (save-excursion (goto-char pos)
+		    (when current-prefix-arg
+		      (setq pos (+ pos (skip-syntax-backward " >"))))
+		    (when (= pos (line-end-position)) (cl-decf pos)))
+    (when-let ((node (tree-sitter-node-at-pos 'function_definition pos)))
+      (tsc-get-child-by-field node :parameters))))
+(python-ext-define-motion-commands def-args python-ext--def-args-at-pos
+  :assert-type parameters
+  :beg-offset 1
+  :no-body t)
+
+;; Def (return value)
+(defun python-ext-backward-def-returns (&optional orig)
+  "Go to beginning of def-returns.
+Return position or node if successful, nil otherwise.
+If ORIG is non-nil, use it as starting position; it defaults
+to point."
+  (interactive)
+  (let* (py-mark-decorators
+	 (node (python-ext--def-at-pos orig))
+	 child)
+    (when node
+      (if (setq child (tsc-get-child-by-field node :return_type))
+	  (cl-ext-progn
+	    (goto-char (tsc-node-start-position child)))
+	;; No return, go to the end of :parameters
+	(setq child (tsc-get-child-by-field node :parameters))
+	(goto-char (tsc-node-end-position child)))
+      (point))))
+
 ;; Imports
 (defun python-ext-jump-to-imports ()
   "Jump to the module-level imports.
@@ -524,8 +560,11 @@ The previous position is saved."
 (keymaps-ext-set-keymap user-ext-python-motion-map "d" #'python-ext-backward-def)
 (keymaps-ext-set-keymap user-ext-python-motion-map "D" #'python-ext-forward-def)
 (keymaps-ext-set-keymap user-ext-python-motion-map "i" #'python-ext-jump-to-imports)
+(keymaps-ext-set-keymap user-ext-python-motion-map "p" #'python-ext-backward-def-args)
+(keymaps-ext-set-keymap user-ext-python-motion-map "P" #'python-ext-forward-def-args)
 (keymaps-ext-set-keymap user-ext-python-motion-map "c" #'python-ext-backward-class)
 (keymaps-ext-set-keymap user-ext-python-motion-map "C" #'python-ext-forward-class)
+(keymaps-ext-set-keymap user-ext-python-motion-map "r" #'python-ext-backward-def-returns)
 
 (keymaps-ext-set-keymap python-mode-map "C-c c @" #'pop-to-mark-command)
 
