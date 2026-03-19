@@ -46,11 +46,17 @@
 
 (defun keymaps-ext--compat-check-key (key)
   (cl-ext-cond
-    ((string-match (rx ?<
-		       (group (+ (seq (any "ACHMSs") ?-))) ; 1 = modifiers
-		       (group (+ (not ?>)))		   ; 2 = event
-		       ?>)
-		   key)
+    ((vectorp key)
+     (unless (eq (aref key 0) 'remap)
+       (error "Vector key must be a remap"))
+     (mapconcat (lambda (e) (format "<%s>" e))
+		key " "))
+    ((and (stringp key)
+	  (string-match (rx ?<
+			    (group (+ (seq (any "ACHMSs") ?-))) ; 1 = modifiers
+			    (group (+ (not ?>)))		   ; 2 = event
+			    ?>)
+			key))
      (format "%s<%s>" (match-string 1 key) (match-string 2 key)))
     (t key)))
 (ert-deftest keymaps-ext-test-correct-key-string ()
@@ -96,7 +102,7 @@ internally; in older versions, this calls `define-key'."
   (setq key (keymaps-ext--compat-check-key key))
   (emacs-version-cond-when-compile
     ((>= "29.1")
-     (cl-check-type key key)
+     (cl-check-type key (or key vector))
      (if where
 	 (keymap-set-after keymap key definition
 	   (pcase where
