@@ -7,10 +7,12 @@
 
 ;;;###autoload
 (defun hs-ext-hide-range
-    (start end kind &optional b-offset e-offset no-hooks)
+    (start end kind &optional b-offset e-offset no-discard no-hooks)
   "Hide the text between START and END.
 START and END are inclusive.
 KIND is either `code' or `comment'.
+Unless NO-DISCARD is non-nil, and `hs-allow-nesting' is also
+non-nil, discard preexisting folds.
 Unless NO-HOOKS is non-nil, run `hs-hide-hook' after hiding
 the text.
 
@@ -18,7 +20,8 @@ See also: `hs-make-overlay'."
   (let* ((kind (pcase kind
 		 ((and k (or 'code 'comment)) k)
 		 ('t 'code)))
-	 (ov (hs-make-overlay start end kind b-offset e-offset)))
+	 (ov (and (or no-discard hs-allow-nesting (hs-discard-overlays start end) t)
+		  (hs-make-overlay start end kind b-offset e-offset))))
     (hs-ext-add-keymap-to-overlay ov)
     (goto-char start)
     (unless no-hooks
