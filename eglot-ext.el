@@ -86,6 +86,25 @@ END is bound to the visible end of window."
     (with-current-buffer buffer
       (activate-view-mode 1))))
 
+(defun eglot-ext-symbol-at-point ()
+  "Return the symbol at point, or nil if there is none."
+  (eglot-server-capable-or-lose :hoverProvider)
+  (let ((buf (current-buffer)))
+    (-let* ((result (eglot--request
+		     (eglot--current-server-or-lose)
+		     :textDocument/hover
+		     (eglot--TextDocumentPositionParams)))
+	    (contents (-> (plist-get result :contents)
+			  (plist-get :value))))
+      (cl-ext-cond
+	((string-match "^func \\(.+?\\)(.+" contents)
+	 ;; func NAME(...
+	 (match-string 1 contents))
+	((string-match "^\\_<\\(?:var\\|type\\) \\([^ ]+\\) .+" contents)
+	 ;; var NAME TYPE
+	 ;; TYPE NAME ...
+	 (match-string 1 contents))))))
+
 (defun eglot-ext-show-help-at-point ()
   "Show the documentation for symbol at point."
   (interactive)
