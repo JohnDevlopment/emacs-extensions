@@ -1,5 +1,16 @@
 ;; -*- lexical-binding: t; -*-
 
+(require 'cl-lib)
+(require 'cl-ext)
+
+(eval-when-compile
+  (require 'debug-ext))
+
+(--declare (debug-level 2))
+
+
+;; ### Variables
+
 (defconst user-ext-fext-valid-advice-classes
   '(before
     before-while
@@ -15,8 +26,8 @@
     filter-return)
   "List of valid CLASS symbols for `fext-defadvice'.")
 
-(require 'cl-lib)
-(require 'cl-ext)
+
+;; ### Functions
 
 ;;;###autoload
 (defmacro fext-defalias (symbol definition &optional docstring)
@@ -148,7 +159,7 @@ The following keywords are supported:
 			   def-body)))
   (let ((arglist '(&rest _args))
 	(remove (cl-ext-progn
-		  (cl-ext-when (eq (car-safe body) :remove)
+		  (when (eq (car-safe body) :remove)
 		    (pop body)
 		    (pop body))))
 	aname fname
@@ -178,6 +189,24 @@ The following keywords are supported:
 	   (advice-add ',function ,class ',fname
 		       (alist-ext-define 'name ',aname)))))))
 
-(provide 'function-ext)
+;;;###autoload
+(defun fext-minor-mode-p (symbol)
+  "Return t if SYMBOL is a minor mode symbol, nil otherwise."
+  (declare (side-effect-free t))
+  (cl-check-type symbol symbol)
+  (and (string-match "-mode\\'" (symbol-name symbol))
+       (commandp symbol)
+       (or (memq symbol minor-mode-list)
+	   (assq symbol minor-mode-alist))
+       t))
+(unless (fboundp 'minor-mode-p)
+  (defalias 'minor-mode-p #'fext-minor-mode-p))
 
+(provide 'function-ext)
 ;;; function-ext.el ends here
+
+;; Local Variables:
+;; eval: (abbrev-ext-install-local-abbrev-functions)
+;; eval: (abbrev-ext-define-local-abbrev "ux" "user-ext-fext")
+;; eval: (abbrev-ext-define-local-abbrev "fx" "fext-")
+;; End:
