@@ -157,7 +157,7 @@
 
 ;; ### Syntax
 
-(load-extension "go-ext-subext_syntax")
+(load-extension "go-subext_syntax")
 
 
 ;; --- Godoc
@@ -595,17 +595,17 @@ from `user-ext-go-godoc-server-process-buffer'."
 
 ;; --- Docedit scratch buffer
 
-(load-extension "go-ext-subext_docedit")
+(load-extension "go-subext_docedit")
 
 
 ;; --- Hs Mode Integration
 
-(load-extension "go-ext-subext_hs")
+(load-extension "go-subext_hs")
 
 
 ;; ### Project
 
-(load-extension "go-ext-subext_project")
+(load-extension "go-subext_project")
 
 
 ;; ### Process buffer
