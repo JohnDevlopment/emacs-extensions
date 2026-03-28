@@ -28,9 +28,7 @@
 
 ;; ### Advice
 
-(fext-defadvice eval-region (after eval-region)
-  "Deactive mark after evalling region."
-  (deactivate-mark))
+(advice-add #'eval-region :after (##deactivate-mark &*))
 
 
 ;; ### Variables
