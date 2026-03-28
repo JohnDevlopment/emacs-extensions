@@ -1,18 +1,24 @@
 ;; -*- lexical-binding: t;  -*-
 
-;; Extension checks
 (check-emacs-minimum-version "27.1")
 
 (require 'autoload)
 (require 'button)
-(require 'cl-lib)
 (require 'function-ext)
 (require 'hideshow)
 (require 's)
 
 (eval-when-compile
+  (require 'cl-lib)
   (require 'cl-ext)
   (require 'alist-ext))
+
+
+;; ### Customization
+
+(defgroup elisp-ext nil
+  "Emacs Lisp extension."
+  :group 'user-extensions)
 
 
 ;; ### Abbrevs
