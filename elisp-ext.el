@@ -252,6 +252,45 @@ duration of the next command, the following bindings apply:
   (set-mark-command arg)
   (elisp-ext--set-transient-map))
 
+(defun elisp-ext-autotype (&optional choice)
+  "Insert default contents into a new Emacs Lisp file.
+CHOICE is used to specify which skeleton to use for this file.
+CHOICE is either a list of the form (CHAR NAME) (in which
+CHAR is an integerp describing a character), or a single
+integer with the same purpose.
+
+The following characters are recognized:
+p - package header
+e = extension header
+s = subextension header"
+  (interactive (list (read-multiple-choice
+		      "Which skeleton? "
+		      '((?p "package header")
+			(?e "extension header")
+			(?s "subextension header")))))
+  (setq choice (or choice
+		   (read-multiple-choice
+		    "Which skeleton? "
+		    '((?p "package header")
+		      (?e "extension header")
+		      (?s "subextension header")))))
+  (pcase choice
+    (`(,a ,b)
+     (and (or (integerp a)
+	      (error "Invalid car %S of choice %S: must be an integer" a choice))
+	  (or (stringp b)
+	      (error "Invalid element 1 %S of choice %S: must be a string" b choice))
+	  (setq choice a)))
+    ((pred integerp) t)
+    (_ (signal 'wrong-type-argument
+	       (list '(or list integerp string) choice 'choice))))
+  (let ((mapping (alist-ext-define
+		  ?p #'elisp-ext-skeleton-package-header
+		  ?e #'elisp-ext-skeleton-extension-header
+		  ?s #'elisp-ext-skeleton-subextension-header)))
+    (call-interactively (or (alist-get choice mapping nil nil #'=)
+			    (error "Invalid choice %S" choice)))))
+
 
 ;; --- Skeletons
 
@@ -269,6 +308,27 @@ itself.
     `(progn
        (define-skeleton ,function-name
 	 ,docstring
+	 ,@skel))))
+
+(defmacro elisp-ext-define-auxiliary-skeleton (name &optional docstring &rest skel)
+  "Define an auxiliary Elisp mode command to insert a skeleton.
+The command will be named elisp-ext--skeleton-NAME.  DOCSTRING
+is the documentation of the skeleton; if nil, default to
+generic string.
+
+\(fn NAME DOCSTRING INTERACTOR SKELETON...\)"
+  (declare (indent 1) (doc-string 2)
+	   (debug (&define name [&optional stringp] skeleton-edebug-spec)))
+  (cl-check-type name symbol)
+  (cl-check-type docstring string-or-null)
+  (let* ((function-name (intern (format "elisp-ext--skeleton-%S" name)))
+	 (msg (format "Insert %s clause? " name)))
+    `(progn
+       (elisp-ext-define-skeleton ,function-name
+	 ,(or docstring (format "Insert %s clause." name))
+	 nil
+	 (unless (y-or-n-p ,msg)
+	   (signal 'quit t))
 	 ,@skel))))
 
 (elisp-ext-define-skeleton defun
@@ -308,6 +368,89 @@ itself.
       (format "\"%s\"\n" v1)))
   >
   _ ?\))
+
+(elisp-ext-define-skeleton package-header
+  "Insert a package header."
+  "Short description: "
+  ";;; "
+  (file-name-nondirectory
+   (buffer-file-name))
+  " --- " str
+  (make-string
+   (max 2
+	(- 80
+	   (current-column)
+	   27))
+   32)
+  "-*- lexical-binding: t; -*-"
+  '(setq lexical-binding t)
+  "\n\n;; Copyright (C) "
+  (format-time-string "%Y")
+  "  "
+  (getenv "ORGANIZATION")
+  |
+  (progn user-full-name)
+  "\n\n;; Author: "
+  (user-full-name)
+  '(if
+       (search-backward "&"
+			(line-beginning-position)
+			t)
+       (replace-match
+	(capitalize
+	 (user-login-name))
+	t t))
+  '(end-of-line 1)
+  " <"
+  (progn user-mail-address)
+  ">\n;; Keywords: "
+  '(require 'finder)
+  '(setq v1
+	 (mapcar
+	  (lambda
+	    (x)
+	    (list
+	     (symbol-name
+	      (car x))))
+	  finder-known-keywords)
+	 v2
+	 (mapconcat
+	  (lambda
+	    (x)
+	    (format "%12s:  %s"
+		    (car x)
+		    (cdr x)))
+	  finder-known-keywords "\n"))
+  ((let
+       ((minibuffer-help-form v2))
+     (completing-read "Keyword, C-h: " v1 nil t))
+   str ", ")
+  & -2 "\n\n;; This program is free software; you can redistribute it and/or modify\n;; it under the terms of the GNU General Public License as published by\n;; the Free Software Foundation, either version 3 of the License, or\n;; (at your option) any later version.\n\n;; This program is distributed in the hope that it will be useful,\n;; but WITHOUT ANY WARRANTY; without even the implied warranty of\n;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n;; GNU General Public License for more details.\n\n;; You should have received a copy of the GNU General Public License\n;; along with this program.  If not, see <https://www.gnu.org/licenses/>.\n\n;;; Commentary:\n\n;; " _ "\n\n;;; Code:\n\n\n\n(provide '"
+  (file-name-base
+   (buffer-file-name))
+  ")\n;;; "
+  (file-name-nondirectory
+   (buffer-file-name))
+  " ends here\n")
+
+(elisp-ext-define-skeleton extension-header
+  "Insert an extension header."
+  "Extension name: "
+  ";; -*- lexical-binding: t; -*-" n n
+  _ n n
+  "" n
+  "(extension-provide '" str ?\) n ";;; " str ".el ends here")
+
+(elisp-ext-define-skeleton subextension-header
+  "Insert a subextension header."
+  "Subextension name: "
+  ";; -*- lexical-binding: t; -*-" n n
+  _ n n
+  "" n
+  "(cl-pushnew '" str " user-ext-"
+  (setq v1 (read-string "Extension parent (sans \"-ext\" suffix: " nil t))
+  "-subextensions)
+;;; " (format "%s-subext_%s.el ends here" v1 str))
 
 
 ;; --- Occur functions
