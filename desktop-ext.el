@@ -1,18 +1,23 @@
 ;; -*- lexical-binding: t; -*-
 
-(--ignore :no-warn
-  (defgroup desktop-ext nil
-    "Group for Desktop extensions."
-    :group 'user-extensions)
-  t)
+(defgroup desktop-ext nil
+  "Group for Desktop extensions."
+  :group 'user-extensions)
 
-(defconst user-ext-desktop-prefix "C-c M-d"
-  "Prefix for desktop-related commands.")
+(eval-and-compile
+  (defconst user-ext-desktop-prefix "C-c M-d"
+    "Prefix for desktop-related commands."))
 
 (unless (featurep 'jdesktop)
-  (global-set-key (kbd (concat user-ext-desktop-prefix " s")) #'desktop-save-mode)
-  (global-set-key (kbd (concat user-ext-desktop-prefix " l")) #'desktop-read)
-  (global-set-key (kbd (concat user-ext-desktop-prefix " M-c")) #'desktop-clear))
+  (keymaps-ext-set-keymap-global
+   (eval-when-compile (concat user-ext-desktop-prefix " s"))
+   #'desktop-save-mode)
+  (keymaps-ext-set-keymap-global
+   (eval-when-compile (concat user-ext-desktop-prefix " l"))
+   #'desktop-read)
+  (keymaps-ext-set-keymap-global
+   (eval-when-compile (concat user-ext-desktop-prefix " M-c"))
+   #'desktop-clear))
 
 (extension-provide 'desktop-ext)
 ;;; desktop-ext.el ends here
