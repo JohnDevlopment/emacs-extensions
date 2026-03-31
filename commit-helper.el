@@ -375,7 +375,7 @@ Example:
 (defun commit-helper-change-convention (convention)
   "Change the current convention to CONVENTION.
 CONVENTION can either a string or of type `commit-helper-convention'."
-  (interactive (commit-helper--complete-convention t))
+  (interactive (list (commit-helper--complete-convention t)))
   (cl-check-type convention (or string commit-helper-convention))
   (setq commit-helper-convention (if (stringp convention)
 				     convention
@@ -518,7 +518,7 @@ prompted from the user, and DRY-RUN is the prefix argument."
    " "
    ("D" "Format a dependency commit" commit-helper-dependency)]
   ["Misc"
-   ("C" "Change convention" commit-helper-change-convention :transient t)
+   ("C" "Change convention" commit-helper-change-convention)
    ("h" "Convention help" commit-helper-convention-help)
    ("g" "Customize group" commit-helper-customize-group)
    ("q" "Quit" keyboard-quit)]
