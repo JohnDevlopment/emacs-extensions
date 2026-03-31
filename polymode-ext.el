@@ -196,5 +196,7 @@
 
 (advice-add 'eglot--managed-mode :around #'polymode-inhibit-in-indirect-buffers)
 
+(autoload 'polymode-inhibit-in-indirect-buffers "polymode-core")
+
 (extension-provide 'polymode-ext)
 ;;; polymode-ext.el ends here
