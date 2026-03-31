@@ -205,7 +205,7 @@ the message is visible.  LEVEL must be an integer: if
 then the message is displayed.  LEVEL defaults to 3.
 
 \(fn FORMAT-STRING ARGS...)"
-  (let ((level (cl-ext-get-keyword-with-arg args :level 3))
+  (let ((level (or (cl-ext-get-keyword-with-arg args :level) 3))
 	level-name)
     (when (macroexp-compiling-p)
       (--show-compiler-warning --message))
