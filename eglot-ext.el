@@ -129,16 +129,6 @@ END is bound to the visible end of window."
 	(insert content)))
     (run-mode-hooks)))
 
-;; TODO: Remove this function
-(defun temp-show-in-temp-buffer (obj)
-  (prog1 nil
-    (with-current-buffer (get-buffer-create "*output*")
-      (emacs-lisp-mode)
-      (cl-prettyprint obj)
-      (run-with-idle-timer 0.2 nil #'activate-view-mode 1)
-      (set-buffer-modified-p nil))
-    (pop-to-buffer "*output*" t)))
-
 
 ;; ### Help mode
 
