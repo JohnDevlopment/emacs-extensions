@@ -580,6 +580,7 @@ point."
 (load-extension "compat-29-ext")
 (load-extension "abbrev-ext")
 (load-extension "buffers-ext")
+(load-extension "desktop-ext")
 (load-extension "syntax-ext")
 (load-extension "subr-ext")
 (load-extension-safe "thingatpt-ext" 1)
