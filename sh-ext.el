@@ -305,6 +305,22 @@ it is non-nil, \"1;\" is prepended to the color code."
   (insert "\\[\\]")
   (left-char 2))
 
+(defun sh-ext-edit-region (start end &optional display-buffer interactive-p)
+  "Edit the region START..END in a separate buffer.
+This basically calls `edit-indirect-region' with the major
+mode being the same as the source buffer.
+When DISPLAY-BUFFER is non-nil or when called interactively,
+display the edit-indirect-buffer in some window and select."
+  (declare (advertised-calling-convention
+	    (start end &optional display-buffer) "2026-03-22"))
+  (interactive "*r\nP\np")
+  (unless (derived-mode-p 'sh-base-mode)
+    (user-error "Buffer must be in Shell Script Mode"))
+  (let ((mode major-mode))
+    (deactivate-mark)
+    (edit-indirect-region start end (or display-buffer interactive-p))
+    (funcall mode)))
+
 
 ;; ### Skeletons
 
@@ -406,3 +422,8 @@ The arguments are exactly the same as those for
 
 (extension-provide 'sh-ext)
 ;;; sh-ext ends here
+
+;; Local Variables:
+;; eval: (abbrev-ext-install-local-abbrev-functions)
+;; eval: (abbrev-ext-define-local-abbrev "sx" "sh-ext")
+;; End:
