@@ -62,14 +62,14 @@ Keywords:
   (let* ((save (cl-ext-get-keyword-with-arg props :save))
 	 (hash (cl-ext-get-keyword-with-arg props :hash)))
     `(progn
-       ,(when save
-	  `(and save-abbrevs abbrevs-changed
-		(progn
-		  (if (or arg (eq save-abbrevs 'silently))
-		      (write-abbrev-file nil))
-		  (setq abbrevs-changed nil))))
-       ,(when hash
-	  `(puthash ,name ,expansion user-ext-abbrev-local-abbrevs))
+       ,@(when save
+	   `((and save-abbrevs abbrevs-changed
+		  (progn
+		    (if (or arg (eq save-abbrevs 'silently))
+			(write-abbrev-file nil))
+		    (setq abbrevs-changed nil)))))
+       ,@(when hash
+	  `((puthash ,name ,expansion user-ext-abbrev-local-abbrevs)))
        (let ((changed abbrevs-changed))
 	 (unwind-protect
 	     (define-abbrev ,table ,name ,expansion
@@ -90,6 +90,7 @@ Keywords:
 
 (defun abbrev-ext-local-abbrevs ()
   "Return an alist of local abbrevs."
+  (declare (side-effect-free t))
   (cl-loop for k being the hash-keys of user-ext-abbrev-local-abbrevs
 	   using (hash-values v)
 	   collect
@@ -138,14 +139,14 @@ argument means to undefine the specified abbrev."
 More precisely, enable abbrevs that are only available in the
 current buffer."
   (interactive)
-  (or
-   user-ext-abbrev-local-table
-   (let ((ac abbrevs-changed))
-     (setq user-ext-abbrev-local-table (copy-abbrev-table local-abbrev-table)
-	   user-ext-abbrev-local-abbrevs (make-hash-table)
-	   local-abbrev-table user-ext-abbrev-local-table)
-     (message "Copied local abbrev table")
-     (setq abbrevs-changed ac))))
+  (and user-ext-abbrev-local-table
+       (user-error "Already installed local abvrev table"))
+  (let ((ac abbrevs-changed))
+    (setq user-ext-abbrev-local-table (copy-abbrev-table local-abbrev-table)
+	  user-ext-abbrev-local-abbrevs (make-hash-table)
+	  local-abbrev-table user-ext-abbrev-local-table)
+    (message "Copied local abbrev table")
+    (setq abbrevs-changed ac)))
 
 
 ;; --- Hooks
@@ -208,9 +209,9 @@ same-name arguments in `define-abbrev', which see."
   (cl-check-type name string)
   (cl-check-type expansion (or string function))
   (if (stringp expansion)
-      (abbrev-ext--define-abbrev
-	local-abbrev-table name expansion #'abbrev-ext-insert-hook
-	:system t)
+      (abbrev-ext--define-abbrev local-abbrev-table
+	name expansion #'abbrev-ext-insert-hook
+	:system t :hash t)
     (abbrev-ext--define-abbrev local-abbrev-table name
       "" #'abbrev-ext-special-hook :system t :hash t)))
 
@@ -267,6 +268,7 @@ argument means to undefine the specified abbrev."
 ;; ### Keymap
 
 (keymaps-ext-set-keymap-global "C-x a I" #'abbrev-ext-install-local-abbrev-functions)
+(keymaps-ext-set-keymap-global "C-x a M-I" #'abbrev-ext-add-local-file-local-variables)
 (keymaps-ext-set-keymap-global "C-x a i L" #'abbrev-ext-inverse-add-local-abbrev)
 (keymaps-ext-set-keymap-global "C-x a L" #'abbrev-ext-add-local-abbrev)
 (keymaps-ext-set-keymap-global "C-x a G" #'abbrev-ext-add-global-abbrev)
