@@ -27,17 +27,11 @@ unless the :no-warn keyword is present.
     (or no-warn (--show-compiler-warning --ignore))
     (list 'ignore t)))
 
-;; (defenum debug-level
-;;   ((low 1 "Low level")
-;;    (medium 2 "Medium level")
-;;    (high 3 "High level"))
-;;   "Debug level for functions like `debug-ext-message'.")
-
 (defconst user-ext-debug-level-name-mapping
   (alist-ext-define 1 "LOW" 2 "MEDIUM" 3 "HIGH")
   "Mapping of level numbers to level names.")
 
-(defvar-local user-ext-debug-level 3
+(defvar-local user-ext-debug-level 1
   "The default debug level for functions like `debug-ext-message'.
 Valid values are in `user-ext-debug-level-name-mapping',
 which see.")
@@ -220,7 +214,6 @@ then the message is displayed.  LEVEL defaults to 3.
   (indirect-function symbol))
 
 (provide 'debug-ext)
-
 ;;; debug-ext.el ends here
 
 ;; Local Variables:
