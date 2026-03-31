@@ -565,6 +565,7 @@ point."
      "`use-package' is required")))
 (load-extension "keymaps-ext")
 (load-extension-safe "loaddefs-ext")
+(load-extension-safe "config" 5)
 
 
 ;; --- Bootstraps for external packages
